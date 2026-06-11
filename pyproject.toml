@@ -5,14 +5,14 @@ build-backend = "hatchling.build"
 [project]
 name = "spedas-mcp"
 version = "0.1.0"
-description = "Unified SPEDAS-oriented MCP server combining XHelio CDAWeb discovery/data access and SPICE ephemeris tools"
+description = "Unified SPEDAS-oriented MCP server combining XHelio CDAWeb, PDS PPI, and SPICE tools"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
 authors = [
     { name = "Zesen Huang" },
 ]
-keywords = ["spedas", "heliophysics", "cdaweb", "spice", "mcp", "space-physics"]
+keywords = ["spedas", "heliophysics", "cdaweb", "pds", "spice", "mcp", "space-physics"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
@@ -27,6 +27,7 @@ classifiers = [
 ]
 dependencies = [
     "xhelio-cdaweb>=0.3.7",
+    "xhelio-pds>=0.3.0",
     "xhelio-spice>=0.6.0",
 ]
 

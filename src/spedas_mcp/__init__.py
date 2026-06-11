@@ -1,4 +1,4 @@
-"""spedas-mcp — unified SPEDAS-oriented MCP facade over XHelio tools."""
+"""spedas-mcp — unified SPEDAS-oriented MCP facade over XHelio CDAWeb, PDS, and SPICE tools."""
 
 __version__ = "0.1.0"
 

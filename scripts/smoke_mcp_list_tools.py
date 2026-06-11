@@ -25,12 +25,17 @@ EXPECTED_TOOLS = [
     "load_observatory",
     "browse_parameters",
     "fetch_data",
+    "browse_pds_missions",
+    "load_pds_mission",
+    "browse_pds_parameters",
+    "fetch_pds_data",
     "list_spice_missions",
     "get_ephemeris",
     "compute_distance",
     "transform_coordinates",
     "list_coordinate_frames",
     "manage_cdaweb_cache",
+    "manage_pds_cache",
     "manage_spice_kernels",
 ]
 
@@ -62,6 +67,7 @@ def main() -> int:
         env = os.environ.copy()
         env.setdefault("XHELIO_CDAWEB_CACHE_DIR", str(Path(tmp) / "cdaweb"))
         env.setdefault("XHELIO_SPICE_KERNEL_DIR", str(Path(tmp) / "spice"))
+        env.setdefault("PDSMCP_CACHE_DIR", str(Path(tmp) / "pds"))
         tools = anyio.run(_list_tools, args.module, env)
 
     missing = [name for name in EXPECTED_TOOLS if name not in tools]
@@ -74,7 +80,7 @@ def main() -> int:
         "expected_tools": EXPECTED_TOOLS,
         "missing": missing,
         "unexpected": unexpected,
-        "note": "list_tools only; no CDAWeb data fetch or SPICE kernel download requested",
+        "note": "list_tools only; no CDAWeb/PDS data fetch or SPICE kernel download requested",
     }
 
     if args.json:

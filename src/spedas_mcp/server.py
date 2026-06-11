@@ -1,10 +1,11 @@
 """Unified SPEDAS-oriented MCP server.
 
-This is intentionally a thin facade. The first implementation composes the two
-polished XHelio MCP/library packages instead of duplicating their science logic:
+This is intentionally a thin facade. It composes focused XHelio MCP/library
+packages instead of duplicating their science logic:
 
 - xhelio-cdaweb: observatory/dataset discovery, parameter metadata, CDAWeb fetch
 - xhelio-spice: spacecraft/body ephemeris, distances, coordinate transforms
+- xhelio-pds: PDS PPI mission/dataset discovery, parameter metadata, PDS fetch
 """
 
 from __future__ import annotations
@@ -33,7 +34,8 @@ def create_server() -> FastMCP:
         "spedas-mcp",
         instructions=(
             "SPEDAS MCP facade for heliophysics workflows. Use CDAWeb tools to "
-            "discover/fetch observatory timeseries data and SPICE tools to compute "
+            "discover/fetch heliophysics timeseries data, PDS tools to inspect/fetch "
+            "Planetary Plasma Interactions mission datasets, and SPICE tools to compute "
             "spacecraft/body ephemeris and coordinate transforms. Plan/discover before "
             "fetching; write bulk data to files; return compact metadata and paths."
         ),
@@ -52,6 +54,12 @@ def create_server() -> FastMCP:
                     "browse_parameters",
                     "fetch_data",
                 ],
+                "pds": [
+                    "browse_pds_missions",
+                    "load_pds_mission",
+                    "browse_pds_parameters",
+                    "fetch_pds_data",
+                ],
                 "spice": [
                     "get_ephemeris",
                     "compute_distance",
@@ -59,12 +67,13 @@ def create_server() -> FastMCP:
                     "list_spice_missions",
                     "list_coordinate_frames",
                 ],
-                "cache": ["manage_cdaweb_cache", "manage_spice_kernels"],
+                "cache": ["manage_cdaweb_cache", "manage_pds_cache", "manage_spice_kernels"],
             },
             "workflow": [
-                "Call browse_observatories or list_spice_missions first.",
-                "Load observatory/mission context before choosing datasets or frames.",
-                "Use browse_parameters before fetch_data.",
+                "Call browse_observatories, browse_pds_missions, or list_spice_missions first.",
+                "Load observatory/PDS mission context before choosing datasets or frames.",
+                "Use browse_parameters before fetch_data for CDAWeb datasets.",
+                "Use browse_pds_parameters before fetch_pds_data for PDS datasets.",
                 "For bulk data, always provide output_dir/output_file and return paths only.",
             ],
         })
@@ -131,6 +140,93 @@ def create_server() -> FastMCP:
         for frame in frames[1:]:
             merged = merged.join(frame, how="outer")
         base_name = f"{dataset_id}_{start_short}_{stop_short}"
+        file_path = out_dir / f"{base_name}.{format}"
+        counter = 1
+        while file_path.exists():
+            file_path = out_dir / f"{base_name}_{counter}.{format}"
+            counter += 1
+        if format == "json":
+            data = {"time": merged.index.strftime("%Y-%m-%dT%H:%M:%S.%f").tolist()}
+            for col in merged.columns:
+                data[col] = [None if pd.isna(v) else v for v in merged[col].tolist()]
+            file_path.write_text(json.dumps(data), encoding="utf-8")
+        else:
+            merged.to_csv(file_path)
+        return _json({
+            "status": "success",
+            "file_path": str(file_path),
+            "format": format,
+            "dataset_id": dataset_id,
+            "time_range": {"start": start, "stop": stop},
+            "total_rows": len(merged),
+            "parameters": param_meta,
+        })
+
+    @mcp.tool()
+    def browse_pds_missions(query: str | None = None) -> str:
+        """List PDS PPI missions/spacecraft with descriptions, dataset counts, and instruments."""
+        from pdsmcp.catalog import browse_missions as _browse_missions
+
+        return _json(_browse_missions(query=query))
+
+    @mcp.tool()
+    def load_pds_mission(mission_id: str) -> str:
+        """Load PDS PPI mission prompt/catalog for a lowercase mission stem."""
+        from pdsmcp.prompts import build_mission_prompt
+
+        return build_mission_prompt(mission_id)
+
+    @mcp.tool()
+    def browse_pds_parameters(dataset_id: str | None = None, dataset_ids: list[str] | None = None) -> str:
+        """Browse variables/metadata for one or more PDS PPI dataset IDs."""
+        from pdsmcp.metadata import browse_parameters as _browse_parameters
+
+        return _json(_browse_parameters(dataset_id=dataset_id, dataset_ids=dataset_ids))
+
+    @mcp.tool()
+    def fetch_pds_data(
+        dataset_id: str,
+        parameters: list[str],
+        start: str,
+        stop: str,
+        output_dir: str,
+        format: Literal["csv", "json"] = "csv",
+    ) -> str:
+        """Fetch PDS PPI timeseries data, write a file, and return metadata/stats only."""
+        import re
+
+        import pandas as pd
+        from pdsmcp.fetch import fetch_data as _fetch_data
+
+        lib_result = _fetch_data(dataset_id=dataset_id, parameters=parameters, start=start, stop=stop)
+        out_dir = Path(output_dir)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        start_short = start[:10].replace("-", "")
+        stop_short = stop[:10].replace("-", "")
+        frames = []
+        param_meta: dict[str, dict] = {}
+        for param_id, entry in lib_result.items():
+            if "error" in entry:
+                param_meta[param_id] = {"status": "error", "message": entry["error"]}
+                continue
+            df = entry["data"]
+            df.columns = [f"{param_id}.{c}" for c in df.columns]
+            frames.append(df)
+            param_meta[param_id] = {
+                "status": "success",
+                "units": entry.get("units"),
+                "description": entry.get("description"),
+                "rows": len(df),
+                "columns": list(df.columns),
+                "stats": entry.get("stats"),
+            }
+        if not frames:
+            return _json({"status": "error", "message": "No data fetched", "parameters": param_meta})
+        merged = frames[0]
+        for frame in frames[1:]:
+            merged = merged.join(frame, how="outer")
+        safe_dataset = re.sub(r"[^A-Za-z0-9_.-]+", "_", dataset_id).strip("_") or "pds_dataset"
+        base_name = f"{safe_dataset}_{start_short}_{stop_short}"
         file_path = out_dir / f"{base_name}.{format}"
         counter = 1
         while file_path.exists():
@@ -286,6 +382,35 @@ def create_server() -> FastMCP:
         return _json({"status": "error", "message": f"Unknown action: {action}"})
 
     @mcp.tool()
+    def manage_pds_cache(
+        action: Literal["status", "clean", "refresh_metadata", "build_metadata", "refresh_time_ranges", "rebuild_catalog"],
+        category: Literal["metadata", "data_cache", "all"] = "all",
+        mission: str | None = None,
+        dataset_ids: list[str] | None = None,
+        older_than_days: int | None = None,
+        dry_run: bool = True,
+        detail: bool = False,
+        force: bool = False,
+    ) -> str:
+        """Manage PDS cache and metadata/catalog refresh operations."""
+        from pdsmcp.cache import build_metadata, cache_clean, cache_status, refresh_metadata, refresh_time_ranges, rebuild_catalog
+
+        if action == "status":
+            return _json(cache_status(detail=detail))
+        if action == "clean":
+            missions = [mission] if mission else None
+            return _json(cache_clean(category=category, missions=missions, older_than_days=older_than_days, dry_run=dry_run))
+        if action == "refresh_metadata":
+            return _json(refresh_metadata(dataset_ids=dataset_ids, mission=mission))
+        if action == "build_metadata":
+            return _json(build_metadata(mission=mission, force=force))
+        if action == "refresh_time_ranges":
+            return _json(refresh_time_ranges(mission=mission))
+        if action == "rebuild_catalog":
+            return _json(rebuild_catalog(mission=mission))
+        return _json({"status": "error", "message": f"Unknown action: {action}"})
+
+    @mcp.tool()
     def manage_spice_kernels(
         action: Literal["status", "load", "clean", "check_remote", "purge"],
         mission: str | None = None,
@@ -322,6 +447,7 @@ def serve() -> None:
     parser = argparse.ArgumentParser(description="Unified SPEDAS MCP server")
     parser.add_argument("--cdaweb-cache-dir", default=None, help="Override CDAWeb cache root directory")
     parser.add_argument("--spice-kernel-dir", default=None, help="Override SPICE kernel cache directory")
+    parser.add_argument("--pds-cache-dir", default=None, help="Override PDS PPI cache root directory")
     args = parser.parse_args()
 
     import os
@@ -334,6 +460,11 @@ def serve() -> None:
     spice_kernel_dir = args.spice_kernel_dir or os.environ.get("XHELIO_SPICE_KERNEL_DIR")
     if spice_kernel_dir:
         os.environ["XHELIO_SPICE_KERNEL_DIR"] = spice_kernel_dir
+
+    pds_cache_dir = args.pds_cache_dir or os.environ.get("PDSMCP_CACHE_DIR")
+    if pds_cache_dir:
+        from pdsmcp.config import configure as configure_pds
+        configure_pds(cache_dir=pds_cache_dir)
 
     logging.basicConfig(level=logging.INFO)
     create_server().run()
