@@ -21,6 +21,11 @@ from mcp.client.stdio import stdio_client
 
 EXPECTED_TOOLS = [
     "spedas_overview",
+    "browse_data_sources",
+    "load_data_source",
+    "browse_data_parameters",
+    "fetch_data_product",
+    "manage_data_cache",
     "search_spedas_data_sources",
     "plan_spedas_observation",
     "compare_cdaweb_pds_spice",

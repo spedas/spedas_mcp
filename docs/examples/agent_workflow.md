@@ -1,4 +1,4 @@
-# Example: agent workflow with SPEDAS MCP
+# Example: agent workflow with SPEDAS MCP data layer
 
 This example is intentionally tool-oriented rather than tied to one agent runtime. Claude Code, Codex, OpenCode, LingTai, or another MCP-capable client can follow the same sequence.
 
@@ -8,7 +8,7 @@ This example is intentionally tool-oriented rather than tied to one agent runtim
 
 Recommended sequence:
 
-1. Start with the semantic layer:
+1. Start with the science workflow layer:
 
    ```text
    search_spedas_data_sources(
@@ -18,7 +18,7 @@ Recommended sequence:
    )
    ```
 
-   Expected result: PDS and SPICE should rank high, because PDS can provide archived Juno field products while SPICE provides geometry/trajectory context.
+   Expected result: `pds` and `spice` should rank high, because PDS can provide archived Juno field products while SPICE provides geometry/trajectory context.
 
 2. Create a plan:
 
@@ -32,7 +32,24 @@ Recommended sequence:
    )
    ```
 
-3. Scaffold a provenance bundle:
+3. Browse the unified data layer:
+
+   ```text
+   browse_data_sources(source_type="all")
+   browse_data_sources(source_type="pds", query="juno")
+   browse_data_sources(source_type="spice")
+   ```
+
+4. Load source context and browse parameters/frames:
+
+   ```text
+   load_data_source(source_type="pds", source_id="JUNO_PPI")
+   browse_data_parameters(source_type="pds", dataset_id="...")
+   load_data_source(source_type="spice", source_id="JUNO")
+   list_coordinate_frames(mission="JUNO")
+   ```
+
+5. Scaffold a provenance bundle before fetching:
 
    ```text
    create_spedas_analysis_bundle(
@@ -44,34 +61,32 @@ Recommended sequence:
    )
    ```
 
-4. Use source-specific discovery:
+6. Fetch/compute only after the mission, dataset, parameters, frames, and time range are explicit:
 
    ```text
-   browse_pds_missions(query="juno")
-   load_pds_mission("JUNO_PPI")
-   browse_pds_parameters(dataset_id="...")
-   list_spice_missions()
-   list_coordinate_frames(mission="JUNO")
-   ```
+   fetch_data_product(
+     source_type="pds",
+     dataset_id="...",
+     parameters=["..."],
+     start="YYYY-MM-DDTHH:MM:SSZ",
+     stop="YYYY-MM-DDTHH:MM:SSZ",
+     output_dir="./runs/juno-jupiter-field-geometry/data"
+   )
 
-5. Fetch/compute only after the mission, dataset, parameters, frames, and time range are explicit:
-
-   ```text
-   fetch_pds_data(..., output_dir="./runs/juno-jupiter-field-geometry/data")
    get_ephemeris(...)
    compute_distance(...)
    ```
 
-6. Return compact summaries and paths to generated artifacts. Do not paste large data arrays into chat.
+7. Return compact summaries and paths to generated artifacts. Do not paste large data arrays into chat.
 
 ## Mixed heliophysics request
 
 > Compare solar wind plasma and spacecraft geometry during an Earth bow-shock interval.
 
-Likely source families:
+Likely source categories:
 
-- CDAWeb for OMNI/MMS/THEMIS/other time-series measurements.
-- SPICE for geometry, frames, and distance/position context when applicable.
+- `cdaweb` for OMNI/MMS/THEMIS/other time-series measurements.
+- `spice` for geometry, frames, and distance/position context when applicable.
 
 Recommended first calls:
 
@@ -90,4 +105,13 @@ plan_spedas_observation(
 )
 ```
 
-Then continue with `browse_observatories`, `load_observatory`, `browse_parameters`, and `fetch_data`, plus SPICE tools when geometry context is required.
+Then continue through the data layer:
+
+```text
+browse_data_sources(source_type="cdaweb")
+load_data_source(source_type="cdaweb", source_id="...")
+browse_data_parameters(source_type="cdaweb", dataset_id="...")
+fetch_data_product(source_type="cdaweb", dataset_id="...", parameters=["..."], start="...", stop="...", output_dir="./runs/.../data")
+```
+
+Use direct geometry tools when SPICE context is required.

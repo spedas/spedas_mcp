@@ -1,14 +1,14 @@
 """Unified SPEDAS-oriented MCP server.
 
-The server follows Jason's A+B direction:
+The server follows Jason's updated A+B direction:
 
-A. Keep a stable thin facade over focused XHelio MCP/library packages.
-B. Add a minimal SPEDAS science-workflow layer so agents can plan a study before
-   dropping into CDAWeb, PDS, or SPICE-specific tools.
+A. Present one SPEDAS data layer organized by data source categories.
+B. Add a SPEDAS science-workflow layer so agents can plan a study before using
+   source-specific data and geometry operations.
 
-- xhelio-cdaweb: observatory/dataset discovery, parameter metadata, CDAWeb fetch
-- xhelio-spice: spacecraft/body ephemeris, distances, coordinate transforms
-- xhelio-pds: PDS PPI mission/dataset discovery, parameter metadata, PDS fetch
+The focused XHelio packages remain internal backends, not the user-facing mental
+model. Outward-facing tools should speak in terms of SPEDAS data sources such as
+CDAWeb, PDS, and SPICE/geometry.
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ import argparse
 import json
 import logging
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 try:
     from mcp.server.fastmcp import FastMCP
@@ -37,12 +37,12 @@ def create_server() -> FastMCP:
         "spedas-mcp",
         instructions=(
             "SPEDAS MCP facade for heliophysics workflows. Start with the SPEDAS "
-            "science-workflow tools to choose sources and plan a study, then use CDAWeb "
-            "tools to discover/fetch heliophysics timeseries data, PDS tools to "
-            "inspect/fetch Planetary Plasma Interactions mission datasets, and SPICE "
-            "tools to compute spacecraft/body ephemeris and coordinate transforms. "
-            "Plan/discover before fetching; write bulk data to files; return compact "
-            "metadata and paths."
+            "science-workflow tools to plan a study, then use the unified data-layer "
+            "tools with source_type=cdaweb, pds, or spice. CDAWeb and PDS provide "
+            "measurement/archive data; SPICE provides geometry, ephemeris, frames, "
+            "and trajectory context. Focus on SPEDAS data sources rather than backend "
+            "package names. Plan/discover before fetching; write bulk data to files; "
+            "return compact metadata and paths."
         ),
     )
 
@@ -53,39 +53,45 @@ def create_server() -> FastMCP:
             "status": "success",
             "server": "spedas-mcp",
             "capability_groups": {
+                "data": [
+                    "browse_data_sources",
+                    "load_data_source",
+                    "browse_data_parameters",
+                    "fetch_data_product",
+                    "manage_data_cache",
+                ],
                 "science_workflows": [
                     "search_spedas_data_sources",
                     "plan_spedas_observation",
                     "compare_cdaweb_pds_spice",
                     "create_spedas_analysis_bundle",
                 ],
-                "cdaweb": [
+                "geometry": [
+                    "list_spice_missions",
+                    "get_ephemeris",
+                    "compute_distance",
+                    "transform_coordinates",
+                    "list_coordinate_frames",
+                ],
+                "compatibility_low_level": [
                     "browse_observatories",
                     "load_observatory",
                     "browse_parameters",
                     "fetch_data",
-                ],
-                "pds": [
                     "browse_pds_missions",
                     "load_pds_mission",
                     "browse_pds_parameters",
                     "fetch_pds_data",
+                    "manage_cdaweb_cache",
+                    "manage_pds_cache",
+                    "manage_spice_kernels",
                 ],
-                "spice": [
-                    "get_ephemeris",
-                    "compute_distance",
-                    "transform_coordinates",
-                    "list_spice_missions",
-                    "list_coordinate_frames",
-                ],
-                "cache": ["manage_cdaweb_cache", "manage_pds_cache", "manage_spice_kernels"],
             },
             "workflow": [
                 "Start with search_spedas_data_sources or plan_spedas_observation for open-ended science requests.",
-                "Call browse_observatories, browse_pds_missions, or list_spice_missions for source-specific discovery.",
-                "Load observatory/PDS mission context before choosing datasets or frames.",
-                "Use browse_parameters before fetch_data for CDAWeb datasets.",
-                "Use browse_pds_parameters before fetch_pds_data for PDS datasets.",
+                "Use browse_data_sources(source_type='all') to inspect SPEDAS data-source categories.",
+                "Use load_data_source, browse_data_parameters, fetch_data_product, and manage_data_cache for the unified data layer.",
+                "Use geometry tools directly when the request is SPICE-specific ephemeris, frame, distance, or transform work.",
                 "Use create_spedas_analysis_bundle to preserve request/provenance intent before bulk fetches.",
                 "For bulk data, always provide output_dir/output_file and return paths only.",
             ],
@@ -513,6 +519,152 @@ def create_server() -> FastMCP:
             deleted = km.purge_cache()
             return _json({"status": "success", "deleted_files": deleted})
         return _json({"status": "error", "message": f"Unknown action: {action}"})
+
+
+    def _normalize_source_type(source_type: str | None) -> str:
+        value = (source_type or "all").strip().lower().replace("-", "_")
+        aliases = {
+            "all_sources": "all",
+            "all": "all",
+            "cda": "cdaweb",
+            "cda_web": "cdaweb",
+            "cdaweb": "cdaweb",
+            "pds_ppi": "pds",
+            "pds": "pds",
+            "spice_geometry": "spice",
+            "geometry": "spice",
+            "spice": "spice",
+        }
+        return aliases.get(value, value)
+
+    def _wrap_data_payload(source_type: str, raw: str, **extra: Any) -> str:
+        try:
+            payload = json.loads(raw)
+        except Exception:
+            payload = raw
+        return _json({"status": "success", "source_type": source_type, "payload": payload, **extra})
+
+    @mcp.tool()
+    def browse_data_sources(source_type: str = "all", query: str | None = None) -> str:
+        """Browse SPEDAS data-source categories through one data-layer entry point."""
+        source = _normalize_source_type(source_type)
+        if source == "all":
+            return _json({
+                "status": "success",
+                "data_layer": "spedas",
+                "source_types": [
+                    {
+                        "source_type": "cdaweb",
+                        "label": "CDAWeb heliophysics time-series",
+                        "best_for": "observatory/dataset/parameter discovery and measurement fetches",
+                        "next_tools": ["browse_data_sources(source_type='cdaweb')", "load_data_source", "browse_data_parameters", "fetch_data_product"],
+                    },
+                    {
+                        "source_type": "pds",
+                        "label": "PDS Planetary Plasma Interactions archive",
+                        "best_for": "planetary mission/dataset/parameter discovery and archive-backed fetches",
+                        "next_tools": ["browse_data_sources(source_type='pds')", "load_data_source", "browse_data_parameters", "fetch_data_product"],
+                    },
+                    {
+                        "source_type": "spice",
+                        "label": "SPICE geometry and ephemeris",
+                        "best_for": "trajectory, distance, frames, coordinate transforms, and geometry context",
+                        "next_tools": ["browse_data_sources(source_type='spice')", "load_data_source", "get_ephemeris", "compute_distance", "transform_coordinates"],
+                    },
+                ],
+                "query": query,
+                "note": "Use source_type to drill into one category. XHelio package names are internal backend details.",
+            })
+        if source == "cdaweb":
+            return _wrap_data_payload(source, browse_observatories(), query=query)
+        if source == "pds":
+            return _wrap_data_payload(source, browse_pds_missions(query=query), query=query)
+        if source == "spice":
+            return _wrap_data_payload(source, list_spice_missions(), query=query, note="SPICE is exposed as the geometry data-source category.")
+        return _json({"status": "error", "error": f"unknown source_type: {source_type}", "allowed": ["all", "cdaweb", "pds", "spice"]})
+
+    @mcp.tool()
+    def load_data_source(source_type: str, source_id: str) -> str:
+        """Load metadata/context for one SPEDAS data source category item."""
+        source = _normalize_source_type(source_type)
+        if source == "cdaweb":
+            return _wrap_data_payload(source, load_observatory(source_id), source_id=source_id)
+        if source == "pds":
+            return _wrap_data_payload(source, load_pds_mission(source_id), source_id=source_id)
+        if source == "spice":
+            return _wrap_data_payload(source, list_coordinate_frames(mission=source_id), source_id=source_id, note="For SPICE, loading a data source returns known coordinate frames for the mission when available.")
+        return _json({"status": "error", "error": f"unknown source_type: {source_type}", "allowed": ["cdaweb", "pds", "spice"]})
+
+    @mcp.tool()
+    def browse_data_parameters(
+        source_type: str,
+        dataset_id: str,
+        dataset_ids: list[str] | None = None,
+    ) -> str:
+        """Browse dataset parameters through the unified SPEDAS data layer."""
+        source = _normalize_source_type(source_type)
+        if source == "cdaweb":
+            return _wrap_data_payload(source, browse_parameters(dataset_id=dataset_id, dataset_ids=dataset_ids), dataset_id=dataset_id)
+        if source == "pds":
+            return _wrap_data_payload(source, browse_pds_parameters(dataset_id=dataset_id, dataset_ids=dataset_ids), dataset_id=dataset_id)
+        if source == "spice":
+            return _wrap_data_payload(source, list_coordinate_frames(mission=dataset_id), dataset_id=dataset_id, note="SPICE does not expose measurement parameters; use frames/targets/observer geometry instead.")
+        return _json({"status": "error", "error": f"unknown source_type: {source_type}", "allowed": ["cdaweb", "pds", "spice"]})
+
+    @mcp.tool()
+    def fetch_data_product(
+        source_type: str,
+        dataset_id: str,
+        parameters: list[str],
+        start: str | None = None,
+        stop: str | None = None,
+        output_dir: str | None = None,
+        format: Literal["csv", "json"] = "csv",
+        limit: int | None = None,
+    ) -> str:
+        """Fetch a measurement/archive product through the unified SPEDAS data layer."""
+        source = _normalize_source_type(source_type)
+        if source == "cdaweb":
+            if start is None or stop is None or output_dir is None:
+                return _json({"status": "error", "error": "cdaweb fetch requires start, stop, and output_dir"})
+            return _wrap_data_payload(source, fetch_data(dataset_id=dataset_id, parameters=parameters, start=start, stop=stop, output_dir=output_dir, format=format), dataset_id=dataset_id)
+        if source == "pds":
+            return _wrap_data_payload(source, fetch_pds_data(dataset_id=dataset_id, parameters=parameters, start=start, stop=stop, output_dir=output_dir, format=format, limit=limit), dataset_id=dataset_id)
+        if source == "spice":
+            return _json({
+                "status": "error",
+                "source_type": "spice",
+                "error": "SPICE is geometry/ephemeris, not a measurement product fetch. Use get_ephemeris, compute_distance, or transform_coordinates.",
+                "recommended_tools": ["get_ephemeris", "compute_distance", "transform_coordinates"],
+            })
+        return _json({"status": "error", "error": f"unknown source_type: {source_type}", "allowed": ["cdaweb", "pds", "spice"]})
+
+    @mcp.tool()
+    def manage_data_cache(
+        source_type: str = "all",
+        action: Literal["status", "clean"] = "status",
+        cache_dir: str | None = None,
+        mission: str | None = None,
+    ) -> str:
+        """Manage data-layer caches by source type."""
+        source = _normalize_source_type(source_type)
+        if source == "all":
+            return _json({
+                "status": "success",
+                "source_type": "all",
+                "caches": {
+                    "cdaweb": json.loads(manage_cdaweb_cache(action=action, cache_dir=cache_dir)),
+                    "pds": json.loads(manage_pds_cache(action=action, cache_dir=cache_dir)),
+                    "spice": json.loads(manage_spice_kernels(action=action, mission=mission, cache_dir=cache_dir)),
+                },
+            })
+        if source == "cdaweb":
+            return _wrap_data_payload(source, manage_cdaweb_cache(action=action, cache_dir=cache_dir))
+        if source == "pds":
+            return _wrap_data_payload(source, manage_pds_cache(action=action, cache_dir=cache_dir))
+        if source == "spice":
+            return _wrap_data_payload(source, manage_spice_kernels(action=action, mission=mission, cache_dir=cache_dir))
+        return _json({"status": "error", "error": f"unknown source_type: {source_type}", "allowed": ["all", "cdaweb", "pds", "spice"]})
 
     return mcp
 

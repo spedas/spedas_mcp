@@ -24,6 +24,11 @@ def test_server_has_expected_tools():
     names = {tool.name for tool in tools}
     assert {
         "spedas_overview",
+        "browse_data_sources",
+        "load_data_source",
+        "browse_data_parameters",
+        "fetch_data_product",
+        "manage_data_cache",
         "search_spedas_data_sources",
         "plan_spedas_observation",
         "compare_cdaweb_pds_spice",
@@ -51,10 +56,30 @@ def test_overview_is_compact_json():
     server = create_server()
     data = json.loads(_call_tool(server, "spedas_overview"))
     assert data["status"] == "success"
+    assert "data" in data["capability_groups"]
     assert "science_workflows" in data["capability_groups"]
-    assert "cdaweb" in data["capability_groups"]
-    assert "pds" in data["capability_groups"]
-    assert "spice" in data["capability_groups"]
+    assert "geometry" in data["capability_groups"]
+    assert "compatibility_low_level" in data["capability_groups"]
+
+
+def test_browse_data_sources_lists_spedas_source_categories():
+    server = create_server()
+    data = json.loads(_call_tool(server, "browse_data_sources", {"source_type": "all"}))
+    assert data["status"] == "success"
+    assert data["data_layer"] == "spedas"
+    assert {entry["source_type"] for entry in data["source_types"]} == {"cdaweb", "pds", "spice"}
+
+
+def test_fetch_data_product_rejects_spice_measurement_fetch():
+    server = create_server()
+    data = json.loads(_call_tool(server, "fetch_data_product", {
+        "source_type": "spice",
+        "dataset_id": "juno",
+        "parameters": ["ephemeris"],
+    }))
+    assert data["status"] == "error"
+    assert data["source_type"] == "spice"
+    assert "get_ephemeris" in data["recommended_tools"]
 
 
 def test_search_spedas_data_sources_recommends_mixed_planetary_sources():

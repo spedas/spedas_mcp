@@ -1,60 +1,69 @@
-# Maintainer note: SPEDAS MCP as an agent interface layer
+# Maintainer note: SPEDAS MCP data layer
 
-`spedas_mcp` is intended to be the SPEDAS-facing MCP endpoint for agentic heliophysics workflows.
+`spedas_mcp` is the SPEDAS-facing MCP endpoint for agentic heliophysics workflows. Its outward-facing model is **one SPEDAS data layer**, not a pile of backend-specific MCPs.
 
-It does **not** replace SPEDAS, PySPEDAS, CDAWeb, PDS, or SPICE. Instead, it provides an interface layer that MCP-capable coding/research agents can use to plan and execute SPEDAS-related work with clearer source boundaries and provenance expectations.
+It does **not** replace SPEDAS, PySPEDAS, CDAWeb, PDS, or SPICE. It gives MCP-capable coding/research agents one interface for planning and executing SPEDAS-related work with clearer data-source boundaries and provenance expectations.
 
-## Why one MCP?
+## Core framing
 
-Jason's three seed capabilities cover complementary layers:
+Jason's latest direction is that the public interface should not preserve names like `xhelio_cdaweb` or `xhelio_pds` as the main user model. Those packages can remain internal backends. The SPEDAS MCP should expose:
 
-- `xhelio-cdaweb` — heliophysics observatory time-series discovery, metadata, and fetch.
-- `xhelio-pds` — Planetary Plasma Interactions mission/dataset discovery, metadata, and fetch.
-- `xhelio-spice` — geometry, ephemeris, distances, coordinate transforms, frames, and kernel cache management.
+- one `data` layer;
+- data source categories under that layer;
+- science workflow tools above the data layer;
+- plugin/runtime packaging around the MCP.
 
-A researcher or agent normally needs these together: measurements from CDAWeb/PDS and geometry from SPICE. A single SPEDAS MCP gives the agent one scientific entry point while preserving the underlying packages as focused maintainable components.
+## Data source categories
 
-## Current architecture
+Current source categories:
 
-The repo uses a two-layer design:
+- `cdaweb` — heliophysics observatory time-series, CDF-like intervals, plasma/fields/particles, solar-wind context.
+- `pds` — Planetary Plasma Interactions mission/dataset discovery, PDS parameter metadata, and archive products.
+- `spice` — geometry, ephemeris, trajectory, distances, coordinate frames, and transforms.
 
-1. **Stable unified facade**
-   - Keep low-level CDAWeb/PDS/SPICE tools explicit and close to the underlying XHelio packages.
-   - Avoid duplicating domain logic that belongs in those packages.
-   - Keep bulk data as files and return compact metadata/paths.
+SPICE is a special case: it is part of the SPEDAS data context, but most useful operations are geometry computations rather than measurement-product fetches.
 
-2. **SPEDAS science workflow layer**
-   - Add tools that help an agent decide which source family to use first.
-   - Encode reusable scientific workflow: plan before fetch, discover before selecting parameters, preserve request/provenance intent.
-   - Keep this layer small until specific SPEDAS use cases justify deeper orchestration.
+## Public layers
 
-## Current high-level workflow tools
+1. **Data layer**
+   - `browse_data_sources`
+   - `load_data_source`
+   - `browse_data_parameters`
+   - `fetch_data_product`
+   - `manage_data_cache`
 
-- `search_spedas_data_sources(...)` — rank CDAWeb/PDS/SPICE for a science question.
-- `plan_spedas_observation(...)` — produce a source-specific execution plan.
-- `compare_cdaweb_pds_spice(...)` — explain source boundaries for maintainers/users.
-- `create_spedas_analysis_bundle(...)` — scaffold request/provenance folders before fetches.
+2. **Science workflow layer**
+   - `search_spedas_data_sources`
+   - `plan_spedas_observation`
+   - `compare_cdaweb_pds_spice`
+   - `create_spedas_analysis_bundle`
 
-## What should be upstreamed here vs. elsewhere?
+3. **Geometry layer**
+   - SPICE-specific operations like `get_ephemeris`, `compute_distance`, and `transform_coordinates`.
+
+4. **Compatibility layer**
+   - Existing source-specific tools remain for clients that already know them, but docs and overview should steer new users to the unified data layer.
+
+## Internal backend policy
+
+Good fits for backend packages:
+
+- CDAWeb catalog/fetch semantics → `xhelio-cdaweb` backend.
+- PDS archive resolution and dataset metadata → `xhelio-pds` backend.
+- SPICE kernel registry and geometry computation → `xhelio-spice` backend.
 
 Good fits for `spedas_mcp`:
 
-- Unified MCP naming and schema conventions.
-- Cross-source planning logic.
-- Agent-facing examples and plugin wrappers.
-- Provenance bundle conventions.
-- Compatibility smoke tests and list-tools validation.
-
-Better fits for underlying packages:
-
-- CDAWeb catalog/fetch semantics → `xhelio-cdaweb`.
-- PDS archive resolution and dataset metadata → `xhelio-pds`.
-- SPICE kernel registry and geometry computation → `xhelio-spice`.
-- Full SPEDAS/PySPEDAS numerical routines → SPEDAS/PySPEDAS proper.
+- unified tool names and schemas;
+- data-source taxonomy;
+- cross-source planning logic;
+- provenance bundle conventions;
+- plugin wrappers and examples;
+- compatibility smoke tests.
 
 ## Near-term next steps
 
-1. Add examples that combine measurement + geometry, for example Juno PDS + SPICE or MMS/CDAWeb + bow-shock geometry.
-2. Add opt-in real-data integration smokes that write artifacts to temporary directories.
-3. Publish a small release once the API is stable enough for Claude/Codex/OpenCode plugin users.
-4. Keep the science workflow layer intentionally small until real SPEDAS users validate the best abstractions.
+1. Add real end-to-end examples that combine measurement + geometry, such as Juno PDS + SPICE or MMS/CDAWeb + bow-shock geometry.
+2. Decide whether compatibility low-level tools should remain public long-term or be hidden/renamed in a breaking API cleanup.
+3. Add opt-in real-data integration smokes that write artifacts to temporary directories.
+4. Prepare a small release once the data-layer API stabilizes.

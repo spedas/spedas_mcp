@@ -1,55 +1,54 @@
 # SPEDAS MCP
 
-`spedas_mcp` is the SPEDAS organization MCP server for agentic heliophysics workflows. It turns the three XHelio capability layers Jason provided — CDAWeb, PDS, and SPICE — into one SPEDAS-facing MCP endpoint.
+`spedas_mcp` is the SPEDAS organization MCP server for agentic heliophysics workflows. It presents one SPEDAS-facing **data layer** and organizes capabilities by data source category instead of by the internal backend packages used to implement them.
 
-The design follows two layers:
+The current design follows Jason's A+B direction:
 
-- **A. Stable unified facade** — preserve clear low-level tool groups for `xhelio-cdaweb`, `xhelio-pds`, and `xhelio-spice` so each package can keep evolving independently.
-- **B. SPEDAS science workflow layer** — add high-level planning tools so Claude Code, Codex, OpenCode, LingTai, or another agent can start from a science question and then choose CDAWeb/PDS/SPICE tools deliberately.
+- **A. SPEDAS data layer** — one unified entry point for source categories such as `cdaweb`, `pds`, and `spice`/geometry.
+- **B. SPEDAS science workflow layer** — high-level planning tools that let Claude Code, Codex, OpenCode, LingTai, or another agent start from a science question before choosing source-specific operations.
 
-This is not a replacement for SPEDAS/PySPEDAS. It is an agent interface layer that lets MCP-capable runtimes discover, plan, fetch, compute, and preserve provenance around SPEDAS-related data workflows.
+The `xhelio-*` packages are implementation backends. They should stay visible to maintainers, but they should not be the user's first mental model.
 
 ## Repository
 
 - Official repo: <https://github.com/spedas/spedas_mcp>
 - Python package name: `spedas-mcp`
 - Python module / CLI module: `spedas_mcp`
+- Current MCP tool count: 26
 
-## Capability map
+## Layered capability map
 
-### SPEDAS workflow tools
+### 1. Data layer tools
+
+Start here when the user asks for data, datasets, parameters, products, archives, or cache status.
+
+- `browse_data_sources(source_type="all", query=None)` — browse SPEDAS data source categories, or drill into one category.
+- `load_data_source(source_type, source_id)` — load source context, e.g. a CDAWeb observatory, PDS mission, or SPICE mission/frame context.
+- `browse_data_parameters(source_type, dataset_id, dataset_ids=None)` — browse parameters/metadata for CDAWeb or PDS datasets; for SPICE, returns geometry/frame context.
+- `fetch_data_product(source_type, dataset_id, parameters, start=None, stop=None, output_dir=None, format="csv", limit=None)` — unified measurement/archive data fetch for CDAWeb/PDS. SPICE requests are routed to geometry tools instead.
+- `manage_data_cache(source_type="all", action="status", cache_dir=None, mission=None)` — unified cache status/maintenance for the source categories.
+
+Supported `source_type` values:
+
+| source_type | Use for | Main data-layer path |
+|---|---|---|
+| `cdaweb` | heliophysics observatory time-series, plasma/fields/particles, solar wind, CDF-like intervals | `browse_data_sources` → `load_data_source` → `browse_data_parameters` → `fetch_data_product` |
+| `pds` | Planetary Plasma Interactions archives, planetary mission datasets, PDS metadata/products | `browse_data_sources` → `load_data_source` → `browse_data_parameters` → `fetch_data_product` |
+| `spice` | geometry, ephemeris, trajectory, distance, coordinate frames/transforms | `browse_data_sources` → `load_data_source` → geometry tools |
+
+### 2. Science workflow tools
 
 Start here for open-ended science requests.
 
-- `spedas_overview()` — compact map of available capability groups and recommended workflow.
-- `search_spedas_data_sources(question, target=None, observables=None)` — recommend whether the request should start with CDAWeb, PDS, SPICE, or a mix.
-- `plan_spedas_observation(science_goal, start=None, stop=None, target=None, observables=None, data_sources=None)` — build a source-specific plan before fetching data.
-- `compare_cdaweb_pds_spice(science_goal="")` — explain what each source family is good for and where it should not be used.
-- `create_spedas_analysis_bundle(study_name, output_dir, ...)` — create a lightweight request/provenance bundle with `requests/`, `data/`, `plots/`, `provenance/`, and `notes/` folders.
+- `spedas_overview()` — compact map of capability groups and recommended workflow.
+- `search_spedas_data_sources(question, target=None, observables=None)` — recommend which data source categories should lead a request.
+- `plan_spedas_observation(science_goal, start=None, stop=None, target=None, observables=None, data_sources=None)` — produce a source-specific plan before fetching data.
+- `compare_cdaweb_pds_spice(science_goal="")` — explain source boundaries and choose the right source family.
+- `create_spedas_analysis_bundle(study_name, output_dir, ...)` — create a request/provenance scaffold with `requests/`, `data/`, `plots/`, `provenance/`, and `notes/` folders.
 
-### CDAWeb tools
+### 3. Geometry tools
 
-Use for heliophysics observatory time series, CDF-style datasets, plasma/field/particle measurements, and solar-wind context.
-
-- `browse_observatories()`
-- `load_observatory(observatory_id)`
-- `browse_parameters(dataset_id, dataset_ids=None)`
-- `fetch_data(dataset_id, parameters, start, stop, output_dir, format="csv")`
-- `manage_cdaweb_cache(action, cache_dir=None)`
-
-### PDS PPI tools
-
-Use for Planetary Plasma Interactions mission/dataset discovery, PDS parameter metadata, and archive-backed planetary plasma products.
-
-- `browse_pds_missions(query=None)`
-- `load_pds_mission(mission_id)`
-- `browse_pds_parameters(dataset_id, dataset_ids=None)`
-- `fetch_pds_data(dataset_id, parameters, start=None, stop=None, output_dir=None, format="csv", limit=None)`
-- `manage_pds_cache(action, cache_dir=None)`
-
-### SPICE tools
-
-Use for spacecraft/body geometry, ephemerides, distances, coordinate transforms, frames, and kernel cache management.
+SPICE is exposed as a data source category, but geometry operations are clearer as explicit tools:
 
 - `list_spice_missions()`
 - `get_ephemeris(mission, target, start, stop, step="1h", frame="J2000", observer=None)`
@@ -58,16 +57,29 @@ Use for spacecraft/body geometry, ephemerides, distances, coordinate transforms,
 - `list_coordinate_frames(mission=None)`
 - `manage_spice_kernels(action, mission=None, cache_dir=None)`
 
+### 4. Compatibility low-level tools
+
+These remain available for clients that already know the source-specific operations:
+
+- CDAWeb: `browse_observatories`, `load_observatory`, `browse_parameters`, `fetch_data`, `manage_cdaweb_cache`
+- PDS: `browse_pds_missions`, `load_pds_mission`, `browse_pds_parameters`, `fetch_pds_data`, `manage_pds_cache`
+- SPICE: the geometry tools above plus `manage_spice_kernels`
+
+Future cleanup can hide or rename some compatibility tools if we decide to make a breaking API pass. For now the primary docs and `spedas_overview` route users to the unified data layer.
+
 ## Recommended agent workflow
 
-1. Call `spedas_overview()` to learn the available groups.
-2. For a natural-language or science-goal request, call `search_spedas_data_sources(...)` or `plan_spedas_observation(...)`.
-3. Use source-specific discovery before data movement:
-   - CDAWeb: `browse_observatories` → `load_observatory` → `browse_parameters` → `fetch_data`
-   - PDS: `browse_pds_missions` → `load_pds_mission` → `browse_pds_parameters` → `fetch_pds_data`
-   - SPICE: `list_spice_missions` / `list_coordinate_frames` → `get_ephemeris` / `compute_distance` / `transform_coordinates`
-4. For any real analysis, call `create_spedas_analysis_bundle(...)` and write fetched files under the generated `data/` directory.
-5. Return compact summaries and file paths. Do not return bulk science arrays directly in chat.
+1. Call `spedas_overview()`.
+2. For a natural-language science request, call `search_spedas_data_sources(...)` or `plan_spedas_observation(...)`.
+3. Use the data layer:
+   - `browse_data_sources(source_type="all")`
+   - `browse_data_sources(source_type="cdaweb" | "pds" | "spice")`
+   - `load_data_source(...)`
+   - `browse_data_parameters(...)`
+   - `fetch_data_product(...)` for CDAWeb/PDS measurement/archive products
+4. Use geometry tools directly for SPICE ephemeris, distance, frame, and coordinate-transform work.
+5. For any real analysis, call `create_spedas_analysis_bundle(...)` and write fetched files under the generated `data/` directory.
+6. Return compact summaries and file paths. Do not paste large science arrays into chat.
 
 ## Quick start for local development
 
@@ -112,10 +124,11 @@ For plugin-style distribution, see:
 
 ## Maintainer-facing positioning
 
-`spedas_mcp` should stay thin where the underlying science packages already have strong ownership, and become thick only at the SPEDAS workflow level:
+`spedas_mcp` should be thick at the SPEDAS data/workflow layer and thin at the backend implementation layer:
 
-- Keep CDAWeb, PDS, and SPICE domain details in their focused XHelio packages.
-- Keep this repo responsible for unified naming, agent-facing workflow, packaging, plugin wrappers, examples, and provenance conventions.
-- Add higher-level tools only when they encode reusable SPEDAS scientific method rather than one-off prompt text.
+- Users see one SPEDAS MCP and one `data` layer.
+- Data source categories are scientific concepts: CDAWeb, PDS, SPICE/geometry.
+- Backend packages remain maintainable internal implementation surfaces.
+- Higher-level tools should encode reusable SPEDAS scientific method: source selection, planning, provenance, and artifact discipline.
 
 See `docs/maintainer_note.md` and `docs/examples/agent_workflow.md` for the current framing.
