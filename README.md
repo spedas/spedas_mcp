@@ -133,3 +133,4 @@ The in-repo `plugins/spedas-claude/` and `.agents/plugins/spedas-codex/` directo
 - Higher-level tools should encode reusable SPEDAS scientific method: source selection, planning, provenance, and artifact discipline.
 
 See `docs/maintainer_note.md` and `docs/examples/agent_workflow.md` for the current framing.
+- `docs/examples/juno_pds_spice_workflow.md` — Juno MAG/PDS discovery plus SPICE geometry planning, including current caveats.

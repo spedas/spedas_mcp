@@ -108,6 +108,23 @@ def test_plan_spedas_observation_returns_source_specific_steps():
     assert any(step["phase"] == "preserve_provenance" for step in data["plan"])
 
 
+def test_juno_pds_spice_plan_uses_requested_planetary_sources():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": "Juno Jupiter magnetic-field workflow combining PDS measurement discovery with SPICE geometry planning",
+        "target": "Jupiter",
+        "start": "2016-08-27T00:00:00Z",
+        "stop": "2016-08-28T00:00:00Z",
+        "observables": ["magnetic field", "spacecraft position"],
+        "data_sources": ["pds", "spice"],
+    }))
+    assert data["status"] == "success"
+    assert data["recommended_sources"] == ["pds", "spice"]
+    assert {"discover_pds", "discover_spice", "preserve_provenance"} <= {
+        step["phase"] for step in data["plan"]
+    }
+
+
 def test_create_spedas_analysis_bundle_writes_plan_files(tmp_path: Path):
     server = create_server()
     data = json.loads(_call_tool(server, "create_spedas_analysis_bundle", {
