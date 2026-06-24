@@ -70,6 +70,22 @@ def test_browse_data_sources_lists_spedas_source_categories():
     assert {entry["source_type"] for entry in data["source_types"]} == {"cdaweb", "pds", "spice"}
 
 
+
+def test_browse_data_sources_filters_cdaweb_query():
+    server = create_server()
+    data = json.loads(_call_tool(server, "browse_data_sources", {"source_type": "cdaweb", "query": "mms"}))
+    assert data["status"] == "success"
+    ids = [entry["id"] for entry in data["payload"]]
+    assert ids == ["mms"]
+
+
+def test_browse_data_sources_filters_spice_query():
+    server = create_server()
+    data = json.loads(_call_tool(server, "browse_data_sources", {"source_type": "spice", "query": "PSP"}))
+    assert data["status"] == "success"
+    assert data["payload"]
+    assert all("psp" in json.dumps(entry).lower() or "parker" in json.dumps(entry).lower() for entry in data["payload"])
+
 def test_fetch_data_product_rejects_spice_measurement_fetch():
     server = create_server()
     data = json.loads(_call_tool(server, "fetch_data_product", {

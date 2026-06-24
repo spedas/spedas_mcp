@@ -557,6 +557,23 @@ def create_server() -> FastMCP:
         status = "error" if _payload_has_error(payload) else "success"
         return _json({"status": status, "source_type": source_type, "payload": payload, **extra})
 
+    def _filter_json_records(raw: str, query: str | None) -> str:
+        """Apply a compact query filter to list-shaped backend JSON payloads."""
+        if not query:
+            return raw
+        try:
+            payload = json.loads(raw)
+        except Exception:
+            return raw
+        if not isinstance(payload, list):
+            return raw
+        needle = query.casefold()
+        filtered = [
+            entry for entry in payload
+            if needle in json.dumps(entry, default=str).casefold()
+        ]
+        return _json(filtered)
+
     def _normalize_pds_source_id(source_id: str) -> str:
         value = (source_id or "").strip().lower().replace("-", "_")
         if value.endswith("_ppi"):
@@ -595,11 +612,11 @@ def create_server() -> FastMCP:
                 "note": "Use source_type to drill into one category. XHelio package names are internal backend details.",
             })
         if source == "cdaweb":
-            return _wrap_data_payload(source, browse_observatories(), query=query)
+            return _wrap_data_payload(source, _filter_json_records(browse_observatories(), query), query=query)
         if source == "pds":
             return _wrap_data_payload(source, browse_pds_missions(query=query), query=query)
         if source == "spice":
-            return _wrap_data_payload(source, list_spice_missions(), query=query, note="SPICE is exposed as the geometry data-source category.")
+            return _wrap_data_payload(source, _filter_json_records(list_spice_missions(), query), query=query, note="SPICE is exposed as the geometry data-source category.")
         return _json({"status": "error", "error": f"unknown source_type: {source_type}", "allowed": ["all", "cdaweb", "pds", "spice"]})
 
     @mcp.tool()
