@@ -244,6 +244,33 @@ def test_transform_writes_output_and_summary(vector_csv, tmp_path, monkeypatch):
     assert len(out["summary"]["mean"]) == 3
 
 
+def test_load_time_and_vectors_accepts_datetime_string_dtype(tmp_path, monkeypatch):
+    """Data-layer CSV artifacts may expose datetime strings with pandas StringDtype."""
+    input_path = tmp_path / "datetime_strings.csv"
+    input_path.write_text("placeholder", encoding="utf-8")
+
+    frame = pd.DataFrame(
+        {
+            "time": pd.Series(
+                ["2024-01-01T00:00:00Z", "2024-01-01T00:00:01Z"],
+                dtype="string",
+            ),
+            "bx": [1.0, 2.0],
+            "by": [3.0, 4.0],
+            "bz": [5.0, 6.0],
+        }
+    )
+
+    monkeypatch.setattr(pd, "read_csv", lambda *args, **kwargs: frame.copy())
+
+    unix_time, vectors, resolved = coords._load_time_and_vectors(str(input_path))
+
+    assert resolved == ["bx", "by", "bz"]
+    assert np.all(np.isfinite(unix_time))
+    assert unix_time[1] > unix_time[0]
+    assert vectors.tolist() == [[1.0, 3.0, 5.0], [2.0, 4.0, 6.0]]
+
+
 def test_transform_handles_cotrans_failure(vector_csv, tmp_path, monkeypatch):
     _install_fake_pyspedas(monkeypatch, cotrans=lambda **kw: 0)
     out = coords.transform_timeseries_coordinates(

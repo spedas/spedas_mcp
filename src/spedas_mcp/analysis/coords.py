@@ -105,7 +105,7 @@ def _load_time_and_vectors(
 
     # Convert times to Unix seconds. Numeric values are assumed to already be
     # Unix seconds; otherwise parse as datetimes.
-    if np.issubdtype(time_series.dtype, np.number):
+    if pd.api.types.is_numeric_dtype(time_series):
         unix_time = time_series.to_numpy(dtype="float64")
     else:
         parsed = pd.to_datetime(time_series, utc=True, errors="coerce")
@@ -118,8 +118,8 @@ def _load_time_and_vectors(
         candidate_cols = [
             c
             for c in df.columns
-            if c is not time_series.name
-            and np.issubdtype(df[c].dtype, np.number)
+            if c != time_series.name
+            and pd.api.types.is_numeric_dtype(df[c])
         ]
         if len(candidate_cols) < 3:
             raise ValueError(
