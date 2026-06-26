@@ -49,6 +49,9 @@ def test_server_has_expected_tools():
         "transform_coordinates",
         "list_coordinate_frames",
         "manage_spice_kernels",
+        "transform_timeseries_coordinates",
+        "generate_fac_matrix",
+        "analyze_minvar_coordinates",
     } <= names
 
 

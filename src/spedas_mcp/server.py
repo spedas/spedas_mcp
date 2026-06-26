@@ -73,6 +73,14 @@ def create_server() -> FastMCP:
                     "transform_coordinates",
                     "list_coordinate_frames",
                 ],
+                "analysis": {
+                    "status": "optional pyspedas backend; install with spedas-mcp[analysis]",
+                    "tools": [
+                        "transform_timeseries_coordinates",
+                        "generate_fac_matrix",
+                        "analyze_minvar_coordinates",
+                    ],
+                },
                 "compatibility_low_level": {
                     "status": "supported compatibility surface; not the preferred starting point",
                     "prefer": [
@@ -741,6 +749,94 @@ def create_server() -> FastMCP:
         if source == "spice":
             return _wrap_data_payload(source, manage_spice_kernels(action=action, mission=mission), note=cache_note)
         return _json({"status": "error", "error": f"unknown source_type: {source_type}", "allowed": ["all", "cdaweb", "pds", "spice"]})
+
+    # ------------------------------------------------------------------
+    # Analysis layer (Phase 1: coordinate transforms). Optional pyspedas
+    # backend via the spedas-mcp[analysis] extra; tools import it lazily and
+    # return a clear install error when the extra is missing.
+    # ------------------------------------------------------------------
+
+    @mcp.tool()
+    def transform_timeseries_coordinates(
+        input_file: str,
+        coord_in: str,
+        coord_out: str,
+        output_file: str,
+        time_col: str = "time",
+        vector_cols: list[str] | None = None,
+    ) -> str:
+        """Analysis: transform an Nx3 vector time-series between GSE/GSM/SM/GEI/GEO/MAG/J2000.
+
+        Reads a fetched CSV/JSON artifact, transforms with pyspedas cotrans,
+        writes the transformed series to output_file, and returns paths plus
+        per-component summary stats only. Requires spedas-mcp[analysis].
+        """
+        from spedas_mcp.analysis.coords import transform_timeseries_coordinates as _impl
+
+        return _json(_impl(
+            input_file=input_file,
+            coord_in=coord_in,
+            coord_out=coord_out,
+            output_file=output_file,
+            time_col=time_col,
+            vector_cols=vector_cols,
+        ))
+
+    @mcp.tool()
+    def generate_fac_matrix(
+        mag_file: str,
+        output_file: str,
+        other_dim: str = "xgse",
+        pos_file: str | None = None,
+        time_col: str = "time",
+        vector_cols: list[str] | None = None,
+        mag_coord: str = "gse",
+    ) -> str:
+        """Analysis: build per-sample field-aligned-coordinate (FAC) 3x3 rotation matrices.
+
+        Backend: pyspedas fac_matrix_make. Writes the (N,3,3) matrix stack to
+        output_file (.npy/.npz) and returns shape + mode + path only. Position-
+        dependent modes (rgeo/mrgeo/phigeo/mphigeo/phism/mphism) require a GEI
+        position series via pos_file. Requires spedas-mcp[analysis].
+        """
+        from spedas_mcp.analysis.coords import generate_fac_matrix as _impl
+
+        return _json(_impl(
+            mag_file=mag_file,
+            output_file=output_file,
+            other_dim=other_dim,
+            pos_file=pos_file,
+            time_col=time_col,
+            vector_cols=vector_cols,
+            mag_coord=mag_coord,
+        ))
+
+    @mcp.tool()
+    def analyze_minvar_coordinates(
+        input_file: str,
+        output_dir: str,
+        twindow: float | None = None,
+        tslide: float | None = None,
+        time_col: str = "time",
+        vector_cols: list[str] | None = None,
+    ) -> str:
+        """Analysis: minimum-variance analysis (MVA) / LMN boundary-normal frame.
+
+        Backend: pyspedas minvar / minvar_matrix_make. Full-interval mode
+        (twindow=None) returns eigenvalues, eigenvectors, the normal vector, and
+        the intermediate/min ratio plus a rotated-series file path. Sliding-window
+        mode writes per-window rotation matrices. Requires spedas-mcp[analysis].
+        """
+        from spedas_mcp.analysis.coords import analyze_minvar_coordinates as _impl
+
+        return _json(_impl(
+            input_file=input_file,
+            output_dir=output_dir,
+            twindow=twindow,
+            tslide=tslide,
+            time_col=time_col,
+            vector_cols=vector_cols,
+        ))
 
     return mcp
 

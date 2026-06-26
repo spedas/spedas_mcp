@@ -57,7 +57,21 @@ SPICE is exposed as a data source category, but geometry operations are clearer 
 - `list_coordinate_frames(mission=None)`
 - `manage_spice_kernels(action, mission=None, cache_dir=None)`
 
-### 4. Compatibility low-level tools
+### 4. Analysis tools (optional `pyspedas` backend)
+
+Phase-1 coordinate transforms over fetched artifacts. These tools require the
+optional `analysis` extra (`pip install 'spedas-mcp[analysis]'`, which installs
+`pyspedas`). `pyspedas` is **not** part of the base install; the tools import it
+lazily and return a clear `status="error"` with an install hint when the extra is
+missing. They are file-in / file-out: inputs are paths to fetched CSV/JSON
+products, bulk outputs are written to disk, and only paths plus compact summaries
+are returned (never raw arrays).
+
+- `transform_timeseries_coordinates(input_file, coord_in, coord_out, output_file, time_col="time", vector_cols=None)` — transform an Nx3 vector time-series between `gse`/`gsm`/`sm`/`gei`/`geo`/`mag`/`j2000` (`pyspedas` `cotrans`).
+- `generate_fac_matrix(mag_file, output_file, other_dim="xgse", pos_file=None, time_col="time", vector_cols=None, mag_coord="gse")` — build per-sample field-aligned-coordinate (FAC) 3×3 rotation matrices (`fac_matrix_make`). Position-dependent modes (`rgeo`/`mrgeo`/`phigeo`/`mphigeo`/`phism`/`mphism`) require a GEI `pos_file`.
+- `analyze_minvar_coordinates(input_file, output_dir, twindow=None, tslide=None, time_col="time", vector_cols=None)` — minimum-variance analysis / LMN boundary-normal frame (`minvar`/`minvar_matrix_make`). Full-interval mode returns eigenvalues, eigenvectors, the normal vector, and the intermediate/min ratio; sliding-window mode (set `twindow`) writes per-window rotation matrices.
+
+### 5. Compatibility low-level tools
 
 These remain available for clients that already know the source-specific operations:
 

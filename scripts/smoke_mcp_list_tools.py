@@ -46,6 +46,9 @@ EXPECTED_TOOLS = [
     "manage_cdaweb_cache",
     "manage_pds_cache",
     "manage_spice_kernels",
+    "transform_timeseries_coordinates",
+    "generate_fac_matrix",
+    "analyze_minvar_coordinates",
 ]
 
 
