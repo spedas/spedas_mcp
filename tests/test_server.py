@@ -402,3 +402,163 @@ def test_load_data_source_cdaweb_datasets_round_trip_to_browse_parameters():
         "dataset_id": dataset_id,
     }))
     assert params["dataset_id"] == dataset_id
+
+
+# ---------------------------------------------------------------------------
+# Batch K — error contract, source_id validation, response-size guard
+# (issues #25, #27, #28)
+# ---------------------------------------------------------------------------
+
+from spedas_mcp.server import (  # noqa: E402
+    _MAX_RESPONSE_BYTES,
+    _error_response,
+    _sanitize_message,
+    _size_guarded,
+)
+
+
+def test_sanitize_message_redacts_posix_and_windows_paths():
+    # POSIX absolute path (real load_data_source leak from issue #25).
+    out = _sanitize_message(
+        "Observatory file not found: /Users/someone/.cdawebmcp/observatories/MMS1.json"
+    )
+    assert "/Users/" not in out
+    assert ".cdawebmcp" not in out
+    assert "<path>" in out
+    # Windows absolute path.
+    out_win = _sanitize_message(r"Mission file not found: C:\Users\x\cache\m.json here")
+    assert "C:\\" not in out_win
+    assert "<path>" in out_win
+
+
+def test_sanitize_message_redacts_external_urls():
+    out = _sanitize_message(
+        "Field required (type=missing) https://errors.pydantic.dev/2.13/v/missing"
+    )
+    assert "http" not in out
+    assert "<url-redacted>" in out
+
+
+def test_sanitize_message_does_not_over_redact_plain_text():
+    # Slashes that are not absolute paths (ratios, frame lists) must survive so
+    # error messages stay useful.
+    assert _sanitize_message("ratio 3/4 and a/b notation") == "ratio 3/4 and a/b notation"
+    frames = "valid frames are GSE, GSM, RTN"
+    assert _sanitize_message(frames) == frames
+
+
+def test_sanitize_message_collapses_multiline_to_single_line():
+    # SPICE tracebacks carry an 80-char banner across many lines (issue #27/#28);
+    # the sanitized message must be a single line so it cannot overflow the
+    # 64KB stdio line buffer.
+    multiline = "error:\n" + ("=" * 80) + "\nSPICE(UNKNOWNFRAME)\n" + ("=" * 80)
+    out = _sanitize_message(multiline)
+    assert "\n" not in out
+
+
+def test_error_response_has_uniform_contract():
+    raw = _error_response(
+        "unknown_source_id",
+        "Source ID 'MMS1' not found in /Users/x/cache/MMS1.json",
+        hint="Did you mean 'mms'?",
+        source_type="cdaweb",
+        source_id="MMS1",
+    )
+    payload = json.loads(raw)
+    assert payload["status"] == "error"
+    assert payload["code"] == "unknown_source_id"
+    assert payload["hint"] == "Did you mean 'mms'?"
+    assert payload["source_type"] == "cdaweb"
+    # The message is sanitized by default — no path leak even when the caller
+    # passes a backend string that embedded one.
+    assert "/Users/" not in payload["message"]
+
+
+def test_size_guard_passes_small_payload_unchanged():
+    small = json.dumps({"status": "success", "x": 1})
+    assert _size_guarded(small) == small
+
+
+def test_size_guard_replaces_oversized_payload_with_compact_error():
+    oversized = json.dumps({"status": "success", "payload": "X" * (_MAX_RESPONSE_BYTES + 5000)})
+    assert len(oversized.encode("utf-8")) > _MAX_RESPONSE_BYTES
+    guarded = _size_guarded(oversized, source_type="cdaweb")
+    # Measured against actual serialized bytes, the guard returns a compact,
+    # structured error well under the limit (issue #28).
+    assert len(guarded.encode("utf-8")) < _MAX_RESPONSE_BYTES
+    payload = json.loads(guarded)
+    assert payload["status"] == "error"
+    assert payload["code"] == "response_too_large"
+    assert payload["response_bytes"] > payload["max_bytes"]
+    assert payload["source_type"] == "cdaweb"
+    assert "hint" in payload
+
+
+def test_load_data_source_invalid_cdaweb_id_returns_structured_error_without_path():
+    server = create_server()
+    raw = _call_tool(server, "load_data_source", {
+        "source_type": "cdaweb",
+        "source_id": "MMS1",
+    })
+    # No filesystem path may appear anywhere in the response (issue #25).
+    assert "/Users/" not in raw
+    assert "/var/folders" not in raw
+    assert ".cdawebmcp" not in raw
+    payload = json.loads(raw)
+    assert payload["status"] == "error"
+    assert payload["code"] == "unknown_source_id"
+    assert payload["source_id"] == "MMS1"
+    # A typo for the real observatory ("mms") must be suggested for recovery.
+    assert any(s.lower() == "mms" for s in payload["suggestions"])
+    assert payload["valid_ids_sample"]
+
+
+def test_load_data_source_invalid_pds_id_returns_structured_error_without_path():
+    server = create_server()
+    raw = _call_tool(server, "load_data_source", {
+        "source_type": "pds",
+        "source_id": "NOT_A_MISSION",
+    })
+    assert "/Users/" not in raw
+    assert "site-packages" not in raw
+    payload = json.loads(raw)
+    assert payload["status"] == "error"
+    assert payload["code"] == "unknown_source_id"
+    assert payload["source_id"] == "NOT_A_MISSION"
+
+
+def test_load_data_source_valid_ids_still_succeed():
+    server = create_server()
+    cdaweb = json.loads(_call_tool(server, "load_data_source", {
+        "source_type": "cdaweb",
+        "source_id": "mms",
+    }))
+    assert cdaweb["status"] == "success"
+    pds = json.loads(_call_tool(server, "load_data_source", {
+        "source_type": "pds",
+        "source_id": "CASSINI_PPI",
+    }))
+    assert pds["status"] == "success"
+
+
+def test_geometry_tool_invalid_body_returns_structured_error():
+    server = create_server()
+    raw = _call_tool(server, "get_ephemeris", {
+        "target": "NONEXISTENT_BODY",
+        "time": "2020-01-01T00:00:00",
+    })
+    payload = json.loads(raw)
+    assert payload["status"] == "error"
+    assert "code" in payload
+    # Single-line message, no path leak (issues #27/#28).
+    assert "\n" not in payload["message"]
+    assert "/Users/" not in raw
+
+
+def test_wrapped_tool_responses_stay_within_size_limit():
+    server = create_server()
+    # The discovery/listing tools most at risk of overflowing the 64KB stdio
+    # buffer (issue #28) must stay within the safety limit.
+    for source_type in ("cdaweb", "pds", "spice"):
+        raw = _call_tool(server, "browse_data_sources", {"source_type": source_type})
+        assert len(raw.encode("utf-8")) <= _MAX_RESPONSE_BYTES, source_type
