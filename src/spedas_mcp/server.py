@@ -627,9 +627,10 @@ def create_server() -> FastMCP:
         ``load_data_source`` to ``browse_data_parameters`` without guessing
         dataset IDs (issue #31). Entries carry the dataset id, instrument key,
         and coverage dates — enough to plan a fetch — while human-readable
-        descriptions remain in the prompt payload. The list is bounded by a byte
-        budget and reports ``datasets_truncated``/``dataset_count`` so very large
-        observatories stay size-safe without hiding the true total.
+        descriptions remain in the prompt payload. The list is bounded by the
+        actual serialized size of the structured enumeration payload and reports
+        ``datasets_truncated``/``dataset_count`` so very large observatories stay
+        size-safe without hiding the true total.
 
         Returns ``None`` if enumeration is unavailable so the existing
         observatory prompt payload is preserved unchanged.
@@ -663,29 +664,39 @@ def create_server() -> FastMCP:
                 })
 
         total = len(all_entries)
-        datasets: list[dict[str, Any]] = []
-        used = 0
-        for entry in all_entries:
-            used += len(json.dumps(entry, default=str)) + 8  # +8 for indent/commas
-            if used > _DATASET_ENUM_BYTE_BUDGET and datasets:
-                break
-            datasets.append(entry)
+        instrument_names = sorted(instruments.keys())
 
-        truncated = len(datasets) < total
-        result: dict[str, Any] = {
-            "dataset_count": total,
-            "datasets": datasets,
-            "datasets_truncated": truncated,
-            "instruments": sorted(instruments.keys()),
-        }
-        if truncated:
-            result["datasets_note"] = (
-                f"Showing {len(datasets)} of {total} datasets to stay within the "
+        def _dataset_note(shown: int) -> str:
+            return (
+                f"Showing {shown} of {total} datasets to stay within the "
                 "response-size limit. Use browse_data_sources(source_type='cdaweb', "
                 "query=...) to filter, or the compatibility load_observatory tool for "
                 "the full per-instrument catalog."
             )
-        return result
+
+        def _dataset_payload(entries: list[dict[str, Any]]) -> dict[str, Any]:
+            truncated = len(entries) < total
+            payload: dict[str, Any] = {
+                "dataset_count": total,
+                "datasets": entries,
+                "datasets_truncated": truncated,
+                "instruments": instrument_names,
+            }
+            if truncated:
+                payload["datasets_note"] = _dataset_note(len(entries))
+            return payload
+
+        def _serialized_dataset_bytes(entries: list[dict[str, Any]]) -> int:
+            return len(json.dumps(_dataset_payload(entries), default=str, indent=2).encode("utf-8"))
+
+        datasets: list[dict[str, Any]] = []
+        for entry in all_entries:
+            candidate = [*datasets, entry]
+            if _serialized_dataset_bytes(candidate) > _DATASET_ENUM_BYTE_BUDGET and datasets:
+                break
+            datasets.append(entry)
+
+        return _dataset_payload(datasets)
 
     @mcp.tool()
     def browse_data_sources(source_type: str = "all", query: str | None = None) -> str:

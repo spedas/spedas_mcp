@@ -367,6 +367,16 @@ def test_load_data_source_cdaweb_dataset_response_is_size_safe():
         assert loaded["dataset_count"] > len(loaded["datasets"])
         assert "datasets_note" in loaded
 
+    enum_payload = {
+        "dataset_count": loaded["dataset_count"],
+        "datasets": loaded["datasets"],
+        "datasets_truncated": loaded["datasets_truncated"],
+        "instruments": loaded["instruments"],
+    }
+    if "datasets_note" in loaded:
+        enum_payload["datasets_note"] = loaded["datasets_note"]
+    assert len(json.dumps(enum_payload, indent=2).encode("utf-8")) <= 16_000
+
 
 def test_load_data_source_cdaweb_small_observatory_not_truncated():
     server = create_server()
