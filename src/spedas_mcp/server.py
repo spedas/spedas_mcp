@@ -1166,6 +1166,11 @@ def create_server() -> FastMCP:
             "spice_geometry": "spice",
             "geometry": "spice",
             "spice": "spice",
+            "hapi": "hapi",
+            "hapi_server": "hapi",
+            "fdsn": "fdsn",
+            "mth5": "fdsn",
+            "magnetotelluric": "fdsn",
         }
         return aliases.get(value, value)
 
@@ -1424,9 +1429,23 @@ def create_server() -> FastMCP:
                         "best_for": "trajectory, distance, frames, coordinate transforms, and geometry context",
                         "next_tools": ["browse_data_sources(source_type='spice')", "load_data_source", "get_ephemeris", "compute_distance", "transform_coordinates"],
                     },
+                    {
+                        "source_type": "hapi",
+                        "label": "HAPI time-series servers (CDAWeb, PDS-PPI, ISWA, LISIRD, ...)",
+                        "best_for": "any HAPI-compliant server; generic catalog discovery and time-series fetch",
+                        "optional_extra": "spedas-mcp[hapi]",
+                        "next_tools": ["browse_hapi_catalog(server_url=...)", "fetch_hapi_data(server_url=..., dataset_id=..., parameters=[...])"],
+                    },
+                    {
+                        "source_type": "fdsn",
+                        "label": "FDSN/MTH5 magnetotelluric magnetic-field stations (EarthScope)",
+                        "best_for": "ground-based 3-component MT magnetic observations for ground-magnetosphere coupling",
+                        "optional_extra": "spedas-mcp[fdsn]",
+                        "next_tools": ["browse_fdsn_datasets(trange=[...])", "fetch_fdsn_data(trange=[...], network=..., station=...)"],
+                    },
                 ],
                 "query": query,
-                "note": "Use source_type to drill into one category. XHelio package names are internal backend details.",
+                "note": "Use source_type to drill into one category. XHelio package names are internal backend details. hapi/fdsn require their optional extras.",
             })
         if source == "cdaweb":
             return _wrap_data_payload(source, _filter_json_records(browse_observatories(), query), query=query)
@@ -1434,7 +1453,42 @@ def create_server() -> FastMCP:
             return _wrap_data_payload(source, browse_pds_missions(query=query), query=query)
         if source == "spice":
             return _wrap_data_payload(source, _filter_json_records(list_spice_missions(), query), query=query, note="SPICE is exposed as the geometry data-source category.")
-        return _unknown_source_type_error(source_type, ["all", "cdaweb", "pds", "spice"])
+        if source == "hapi":
+            return _json({
+                "status": "success",
+                "source_type": "hapi",
+                "note": (
+                    "HAPI catalogs are server-specific; pass a server URL to "
+                    "browse_hapi_catalog. Example servers: "
+                    "https://cdaweb.gsfc.nasa.gov/hapi, "
+                    "https://pds-ppi.igpp.ucla.edu/hapi, "
+                    "https://iswa.gsfc.nasa.gov/IswaSystemWebApp/hapi, "
+                    "https://lasp.colorado.edu/lisird/hapi."
+                ),
+                "next_tools": [
+                    "browse_hapi_catalog(server_url=..., query=...)",
+                    "fetch_hapi_data(server_url=..., dataset_id=..., parameters=[...], start=..., stop=..., output_dir=...)",
+                ],
+                "optional_extra": "spedas-mcp[hapi]",
+                "query": query,
+            })
+        if source == "fdsn":
+            return _json({
+                "status": "success",
+                "source_type": "fdsn",
+                "note": (
+                    "FDSN/MTH5 station availability is time-range specific; pass a "
+                    "trange to browse_fdsn_datasets to list 3-component magnetic "
+                    "magnetotelluric stations from EarthScope."
+                ),
+                "next_tools": [
+                    "browse_fdsn_datasets(trange=[...], network=..., station=..., usa_only=...)",
+                    "fetch_fdsn_data(trange=[...], network=..., station=..., output_dir=...)",
+                ],
+                "optional_extra": "spedas-mcp[fdsn]",
+                "query": query,
+            })
+        return _unknown_source_type_error(source_type, ["all", "cdaweb", "pds", "spice", "hapi", "fdsn"])
 
     @mcp.tool()
     def load_data_source(source_type: str, source_id: str) -> str:
@@ -1492,7 +1546,27 @@ def create_server() -> FastMCP:
                 source_id=source_id,
                 note="SPICE source loading returns the global coordinate-frame catalog; use geometry tools with mission/target arguments for mission-specific context.",
             )
-        return _unknown_source_type_error(source_type, ["cdaweb", "pds", "spice"])
+        if source == "hapi":
+            return _error_response(
+                "use_dedicated_tool",
+                "HAPI source context is a per-server dataset catalog; load_data_source has no server_url argument.",
+                hint="Call browse_hapi_catalog(server_url=...) to list datasets for a specific HAPI server.",
+                sanitize=False,
+                source_type="hapi",
+                source_id=source_id,
+                recommended_tools=["browse_hapi_catalog", "fetch_hapi_data"],
+            )
+        if source == "fdsn":
+            return _error_response(
+                "use_dedicated_tool",
+                "FDSN/MTH5 station context is time-range specific; load_data_source has no trange argument.",
+                hint="Call browse_fdsn_datasets(trange=[...], network=..., station=...) to list available stations.",
+                sanitize=False,
+                source_type="fdsn",
+                source_id=source_id,
+                recommended_tools=["browse_fdsn_datasets", "fetch_fdsn_data"],
+            )
+        return _unknown_source_type_error(source_type, ["cdaweb", "pds", "spice", "hapi", "fdsn"])
 
     @mcp.tool()
     def browse_data_parameters(
@@ -1513,7 +1587,27 @@ def create_server() -> FastMCP:
                 dataset_id=dataset_id,
                 note="SPICE does not expose measurement parameters; use frames/targets/observer geometry instead.",
             )
-        return _unknown_source_type_error(source_type, ["cdaweb", "pds", "spice"])
+        if source == "hapi":
+            return _error_response(
+                "use_dedicated_tool",
+                "HAPI parameter metadata is part of a server's dataset catalog; use browse_hapi_catalog to discover datasets, then pass parameters to fetch_hapi_data.",
+                hint="Call browse_hapi_catalog(server_url=...) to list datasets; HAPI parameter names are fetched via fetch_hapi_data.",
+                sanitize=False,
+                source_type="hapi",
+                dataset_id=dataset_id,
+                recommended_tools=["browse_hapi_catalog", "fetch_hapi_data"],
+            )
+        if source == "fdsn":
+            return _error_response(
+                "use_dedicated_tool",
+                "FDSN/MTH5 datasets expose fixed 3-component magnetic channels (Hx/Hy/Hz); there is no separate parameter catalog.",
+                hint="Use browse_fdsn_datasets(trange=[...]) to find stations/channels, then fetch_fdsn_data.",
+                sanitize=False,
+                source_type="fdsn",
+                dataset_id=dataset_id,
+                recommended_tools=["browse_fdsn_datasets", "fetch_fdsn_data"],
+            )
+        return _unknown_source_type_error(source_type, ["cdaweb", "pds", "spice", "hapi", "fdsn"])
 
     @mcp.tool()
     def fetch_data_product(
@@ -1566,7 +1660,27 @@ def create_server() -> FastMCP:
                 source_type="spice",
                 recommended_tools=["get_ephemeris", "compute_distance", "transform_coordinates"],
             )
-        return _unknown_source_type_error(source_type, ["cdaweb", "pds", "spice"])
+        if source == "hapi":
+            return _error_response(
+                "use_dedicated_tool",
+                "HAPI fetches need a server_url, which fetch_data_product does not carry. Use fetch_hapi_data.",
+                hint="Call fetch_hapi_data(server_url=..., dataset_id=..., parameters=[...], start=..., stop=..., output_dir=...).",
+                sanitize=False,
+                source_type="hapi",
+                dataset_id=dataset_id,
+                recommended_tools=["browse_hapi_catalog", "fetch_hapi_data"],
+            )
+        if source == "fdsn":
+            return _error_response(
+                "use_dedicated_tool",
+                "FDSN/MTH5 fetches are addressed by trange/network/station, not dataset_id. Use fetch_fdsn_data.",
+                hint="Call fetch_fdsn_data(trange=[...], network=..., station=..., output_dir=...).",
+                sanitize=False,
+                source_type="fdsn",
+                dataset_id=dataset_id,
+                recommended_tools=["browse_fdsn_datasets", "fetch_fdsn_data"],
+            )
+        return _unknown_source_type_error(source_type, ["cdaweb", "pds", "spice", "hapi", "fdsn"])
 
     @mcp.tool()
     def manage_data_cache(
@@ -1988,6 +2102,127 @@ def create_server() -> FastMCP:
             dpi=dpi,
             ylog=ylog,
             zlog=zlog,
+        ))
+
+    # ------------------------------------------------------------------
+    # External data-source layer (issues #21, #22). Optional backends reached
+    # via the spedas-mcp[hapi] / spedas-mcp[fdsn] extras; tools import them
+    # lazily and return a structured missing_dependency error (with the extra to
+    # install) when absent, so base install and MCP list-tools work without them.
+    # Artifact-first: bulk time-series are written to output_dir and only paths +
+    # compact metadata are returned. source_type="hapi"/"fdsn" are recognized by
+    # the unified data layer, which routes here.
+    # ------------------------------------------------------------------
+
+    @mcp.tool()
+    @_safe_tool
+    def browse_hapi_catalog(server_url: str, query: str | None = None) -> str:
+        """Data layer (HAPI): list datasets advertised by any HAPI-compliant server.
+
+        Backend: hapiclient (optional spedas-mcp[hapi] extra). Works against
+        CDAWeb, PDS-PPI, ISWA, LISIRD, and university HAPI servers. Pass the HAPI
+        base URL (ends in /hapi), e.g. 'https://cdaweb.gsfc.nasa.gov/hapi';
+        optionally filter ids/titles with query. Returns
+        {status, server, dataset_count, datasets: [{id, title}...]}. Returns a
+        missing_dependency error (install spedas-mcp[hapi]) when hapiclient is
+        absent — base install and list_tools still work without it.
+        """
+        from spedas_mcp.datasources.hapi import browse_hapi_catalog as _impl
+
+        return _json(_impl(server_url=server_url, query=query))
+
+    @mcp.tool()
+    @_safe_tool
+    def fetch_hapi_data(
+        server_url: str,
+        dataset_id: str,
+        parameters: list[str],
+        start: str,
+        stop: str,
+        output_dir: str,
+        format: Literal["csv", "json"] = "csv",
+    ) -> str:
+        """Data layer (HAPI): fetch a HAPI dataset slice to a file (artifact-first).
+
+        Backend: hapiclient (optional spedas-mcp[hapi] extra). Loads the named
+        parameters from dataset_id on server_url over [start, stop) (stop is
+        exclusive per the HAPI spec), writes a flat CSV/JSON table (time column
+        plus one column per scalar parameter and name[i] columns for vector/
+        spectral parameters) to output_dir, and returns only
+        {status, file_path, format, server, dataset_id, time_range, rows,
+        parameters_meta} — never inline arrays. parameters_meta carries per-
+        parameter units/description/type/size/spectral flags. Discover dataset_id
+        with browse_hapi_catalog. Returns a missing_dependency error (install
+        spedas-mcp[hapi]) when hapiclient is absent.
+        """
+        from spedas_mcp.datasources.hapi import fetch_hapi_data as _impl
+
+        return _json(_impl(
+            server_url=server_url,
+            dataset_id=dataset_id,
+            parameters=parameters,
+            start=start,
+            stop=stop,
+            output_dir=output_dir,
+            format=format,
+        ))
+
+    @mcp.tool()
+    @_safe_tool
+    def browse_fdsn_datasets(
+        trange: list[str],
+        network: str | None = None,
+        station: str | None = None,
+        usa_only: bool = False,
+    ) -> str:
+        """Data layer (FDSN/MTH5): list magnetotelluric magnetic stations in a time range.
+
+        Backend: pyspedas.mth5 (optional spedas-mcp[fdsn] extra; wraps mth5 +
+        obspy). Queries EarthScope FDSN for stations that expose three same-band
+        magnetic channels (e.g. LFE/LFN/LFZ) within trange=['YYYY-MM-DD',
+        'YYYY-MM-DD']; optional network/station code filters and usa_only restrict
+        the search. Returns {status, trange, station_count, stations: [{network,
+        station, time_range, channels}...]}. Returns a missing_dependency error
+        (install spedas-mcp[fdsn]) when mth5/obspy are absent.
+        """
+        from spedas_mcp.datasources.fdsn import browse_fdsn_datasets as _impl
+
+        return _json(_impl(
+            trange=trange,
+            network=network,
+            station=station,
+            usa_only=usa_only,
+        ))
+
+    @mcp.tool()
+    @_safe_tool
+    def fetch_fdsn_data(
+        trange: list[str],
+        network: str,
+        station: str,
+        output_dir: str,
+        format: Literal["csv", "json"] = "csv",
+    ) -> str:
+        """Data layer (FDSN/MTH5): fetch a calibrated 3-component MT magnetic series to a file.
+
+        Backend: pyspedas.mth5 load_fdsn (optional spedas-mcp[fdsn] extra). Downloads
+        an MTH5 file from EarthScope for network/station over trange, calibrates
+        counts -> nT, enforces 3-component Hx/Hy/Hz geometry, writes the time-series
+        (time column plus one column per channel) to output_dir as CSV/JSON, and
+        returns only {status, file_path, format, network, station, trange, rows,
+        channels, units?} — never inline arrays or the raw MTH5 payload. Discover
+        network/station with browse_fdsn_datasets. Returns resource_not_found when
+        no qualifying 3-component data exist in the window, or a missing_dependency
+        error (install spedas-mcp[fdsn]) when mth5/obspy are absent.
+        """
+        from spedas_mcp.datasources.fdsn import fetch_fdsn_data as _impl
+
+        return _json(_impl(
+            trange=trange,
+            network=network,
+            station=station,
+            output_dir=output_dir,
+            format=format,
         ))
 
     return mcp

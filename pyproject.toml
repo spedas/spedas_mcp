@@ -40,6 +40,18 @@ mcp = ["mcp>=1.26.0"]
 # explicitly because render_tplot (#20) imports it directly rather than relying
 # on it being a transitive pyspedas dependency.
 analysis = ["pyspedas>=2.0", "matplotlib>=3.5"]
+# Optional HAPI data-source backend (issue #21). browse_hapi_catalog /
+# fetch_hapi_data reach any HAPI-compliant server through hapiclient; it is
+# imported lazily and the tools return a clear "install spedas-mcp[hapi]" error
+# when absent. hapiclient is lightweight and kept separate from the heavier
+# analysis/pyspedas extra so HAPI access does not require all of pyspedas.
+hapi = ["hapiclient>=0.2.5"]
+# Optional FDSN/MTH5 magnetotelluric backend (issue #22). browse_fdsn_datasets /
+# fetch_fdsn_data wrap pyspedas.mth5, which needs mth5 + obspy. These are heavy,
+# ground-magnetometer-specific dependencies, so they are an opt-in extra rather
+# than part of the base or analysis installs; the tools import them lazily and
+# return a clear "install spedas-mcp[fdsn]" error when absent.
+fdsn = ["pyspedas>=2.0", "mth5>=0.4.0", "obspy>=1.4"]
 dev = [
     "pytest>=7.0",
     "mcp>=1.26.0",

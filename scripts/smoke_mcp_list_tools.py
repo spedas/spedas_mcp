@@ -56,6 +56,10 @@ EXPECTED_TOOLS = [
     "compute_particle_moments",
     "compute_particle_spectra",
     "render_tplot",
+    "browse_hapi_catalog",
+    "fetch_hapi_data",
+    "browse_fdsn_datasets",
+    "fetch_fdsn_data",
 ]
 
 

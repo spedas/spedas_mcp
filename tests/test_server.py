@@ -59,6 +59,10 @@ def test_server_has_expected_tools():
         "compute_particle_moments",
         "compute_particle_spectra",
         "render_tplot",
+        "browse_hapi_catalog",
+        "fetch_hapi_data",
+        "browse_fdsn_datasets",
+        "fetch_fdsn_data",
     } <= names
 
 
@@ -89,7 +93,7 @@ def test_browse_data_sources_lists_spedas_source_categories():
     data = json.loads(_call_tool(server, "browse_data_sources", {"source_type": "all"}))
     assert data["status"] == "success"
     assert data["data_layer"] == "spedas"
-    assert {entry["source_type"] for entry in data["source_types"]} == {"cdaweb", "pds", "spice"}
+    assert {entry["source_type"] for entry in data["source_types"]} == {"cdaweb", "pds", "spice", "hapi", "fdsn"}
 
 
 
@@ -1274,3 +1278,90 @@ def test_plan_observation_without_date_still_needs_input_with_helpful_fields():
     assert data["inferred"]["target"] == "MMS"
     scope = next(step for step in data["plan"] if step["phase"] == "scope")
     assert scope["target"] == "MMS"
+
+
+# ---------------------------------------------------------------------------
+# Issues #21 / #22: HAPI + FDSN/MTH5 data-source support in the unified layer.
+# These verify the source_type routing and that the dedicated tools surface a
+# clean missing_dependency envelope without the optional [hapi]/[fdsn] extras
+# installed (so MCP list-tools and base routing stay safe).
+# ---------------------------------------------------------------------------
+
+
+def test_browse_data_sources_all_lists_hapi_and_fdsn():
+    server = create_server()
+    data = json.loads(_call_tool(server, "browse_data_sources", {"source_type": "all"}))
+    types = {entry["source_type"] for entry in data["source_types"]}
+    assert {"hapi", "fdsn"} <= types
+
+
+def test_browse_data_sources_hapi_points_to_dedicated_tool():
+    server = create_server()
+    data = json.loads(_call_tool(server, "browse_data_sources", {"source_type": "hapi"}))
+    assert data["status"] == "success"
+    assert data["source_type"] == "hapi"
+    assert any("browse_hapi_catalog" in t for t in data["next_tools"])
+
+
+def test_browse_data_sources_fdsn_alias_mth5():
+    server = create_server()
+    data = json.loads(_call_tool(server, "browse_data_sources", {"source_type": "mth5"}))
+    assert data["status"] == "success"
+    assert data["source_type"] == "fdsn"
+
+
+def test_unified_load_data_source_hapi_routes_to_dedicated_tool():
+    server = create_server()
+    data = json.loads(_call_tool(server, "load_data_source", {"source_type": "hapi", "source_id": "x"}))
+    assert data["status"] == "error"
+    assert data["code"] == "use_dedicated_tool"
+    assert "browse_hapi_catalog" in data["recommended_tools"]
+
+
+def test_unified_fetch_data_product_fdsn_routes_to_dedicated_tool():
+    server = create_server()
+    data = json.loads(_call_tool(server, "fetch_data_product", {
+        "source_type": "fdsn", "dataset_id": "x", "parameters": ["p"],
+    }))
+    assert data["status"] == "error"
+    assert data["code"] == "use_dedicated_tool"
+    assert "fetch_fdsn_data" in data["recommended_tools"]
+
+
+def test_unified_browse_data_parameters_unknown_lists_new_sources():
+    server = create_server()
+    data = json.loads(_call_tool(server, "browse_data_parameters", {
+        "source_type": "nope", "dataset_id": "x",
+    }))
+    assert data["status"] == "error"
+    assert data["code"] == "invalid_argument"
+    assert {"hapi", "fdsn"} <= set(data["allowed"])
+
+
+def test_browse_hapi_catalog_missing_dep_is_clean(tmp_path: Path):
+    server = create_server()
+    data = json.loads(_call_tool(server, "browse_hapi_catalog", {
+        "server_url": "https://cdaweb.gsfc.nasa.gov/hapi",
+    }))
+    # Without the optional [hapi] extra installed the tool returns a structured
+    # missing_dependency error rather than crashing.
+    assert data["status"] == "error"
+    assert data["code"] == "missing_dependency"
+    assert data["extra"] == "hapi"
+
+
+def test_browse_fdsn_datasets_missing_dep_is_clean():
+    server = create_server()
+    data = json.loads(_call_tool(server, "browse_fdsn_datasets", {
+        "trange": ["2015-06-22", "2015-06-23"],
+    }))
+    assert data["status"] == "error"
+    assert data["code"] == "missing_dependency"
+    assert data["extra"] == "fdsn"
+
+
+def test_browse_fdsn_datasets_bad_trange_validates_before_backend():
+    server = create_server()
+    data = json.loads(_call_tool(server, "browse_fdsn_datasets", {"trange": ["only-one"]}))
+    assert data["status"] == "error"
+    assert data["code"] == "invalid_argument"

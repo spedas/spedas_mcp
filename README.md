@@ -35,6 +35,10 @@ Supported `source_type` values:
 | `cdaweb` | heliophysics observatory time-series, plasma/fields/particles, solar wind, CDF-like intervals | `browse_data_sources` → `load_data_source` → `browse_data_parameters` → `fetch_data_product` |
 | `pds` | Planetary Plasma Interactions archives, planetary mission datasets, PDS metadata/products | `browse_data_sources` → `load_data_source` → `browse_data_parameters` → `fetch_data_product` |
 | `spice` | geometry, ephemeris, trajectory, distance, coordinate frames/transforms | `browse_data_sources` → `load_data_source` → geometry tools |
+| `hapi` | any HAPI-compliant server (CDAWeb, PDS-PPI, ISWA, LISIRD, university networks) | `browse_data_sources(source_type="hapi")` → `browse_hapi_catalog` → `fetch_hapi_data` |
+| `fdsn` | FDSN/MTH5 ground magnetotelluric (MT) magnetic stations from EarthScope | `browse_data_sources(source_type="fdsn")` → `browse_fdsn_datasets` → `fetch_fdsn_data` |
+
+`hapi` and `fdsn` are server/time-range addressed (HAPI needs a `server_url`, FDSN needs a `trange`), so the unified `load_data_source`/`browse_data_parameters`/`fetch_data_product` tools recognize these `source_type` values but route you to the dedicated `browse_hapi_catalog`/`fetch_hapi_data` and `browse_fdsn_datasets`/`fetch_fdsn_data` tools (see section 6). Both require optional extras and degrade to a clear `missing_dependency` error when those are not installed.
 
 ### 2. Science workflow tools
 
@@ -117,7 +121,33 @@ and `render_tplot` turns those artifacts into a picture. It uses `matplotlib` (h
 
 - `render_tplot(input_files, output_file, panel_types=None, trange=None, xsize=12, ysize=None, dpi=200, ylog=None, zlog=None)` — render a multi-panel tplot-style **PNG** from local artifacts, one stacked panel per `input_file` (top to bottom). Spectrogram `.npz` matrices (`power`/`spectrogram` keys with `time` + `freq`/`axis` axes, as written by `dynamic_power_spectrum`/`wavelet_transform`/`compute_particle_spectra`) render as `pcolormesh` panels with a colorbar; CSV/JSON tables and 1-D/2-D `.npz`/`.npy` value arrays render as line panels. `panel_types` overrides per-file auto-detection — each of `auto` (default), `line`/`timeseries`, or `spectrogram`; pass `None` (all auto), a single token (broadcast), or a list matching `input_files`. `trange` is an optional 2-element window (ISO-8601 strings or Unix seconds) that filters samples. `ylog`/`zlog` (per-panel booleans or a scalar broadcast) set a log y-axis / log color scale and are rejected with `invalid_argument` when the data includes non-positive values. `xsize`/`ysize` are inches and `dpi` is bounded to avoid absurd canvases. The PNG is written to `output_file` (parent dirs created); the return is `{status, output_file, n_panels, trange: {requested, actual}, size_px, dpi, panels: [{index, type, file, shape, value_range, time_range, axis_range?/n_series?, ylog?/zlog?}], warnings?}` only — **image bytes are never inlined and no bulk arrays are returned**. Requires `spedas-mcp[analysis]` (matplotlib).
 
-### 5. Compatibility low-level tools
+### 5. External data-source tools (optional `hapi` / `fdsn` backends)
+
+Two additional data sources reach archives outside the three bundled XHelio
+backends. Like the analysis tools, their backends are **optional** and imported
+lazily: without the extra installed each tool returns a structured
+`status="error"`, `code="missing_dependency"` payload naming the extra to
+install, so the base install and MCP `list_tools` keep working. Bulk data is
+written to `output_dir`; tools return only the file path plus compact metadata
+(artifact-first).
+
+HAPI (issue #21, optional `spedas-mcp[hapi]`, installs `hapiclient`):
+
+- `browse_hapi_catalog(server_url, query=None)` — list datasets advertised by any
+  HAPI-compliant server (e.g. `https://cdaweb.gsfc.nasa.gov/hapi`,
+  `https://pds-ppi.igpp.ucla.edu/hapi`, `https://iswa.gsfc.nasa.gov/IswaSystemWebApp/hapi`,
+  `https://lasp.colorado.edu/lisird/hapi`). Returns `{status, server, dataset_count, datasets: [{id, title}...]}`; pass `query` to filter ids/titles.
+- `fetch_hapi_data(server_url, dataset_id, parameters, start, stop, output_dir, format="csv")` —
+  fetch a dataset slice over `[start, stop)` (stop exclusive per the HAPI spec) and write a flat CSV/JSON table (time column plus one column per scalar parameter and `name[i]` columns for vector/spectral parameters). Returns `{status, file_path, format, server, dataset_id, time_range, rows, parameters_meta}` with per-parameter `units`/`description`/`type`/`size`/`spectral` only.
+
+FDSN/MTH5 (issue #22, optional `spedas-mcp[fdsn]`, installs `pyspedas` + `mth5` + `obspy`):
+
+- `browse_fdsn_datasets(trange, network=None, station=None, usa_only=False)` — list
+  EarthScope FDSN magnetotelluric stations that expose three same-band magnetic channels (e.g. `LFE/LFN/LFZ`) within `trange=['YYYY-MM-DD','YYYY-MM-DD']`. Returns `{status, trange, station_count, stations: [{network, station, time_range, channels}...]}`.
+- `fetch_fdsn_data(trange, network, station, output_dir, format="csv")` — download an
+  MTH5 file, calibrate counts → nT, enforce 3-component Hx/Hy/Hz geometry, and write the time-series (time column plus one column per channel). Returns `{status, file_path, format, network, station, trange, rows, channels, units?}`. Returns `code="resource_not_found"` when no qualifying 3-component data exist in the window.
+
+### 6. Compatibility low-level tools
 
 These remain available for clients that already know the source-specific operations:
 
@@ -159,6 +189,15 @@ uv run --extra dev --extra mcp python scripts/validate_plugin_packages.py
 ```
 
 The list-tools smoke starts the stdio MCP server with isolated temporary cache directories, performs MCP `initialize` + `list_tools`, and verifies the expected advertised tool names. It does not fetch CDAWeb/PDS data or download SPICE kernels.
+
+Optional backends are installed via extras and are not required for the base
+install or `list_tools`:
+
+```bash
+uv sync --extra analysis   # pyspedas + matplotlib (coordinate/spectral/field/particle analysis, rendering)
+uv sync --extra hapi       # hapiclient (browse_hapi_catalog / fetch_hapi_data, issue #21)
+uv sync --extra fdsn       # pyspedas + mth5 + obspy (browse_fdsn_datasets / fetch_fdsn_data, issue #22)
+```
 
 ## MCP client configuration
 
