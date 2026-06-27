@@ -64,7 +64,14 @@ def _install_fake_pyspedas(monkeypatch, **overrides):
 
     # tplot store/get/del/set_coords backed by a dict.
     def store_data(name, data=None):
-        store[name] = {"x": np.asarray(data["x"]), "y": np.asarray(data["y"]), "coords": None}
+        # Faithfully mimic the real pyspedas store_data, which scrubs non-finite
+        # timestamps *in place* (``times[cond] = 0``). A read-only array (e.g. a
+        # single-column ``df[...].to_numpy()`` view) raises here, reproducing
+        # issue #58 in the offline suite rather than only against a live backend.
+        x = np.asarray(data["x"])
+        if np.issubdtype(x.dtype, np.floating):
+            x[np.logical_not(np.isfinite(x))] = 0
+        store[name] = {"x": x, "y": np.asarray(data["y"]), "coords": None}
         return True
 
     def get_data(name):
@@ -305,6 +312,36 @@ def test_fac_matrix_shape_and_file(vector_csv, tmp_path, monkeypatch):
     assert out_file.exists()
     arr = np.load(out_file)
     assert arr.shape == (64, 3, 3)
+
+
+def test_load_time_and_vectors_returns_writeable_arrays(vector_csv):
+    """Regression for issue #58: a single-column ``df[time].to_numpy()`` view is
+    read-only, and pyspedas ``store_data`` writes into the time array in place.
+    The loader must hand back writeable, owned copies so the backend's in-place
+    non-finite scrub does not raise ``assignment destination is read-only``.
+    """
+    unix_time, vectors, _ = coords._load_time_and_vectors(
+        str(vector_csv), vector_cols=["bx", "by", "bz"]
+    )
+    assert unix_time.flags.writeable
+    assert vectors.flags.writeable
+    # The exact in-place write the real store_data performs must not raise.
+    unix_time[np.logical_not(np.isfinite(unix_time))] = 0
+
+
+def test_fac_matrix_csv_input_survives_inplace_time_scrub(vector_csv, tmp_path, monkeypatch):
+    """Regression for issue #58 against the (now faithful) fake store_data, which
+    scrubs non-finite timestamps in place. Without the loader copy this raised
+    ``assignment destination is read-only`` for CSV-derived time arrays.
+    """
+    _install_fake_pyspedas(monkeypatch)
+    out = coords.generate_fac_matrix(
+        mag_file=str(vector_csv),
+        output_file=str(tmp_path / "fac.npy"),
+        other_dim="xgse",
+        vector_cols=["bx", "by", "bz"],
+    )
+    assert out["status"] == "success", out
 
 
 def test_fac_matrix_with_position_file(vector_csv, tmp_path, monkeypatch):

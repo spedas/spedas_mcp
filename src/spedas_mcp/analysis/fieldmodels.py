@@ -302,6 +302,13 @@ def _finalize_positions(times: Any, positions: Any) -> tuple[Any, Any]:
                 f"times length ({times.shape[0]}) does not match number of "
                 f"positions ({n})"
             )
+    # pandas' single-column ``Series.to_numpy`` (and some ``np.load`` views) can
+    # return read-only arrays. pyspedas ``store_data`` scrubs non-finite
+    # timestamps in place (``times[cond] = 0``), which raises ``assignment
+    # destination is read-only`` on such an array (issue #58). Hand the backend
+    # writeable, owned copies so the in-place write always succeeds.
+    times = np.array(times, dtype="float64", copy=True)
+    positions = np.array(positions, dtype="float64", copy=True)
     return times, positions
 
 

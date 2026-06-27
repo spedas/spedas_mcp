@@ -62,7 +62,14 @@ class _FakeTplotStore:
         self.data: dict[str, dict] = {}
 
     def store(self, name, data=None, **_):
-        self.data[name] = {"x": np.asarray(data["x"]), "y": np.asarray(data["y"])}
+        # Faithfully mimic the real pyspedas store_data, which scrubs non-finite
+        # timestamps *in place* (``times[cond] = 0``). A read-only array (e.g. a
+        # single-column ``df[...].to_numpy()`` view) raises here, reproducing
+        # issue #58 in the offline suite rather than only against a live backend.
+        x = np.asarray(data["x"])
+        if np.issubdtype(x.dtype, np.floating):
+            x[np.logical_not(np.isfinite(x))] = 0
+        self.data[name] = {"x": x, "y": np.asarray(data["y"])}
         return True
 
     def get(self, name, **_):
@@ -543,6 +550,66 @@ def test_eval_csv_positions(tmp_path, monkeypatch):
     )
     assert out["status"] == "success"
     assert out["n_samples"] == 6
+
+
+def test_load_positions_csv_returns_writeable_times(tmp_path):
+    """Regression for issue #58: a single-column ``df[time].to_numpy()`` view is
+    read-only, and pyspedas ``store_data`` writes into the time array in place.
+    ``_load_positions`` must hand back writeable, owned arrays so the backend's
+    in-place non-finite scrub does not raise ``assignment destination is
+    read-only``.
+    """
+    import pandas as pd
+
+    n = 4
+    t = np.arange(n, dtype="float64") + 1_600_000_000.0
+    df = pd.DataFrame(
+        {
+            "time": t,
+            "x": np.full(n, 4.0 * fieldmodels.R_E_KM),
+            "y": np.zeros(n),
+            "z": np.zeros(n),
+        }
+    )
+    csv = tmp_path / "pos.csv"
+    df.to_csv(csv, index=False)
+    times, positions = fieldmodels._load_positions(
+        str(csv), position_cols=["x", "y", "z"]
+    )
+    assert times.flags.writeable
+    assert positions.flags.writeable
+    # The exact in-place write the real store_data performs must not raise.
+    times[np.logical_not(np.isfinite(times))] = 0
+
+
+def test_lshell_csv_input_survives_inplace_time_scrub(tmp_path, monkeypatch):
+    """Regression for issue #58 against the (now faithful) fake store_data, which
+    scrubs non-finite timestamps in place. Without the loader copy, calling
+    calculate_lshell with a CSV positions file raised ``assignment destination is
+    read-only``.
+    """
+    _install_fake_pyspedas(monkeypatch)
+    import pandas as pd
+
+    n = 5
+    t = np.arange(n, dtype="float64") + 1_600_000_000.0
+    df = pd.DataFrame(
+        {
+            "time": t,
+            "x": np.full(n, 5.0 * fieldmodels.R_E_KM),
+            "y": np.zeros(n),
+            "z": np.zeros(n),
+        }
+    )
+    csv = tmp_path / "pos.csv"
+    df.to_csv(csv, index=False)
+    out = fieldmodels.calculate_lshell(
+        positions_file=str(csv),
+        output_file=str(tmp_path / "l.npz"),
+        model="igrf",
+        position_cols=["x", "y", "z"],
+    )
+    assert out["status"] == "success", out
 
 
 # --------------------------------------------------------------------------

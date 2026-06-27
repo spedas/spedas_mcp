@@ -157,6 +157,13 @@ def _load_time_and_vectors(
         resolved = list(vector_cols)
 
     vectors = df[resolved].to_numpy(dtype="float64")
+    # pandas' single-column ``Series.to_numpy`` can return a read-only view into
+    # the underlying block. pyspedas ``store_data`` scrubs non-finite timestamps
+    # in place (``times[cond] = 0``), which raises ``assignment destination is
+    # read-only`` on such a view (issue #58). Force writeable, owned copies of
+    # both arrays we hand to the backend so the in-place write always succeeds.
+    unix_time = np.array(unix_time, dtype="float64", copy=True)
+    vectors = np.array(vectors, dtype="float64", copy=True)
     return unix_time, vectors, resolved
 
 
