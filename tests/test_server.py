@@ -2320,3 +2320,100 @@ def test_planetary_energetic_particles_stay_pds_led(goal):
     assert data["status"] == "success"
     assert data["ranked_sources"][0]["source"] == "pds"
     assert "cdaweb" not in data["recommended_sources"]
+
+
+# ---------------------------------------------------------------------------
+# Argument-validation error contract (#57)
+#
+# FastMCP validates tool arguments against a generated pydantic model *before*
+# the (_safe_tool-wrapped) tool body runs, so a missing/misnamed/wrong-typed
+# argument used to escape as a raw pydantic ToolError carrying the input dict and
+# a public errors.pydantic.dev URL — bypassing the {status:"error", code, ...}
+# contract every other error follows. These lock in the structured envelope.
+# ---------------------------------------------------------------------------
+
+
+def test_arg_validation_missing_required_is_structured_no_pydantic_leak():
+    """The exact issue #57 scenario: calling analyze_minvar_coordinates with
+    output_file (its sibling's name) instead of the required output_dir must
+    return the structured contract, not a raw pydantic validation error."""
+    server = create_server()
+    raw = _call_tool(server, "analyze_minvar_coordinates", {
+        "input_file": "x.csv",
+        "output_file": "out.csv",
+        "vector_cols": ["Bx", "By", "Bz"],
+    })
+    payload = json.loads(raw)
+    assert payload["status"] == "error"
+    assert payload["code"] == "invalid_arguments"
+    assert payload["tool"] == "analyze_minvar_coordinates"
+    # Names the actually-required argument so the user can recover.
+    assert "output_dir" in payload["message"]
+    assert "hint" in payload
+    # No raw pydantic leak: no doc URL, no echoed input dict, no input value.
+    assert "errors.pydantic.dev" not in raw
+    assert "input_value" not in raw
+    assert "out.csv" not in raw
+    # Single-line message, no path leak (consistent with issues #25/#27/#28).
+    assert "\n" not in payload["message"]
+    assert "/Users/" not in raw
+
+
+def test_arg_validation_wrong_type_is_structured():
+    """Wrong-typed arguments are summarized per-field without leaking the
+    pydantic URL or the offending input values."""
+    server = create_server()
+    raw = _call_tool(server, "render_tplot", {
+        "input_files": "not-a-list",
+        "output_file": 123,
+        "dpi": "abc",
+    })
+    payload = json.loads(raw)
+    assert payload["status"] == "error"
+    assert payload["code"] == "invalid_arguments"
+    # Each offending argument is named.
+    assert "input_files" in payload["message"]
+    assert "output_file" in payload["message"]
+    assert "dpi" in payload["message"]
+    # No pydantic doc URL or echoed input values.
+    assert "errors.pydantic.dev" not in raw
+    assert "not-a-list" not in raw
+    assert "input_value" not in raw
+
+
+def test_valid_arguments_still_reach_tool_body():
+    """A correctly-named/typed call must pass validation and reach the tool body
+    (here surfacing the analysis dependency_missing error, never the
+    invalid_arguments validation envelope)."""
+    server = create_server()
+    raw = _call_tool(server, "analyze_minvar_coordinates", {
+        "input_file": "x.csv",
+        "output_dir": "/tmp/does-not-matter",
+    })
+    payload = json.loads(raw)
+    # Reached the body: not intercepted by the argument-validation guard.
+    assert payload["code"] != "invalid_arguments"
+
+
+def test_summarize_pydantic_validation_is_url_free():
+    """The summarizer turns a real pydantic ValidationError into a compact,
+    URL-free, input-free one-liner."""
+    from pydantic import BaseModel, ValidationError
+
+    from spedas_mcp.server import _summarize_pydantic_validation
+
+    class _M(BaseModel):
+        output_dir: str
+        count: int
+
+    try:
+        _M.model_validate({"count": "not-an-int"})
+    except ValidationError as exc:
+        message = _summarize_pydantic_validation(exc)
+        assert "https://" not in message
+        assert "errors.pydantic.dev" not in message
+        assert "not-an-int" not in message  # no echoed input value
+        assert "output_dir" in message  # the missing field is named
+        assert message.endswith(".")
+    else:  # pragma: no cover - validation must fail
+        raise AssertionError("expected a ValidationError")
