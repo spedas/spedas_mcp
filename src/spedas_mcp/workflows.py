@@ -128,36 +128,73 @@ _PLANETARY_CONTEXT_TERMS = (
 )
 
 
+def _word_pattern(term: str) -> re.Pattern[str]:
+    """Compile a word-boundary regex for a lowercase keyword/phrase.
+
+    Spaces inside multi-word phrases ("solar wind") are matched verbatim; only
+    the outer edges are anchored, so a phrase still matches inside a longer goal.
+    """
+    return re.compile(rf"(?<![a-z0-9]){re.escape(term)}(?![a-z0-9])")
+
+
+# Word-boundary regexes for every source keyword, compiled once. A bare ``in``
+# substring test let short tokens fire inside ordinary words — "ppi" inside
+# "flapping"/"mapping", "urn" inside "return", "mars" inside "marshalling",
+# "ace" inside "surface". For a near-Earth Geotail plasma-sheet goal that pushed
+# PDS to score 2 (one spurious token plus the plasma/field nudge), crossing the
+# score>1 selection threshold and wrongly recommending the PDS planetary archive
+# (T011). Matching on word boundaries — the same discipline ``_extract_target``
+# already uses for missions — counts only real mission/term mentions while still
+# matching multi-word phrases ("solar wind", "ring current") verbatim.
+_SOURCE_KEYWORD_PATTERNS: dict[str, list[re.Pattern[str]]] = {
+    key: [_word_pattern(keyword) for keyword in profile["keywords"]]
+    for key, profile in SOURCE_PROFILES.items()
+}
+
+# The cross-source nudge term lists are subject to the same substring hazard:
+# "mars" inside "marshalling" used to trip the planetary nudge (+2 PDS). Compile
+# their word-boundary patterns once too so only real mentions nudge the scores.
+_PLANETARY_CONTEXT_PATTERNS = [_word_pattern(term) for term in _PLANETARY_CONTEXT_TERMS]
+_PLASMA_FIELD_PATTERNS = [_word_pattern(term) for term in ("magnetic", "field", "plasma", "particle")]
+_GEOMETRY_HINT_PATTERNS = [_word_pattern(term) for term in ("where", "location", "near", "encounter", "closest approach")]
+_NEAR_EARTH_PATTERNS = [_word_pattern(term) for term in (
+    "earth", "magnetopause", "bow shock", "solar wind", "omni",
+    # Magnetotail/substorm phrasing is unambiguously near-Earth CDAWeb science
+    # (T006). These reinforce CDAWeb the same way "magnetopause"/"bow shock"
+    # already do, so a geometry/archive nudge can never overtake it.
+    "magnetotail", "magnetosheath", "plasma sheet", "substorm",
+)]
+_RADIATION_BELT_PATTERN = _word_pattern("radiation belt")
+
+
+def _any_match(patterns: list[re.Pattern[str]], text: str) -> bool:
+    return any(pattern.search(text) for pattern in patterns)
+
+
 def _score_sources(text: str) -> dict[str, int]:
     scores: dict[str, int] = {}
-    for key, profile in SOURCE_PROFILES.items():
+    for key in SOURCE_PROFILES:
         score = 0
-        for keyword in profile["keywords"]:
-            if keyword in text:
+        for pattern in _SOURCE_KEYWORD_PATTERNS[key]:
+            if pattern.search(text):
                 score += 1
         scores[key] = score
 
     # Cross-source nudges that reflect common SPEDAS science workflows.
-    if any(term in text for term in ["magnetic", "field", "plasma", "particle"]):
+    if _any_match(_PLASMA_FIELD_PATTERNS, text):
         scores["cdaweb"] += 1
         scores["pds"] += 1
-    if any(term in text for term in ["where", "location", "near", "encounter", "closest approach"]):
+    if _any_match(_GEOMETRY_HINT_PATTERNS, text):
         scores["spice"] += 1
-    planetary_context = any(term in text for term in _PLANETARY_CONTEXT_TERMS)
+    planetary_context = _any_match(_PLANETARY_CONTEXT_PATTERNS, text)
     if planetary_context:
         scores["pds"] += 2
         scores["spice"] += 1
-    near_earth_context = any(term in text for term in [
-        "earth", "magnetopause", "bow shock", "solar wind", "omni",
-        # Magnetotail/substorm phrasing is unambiguously near-Earth CDAWeb science
-        # (T006). These reinforce CDAWeb the same way "magnetopause"/"bow shock"
-        # already do, so a geometry/archive nudge can never overtake it.
-        "magnetotail", "magnetosheath", "plasma sheet", "substorm",
-    ])
+    near_earth_context = _any_match(_NEAR_EARTH_PATTERNS, text)
     # A bare "radiation belt" phrase is a good CDAWeb nudge for Earth/RBSP-style
     # heliophysics goals, but not for explicitly planetary/Juno/Cassini contexts:
     # Jupiter radiation belts are PDS planetary-archive science, not CDAWeb.
-    if "radiation belt" in text and not planetary_context:
+    if _RADIATION_BELT_PATTERN.search(text) and not planetary_context:
         near_earth_context = True
     if near_earth_context:
         scores["cdaweb"] += 2

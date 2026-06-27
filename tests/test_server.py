@@ -646,6 +646,70 @@ def test_planetary_routing_not_regressed_by_magnetospheric_keywords():
 
 
 # ---------------------------------------------------------------------------
+# T011: Geotail plasma-sheet routing must not be polluted by substring matches.
+# ``_score_sources`` matched source keywords with a bare ``in`` substring test,
+# so short PDS tokens fired inside ordinary words: "ppi" inside "fla-ppi-ng" /
+# "ma-ppi-ng", "urn" inside "ret-urn", "mars" inside "mars-halling". For a
+# near-Earth Geotail plasma-sheet goal that pushed PDS to score 2 (one spurious
+# token + the plasma/field nudge), crossing the score>1 selection threshold and
+# wrongly recommending the PDS planetary archive — explicitly not_for near-Earth
+# CDAWeb observatories. Keyword matching must be word-boundary aware so only real
+# mission/term mentions count.
+# ---------------------------------------------------------------------------
+
+import pytest  # noqa: E402
+
+@pytest.mark.parametrize(
+    "goal",
+    [
+        "Geotail plasma sheet interval workflow",
+        "Geotail current sheet flapping in the plasma sheet",
+        "Geotail magnetotail plasma sheet mapping survey",
+        "Geotail plasma sheet ion flows with return-flow signatures",
+    ],
+)
+def test_geotail_plasma_sheet_routes_to_cdaweb_only(goal):
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": goal,
+    }))
+    assert data["status"] == "success"
+    assert data["recommended_sources"] == ["cdaweb"]
+    # The planetary archive must not be dredged up by a substring match.
+    assert "pds" not in data["recommended_sources"]
+
+
+def test_score_sources_no_ppi_substring_false_positive():
+    from spedas_mcp.workflows import _score_sources
+
+    # The spurious substring token ("ppi" in "flapping"/"mapping", "urn" in
+    # "return", "mars" in "marshalling") must contribute 0. PDS may still carry
+    # at most the +1 plasma/field cross-source nudge, but that alone stays at or
+    # below the score>1 selection threshold so PDS is never recommended for a
+    # near-Earth plasma goal.
+    assert _score_sources("magnetotail current sheet flapping")["pds"] <= 1
+    assert _score_sources("plasma sheet mapping survey")["pds"] <= 1
+    assert _score_sources("return flow in the plasma sheet")["pds"] <= 1
+    # The spurious "mars" inside "marshalling" must not push PDS above the other
+    # families: with no genuine token it falls back to the all-equal floor, so
+    # PDS is never *singled out* for recommendation.
+    marshalling = _score_sources("marshalling tail data products")
+    assert marshalling["pds"] <= marshalling["cdaweb"]
+    assert marshalling["pds"] <= 1
+    # "urn" inside "return" must not score PDS at all when nothing else matches it.
+    belt = _score_sources("return flow near the magnetopause")
+    assert belt["pds"] == 0
+
+
+def test_score_sources_real_pds_tokens_still_match():
+    from spedas_mcp.workflows import _score_sources
+
+    # Genuine whole-word/phrase mentions must still score PDS.
+    assert _score_sources("juno data from the pds ppi archive")["pds"] >= 3
+    assert _score_sources("saturn magnetosphere bundle urn")["pds"] >= 1
+
+
+# ---------------------------------------------------------------------------
 # Issue #24: parameter-name consistency between discovery tools.
 # search_spedas_data_sources historically takes `question`; browse_data_sources
 # takes `query`. Accept `query` as a backward-compatible alias so agents that
