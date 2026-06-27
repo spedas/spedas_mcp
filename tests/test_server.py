@@ -1365,3 +1365,57 @@ def test_browse_fdsn_datasets_bad_trange_validates_before_backend():
     data = json.loads(_call_tool(server, "browse_fdsn_datasets", {"trange": ["only-one"]}))
     assert data["status"] == "error"
     assert data["code"] == "invalid_argument"
+
+
+# ---------------------------------------------------------------------------
+# Numbered/lettered spacecraft target inference (Batch V T007). Mission keywords
+# are matched on strict word boundaries, so the per-spacecraft suffix used in
+# the natural way to phrase a single-probe goal ("MMS1 bow-shock crossing",
+# "rbspa", "themisa") was rejected and ``_extract_target`` returned ``None`` --
+# even though the CDAWeb discovery layer already fuzzy-resolves "MMS1" -> "mms".
+# Allow the suffix for the missions that fly numbered/lettered probes, without
+# weakening the false-positive guards for generic words (ace/wind/solo/cluster).
+# ---------------------------------------------------------------------------
+
+@_pytest_b1.mark.parametrize(
+    "goal,expected",
+    [
+        ("MMS1 bow-shock crossing", "MMS"),
+        ("use MMS3 FGM survey", "MMS"),
+        ("MMS4 dayside magnetopause", "MMS"),
+        ("rbspa radiation belt", "Van Allen Probes"),
+        ("RBSP-B EMFISIS", "Van Allen Probes"),
+        ("themisa substorm tail", "THEMIS"),
+        ("stereoa upstream", "STEREO"),
+    ],
+)
+def test_extract_target_numbered_spacecraft(goal, expected):
+    from spedas_mcp.workflows import _extract_target
+
+    assert _extract_target(goal) == expected
+
+
+@_pytest_b1.mark.parametrize(
+    "goal",
+    # Suffix relaxation must not resurrect the generic-word false positives:
+    # bare "ace"/"wind"/"solo"/"cluster" and plausible-suffix lookalikes.
+    ["surface waves", "spacelike", "acexyz", "windy day", "soloist", "clustered"],
+)
+def test_extract_target_numbered_suffix_no_false_positive(goal):
+    from spedas_mcp.workflows import _extract_target
+
+    assert _extract_target(goal) is None
+
+
+def test_plan_spedas_observation_infers_numbered_mms_target():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": (
+            "Identify an MMS1 bow-shock crossing on 2015-10-07 using FGM "
+            "magnetic field and FPI ion plasma moments"
+        ),
+    }))
+    assert data["status"] == "success"
+    assert data["inferred"]["target"] == "MMS"
+    assert data["inferred"]["start"] == "2015-10-07T00:00:00Z"
+    assert data["recommended_sources"] == ["cdaweb"]

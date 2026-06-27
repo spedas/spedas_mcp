@@ -162,6 +162,35 @@ _MISSION_KEYWORDS: list[tuple[str, str]] = [
     ("omni", "OMNI"),
 ]
 
+# Mission keywords that fly numbered/lettered probes, so a single-spacecraft goal
+# is naturally phrased with a per-probe suffix ("MMS1", "rbspa", "themisa"). For
+# these, an optional trailing probe token is allowed immediately after the
+# keyword (a per-mission probe digit/letter, e.g. MMS1-4 or RBSP a/b), still
+# anchored by a trailing word boundary so "acexyz"/"soloist" do NOT match.
+# The CDAWeb discovery
+# layer already fuzzy-resolves "MMS1" -> "mms"; this keeps target inference in the
+# planner consistent with it (Batch V T007). Keys are the lowercase keyword.
+_NUMBERED_SPACECRAFT_KEYWORDS: dict[str, str] = {
+    "mms": r"[1-4]",
+    "rbsp": r"[ab]",
+    "themis": r"[a-e]",
+    "stereo": r"[ab]",
+}
+
+
+def _mission_keyword_pattern(keyword: str) -> str:
+    """Word-boundary regex for ``keyword`` allowing an optional probe suffix.
+
+    For numbered/lettered missions (see ``_NUMBERED_SPACECRAFT_KEYWORDS``) an
+    optional trailing probe token is permitted between the keyword and the
+    closing boundary, so "MMS1"/"rbspa" match while generic-word lookalikes
+    ("acexyz", "soloist") still do not.
+    """
+    suffix = _NUMBERED_SPACECRAFT_KEYWORDS.get(keyword)
+    body = re.escape(keyword) + (f"(?:{suffix})?" if suffix else "")
+    return rf"(?<![a-z0-9]){body}(?![a-z0-9])"
+
+
 # Missions whose short names collide with ordinary English ("solo", "cluster")
 # are only inferred from explicit spacecraft/mission phrasing. Each pattern is a
 # case-insensitive regex matched against the goal text. This preserves real
@@ -221,7 +250,7 @@ def _extract_target(text: str) -> str | None:
             ):
                 return label
             continue
-        if re.search(rf"(?<![a-z0-9]){re.escape(keyword)}(?![a-z0-9])", lowered):
+        if re.search(_mission_keyword_pattern(keyword), lowered):
             return label
     return None
 
