@@ -51,6 +51,31 @@ SOURCE_PROFILES: dict[str, dict[str, Any]] = {
             # Probes" (issue #30); the source router must agree so a radiation-belt
             # goal routes to CDAWeb instead of falling back to "all sources equally".
             "rbsp", "van allen", "van allen probes",
+            # Parker Solar Probe (PSP) is a CDAWeb heliophysics observatory: its
+            # FIELDS (magnetic field, RTN) and SWEAP (plasma) products live in
+            # CDAWeb, with no PDS planetary bundles. A switchback-interval goal
+            # phrased with the full mission name and switchback/instrument science
+            # used to score 0 on the lone "psp" abbreviation, so the planner fell
+            # back to "all sources equally" and surfaced the PDS archive (T014).
+            # Registering the full name and switchback/SWEAP vocabulary lifts these
+            # goals onto CDAWeb. ``encounter`` also nudges SPICE (perihelion
+            # geometry) below; naming it here keeps CDAWeb (the measurement source)
+            # from being dropped under the geometry nudge. The bare plural "fields"
+            # is *deliberately* excluded — it is everyday plasma vocabulary
+            # ("magnetic fields") that regressed planetary magnetic-field goals
+            # (e.g. MESSENGER/Mercury); the unambiguous parker/psp/switchback/sweap
+            # tokens capture the FIELDS instrument instead.
+            "parker", "parker solar probe", "switchback", "switchbacks",
+            "sweap", "encounter",
+            # Ulysses is an SPDF/CDAWeb mission (remote_data_dir is spdf.gsfc; its
+            # SWOOPS/VHM/FGM/SWICS/URAP products live in *_cdaweb/ directories with
+            # the UY_* naming convention), not a PDS planetary-archive mission. It
+            # previously appeared *only* in the PDS keywords, which mis-routed
+            # Ulysses high-latitude solar-wind goals toward the planetary archive.
+            # Moved here (analogous to RBSP/Van Allen Probes) so Ulysses leads with
+            # CDAWeb; SPICE remains available for heliographic-latitude geometry
+            # (NAIF body -55) via the high-latitude nudge below (T013).
+            "ulysses",
         ],
     },
     "pds": {
@@ -67,8 +92,10 @@ SOURCE_PROFILES: dict[str, dict[str, Any]] = {
         "keywords": [
             "pds", "ppi", "planetary", "jupiter", "saturn", "mars", "venus", "mercury",
             "uranus", "neptune", "juno", "cassini", "voyager", "galileo", "maven",
-            "messenger", "new horizons", "pioneer", "ulysses", "planet", "archive",
+            "messenger", "new horizons", "pioneer", "planet", "archive",
             "bundle", "dataset", "urn",
+            # Note: "ulysses" was moved to the CDAWeb keyword list above — it is an
+            # SPDF/CDAWeb solar-wind mission, not a PDS planetary-archive one (T013).
         ],
     },
     "spice": {
@@ -128,38 +155,116 @@ _PLANETARY_CONTEXT_TERMS = (
 )
 
 
+def _word_pattern(term: str) -> re.Pattern[str]:
+    """Compile a word-boundary-anchored pattern for a source/nudge ``term``.
+
+    Source-keyword and cross-source-nudge matching previously used a bare
+    ``term in text`` substring test, so short tokens fired *inside* ordinary
+    science words: ``ppi`` matched "fla**ppi**ng"/"ma**ppi**ng", ``urn`` matched
+    "ret**urn**", and ``mars`` matched "**mars**halling" — inflating the PDS
+    planetary score for pure near-Earth (e.g. Geotail magnetotail) goals (T011).
+
+    Anchoring with non-word lookarounds on the outer edges (the same discipline
+    ``_mission_keyword_pattern`` already uses for mission keywords) keeps genuine
+    whole-word/whole-phrase mentions matching — including multi-word phrases like
+    ``"solar wind"``, ``"ring current"``, ``"closest approach"`` — while ignoring
+    matches buried inside unrelated words. Letters/digits count as word
+    characters so hyphenated forms (``"solar-wind"``) still match on the edges.
+    """
+    return re.compile(rf"(?<![a-z0-9]){re.escape(term)}(?![a-z0-9])", re.IGNORECASE)
+
+
+def _any_match(patterns: tuple[re.Pattern[str], ...], text: str) -> bool:
+    return any(pattern.search(text) for pattern in patterns)
+
+
+# Pre-compiled, word-boundary-aware patterns for the source keyword lists and the
+# cross-source nudge term lists. Compiled once at import; see ``_word_pattern``.
+_SOURCE_KEYWORD_PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
+    key: tuple(_word_pattern(keyword) for keyword in profile["keywords"])
+    for key, profile in SOURCE_PROFILES.items()
+}
+_PLANETARY_CONTEXT_PATTERNS = tuple(_word_pattern(t) for t in _PLANETARY_CONTEXT_TERMS)
+_MEASUREMENT_PATTERNS = tuple(_word_pattern(t) for t in ("magnetic", "field", "plasma", "particle"))
+_GEOMETRY_HINT_PATTERNS = tuple(
+    _word_pattern(t) for t in ("where", "location", "near", "encounter", "closest approach")
+)
+# Multi-word/phrase boundary structures and magnetotail/substorm vocabulary that
+# reinforce the near-Earth CDAWeb lane. The boundary terms (bow shock /
+# magnetopause / magnetosheath) are split out below so they can be guarded
+# against planetary contexts (T015).
+_NEAR_EARTH_PATTERNS = tuple(
+    _word_pattern(t) for t in (
+        "earth", "solar wind", "omni",
+        "magnetotail", "plasma sheet", "substorm",
+    )
+)
+# Boundary structures that exist at Mars/Venus/Mercury too, not just Earth. They
+# only count as a near-Earth CDAWeb nudge when no planetary body/mission is named
+# — otherwise "MAVEN Mars bow shock" spuriously routes CDAWeb alongside PDS
+# (T015), mirroring the existing "radiation belt" guard.
+_BOUNDARY_PATTERNS = tuple(_word_pattern(t) for t in ("bow shock", "magnetopause", "magnetosheath"))
+_RADIATION_BELT_PATTERN = _word_pattern("radiation belt")
+# Ulysses-style high-latitude / fast-solar-wind heliospheric vocabulary. These
+# define the out-of-ecliptic polar-pass science the planner must route to CDAWeb
+# (measurements, +2) with SPICE for heliographic-latitude geometry (+1), guarded
+# against planetary contexts so a "high-latitude" mention near Saturn stays
+# PDS-led (T013).
+_HIGH_LATITUDE_PATTERNS = tuple(
+    _word_pattern(t) for t in (
+        "high latitude", "high-latitude", "heliographic latitude",
+        "polar pass", "fast solar wind", "corotating interaction region",
+        "out of the ecliptic",
+    )
+)
+# Parker-Solar-Probe-style near-Sun switchback science. ``switchback(s)``/``sweap``
+# reinforce CDAWeb (the FIELDS/SWEAP measurement source), guarded against
+# planetary contexts the same way (T014).
+_HELIO_OBSERVATORY_PATTERNS = tuple(
+    _word_pattern(t) for t in ("switchback", "switchbacks", "sweap")
+)
+
+
 def _score_sources(text: str) -> dict[str, int]:
     scores: dict[str, int] = {}
-    for key, profile in SOURCE_PROFILES.items():
-        score = 0
-        for keyword in profile["keywords"]:
-            if keyword in text:
-                score += 1
-        scores[key] = score
+    for key, patterns in _SOURCE_KEYWORD_PATTERNS.items():
+        scores[key] = sum(1 for pattern in patterns if pattern.search(text))
 
-    # Cross-source nudges that reflect common SPEDAS science workflows.
-    if any(term in text for term in ["magnetic", "field", "plasma", "particle"]):
+    # Cross-source nudges that reflect common SPEDAS science workflows. All term
+    # matching here is word-boundary-aware (``_any_match``) so short tokens never
+    # fire inside unrelated science words (T011).
+    if _any_match(_MEASUREMENT_PATTERNS, text):
         scores["cdaweb"] += 1
         scores["pds"] += 1
-    if any(term in text for term in ["where", "location", "near", "encounter", "closest approach"]):
+    if _any_match(_GEOMETRY_HINT_PATTERNS, text):
         scores["spice"] += 1
-    planetary_context = any(term in text for term in _PLANETARY_CONTEXT_TERMS)
+    planetary_context = _any_match(_PLANETARY_CONTEXT_PATTERNS, text)
     if planetary_context:
         scores["pds"] += 2
         scores["spice"] += 1
-    near_earth_context = any(term in text for term in [
-        "earth", "magnetopause", "bow shock", "solar wind", "omni",
-        # Magnetotail/substorm phrasing is unambiguously near-Earth CDAWeb science
-        # (T006). These reinforce CDAWeb the same way "magnetopause"/"bow shock"
-        # already do, so a geometry/archive nudge can never overtake it.
-        "magnetotail", "magnetosheath", "plasma sheet", "substorm",
-    ])
-    # A bare "radiation belt" phrase is a good CDAWeb nudge for Earth/RBSP-style
-    # heliophysics goals, but not for explicitly planetary/Juno/Cassini contexts:
-    # Jupiter radiation belts are PDS planetary-archive science, not CDAWeb.
-    if "radiation belt" in text and not planetary_context:
+    near_earth_context = _any_match(_NEAR_EARTH_PATTERNS, text)
+    # Boundary structures (bow shock / magnetopause / magnetosheath) and a bare
+    # "radiation belt" phrase are good CDAWeb nudges for Earth/near-Earth science,
+    # but not for explicitly planetary contexts: Mars/Venus bow shocks and Jupiter
+    # radiation belts are PDS planetary-archive science, not CDAWeb (T015/T006).
+    if not planetary_context and (
+        _any_match(_BOUNDARY_PATTERNS, text) or _RADIATION_BELT_PATTERN.search(text)
+    ):
         near_earth_context = True
     if near_earth_context:
+        scores["cdaweb"] += 2
+
+    # Ulysses high-latitude / fast-solar-wind polar-pass science: boost CDAWeb
+    # (measurements, +2) and SPICE (heliographic-latitude geometry, +1), guarded
+    # so a "high-latitude" mention in a planetary context stays PDS-led (T013).
+    if not planetary_context and _any_match(_HIGH_LATITUDE_PATTERNS, text):
+        scores["cdaweb"] += 2
+        scores["spice"] += 1
+
+    # PSP-style near-Sun switchback science: reinforce CDAWeb (FIELDS/SWEAP
+    # measurements, +2) so a geometry (encounter -> SPICE) or archive nudge can
+    # never overtake it, guarded against planetary contexts (T014).
+    if not planetary_context and _any_match(_HELIO_OBSERVATORY_PATTERNS, text):
         scores["cdaweb"] += 2
 
     if max(scores.values()) == 0:
@@ -251,6 +356,21 @@ def _mission_keyword_pattern(keyword: str) -> str:
 # of substorms", "clustering algorithm") still do not match.
 _QUALIFIED_MISSION_KEYWORDS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"\bsolo\s+(?:spacecraft|orbiter|mission|probe)\b", re.IGNORECASE), "Solar Orbiter"),
+    # Bare "SolO" followed by an instrument acronym (MAG/SWA/EPD/RPW in-situ,
+    # EUI/PHI/Metis/SoloHI/STIX remote-sensing) or a science term
+    # (perihelion/periapsis/encounter) is the single most common way scientists
+    # write Solar Orbiter goals, but the qualified pattern above only matched
+    # solo + spacecraft/orbiter/mission/probe, dropping the target (T012). Anchored
+    # to ``\bsolo\s+…`` so bare/generic "solo", "fly solo", "soloist" still do not
+    # match. Mirrors the existing Cluster instrument-acronym branch below.
+    (
+        re.compile(
+            r"\bsolo\s+(?:mag|swa|epd|rpw|eui|phi|metis|solohi|stix"
+            r"|perihelion|periapsis|encounter)\b",
+            re.IGNORECASE,
+        ),
+        "Solar Orbiter",
+    ),
     (
         re.compile(
             r"\bcluster\s+(?:spacecraft|mission|constellation|satellites?"
