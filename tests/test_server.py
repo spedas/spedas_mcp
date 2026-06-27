@@ -1918,3 +1918,405 @@ def test_earth_bow_shock_still_routes_to_cdaweb():
     }))
     assert data["status"] == "success"
     assert data["recommended_sources"] == ["cdaweb"]
+
+
+# ===========================================================================
+# Batch X T016: Cassini / Saturn magnetosphere planetary guard.
+#
+# Cassini is a PDS-only planetary-archive mission (its MAG/CAPS products live in
+# the PDS PPI node; it has no CDAWeb datasets). A goal phrased with generic
+# physics vocabulary ("Cassini Saturn magnetosphere magnetic field") still hit
+# the bare CDAWeb *keywords* ``magnetosphere``/``magnetic`` and lifted CDAWeb to
+# score 3 -- above the score>1 selection threshold -- so the planner wrongly
+# recommended CDAWeb alongside PDS for a mission with no CDAWeb data. The boundary
+# (bow shock / magnetopause) and radiation-belt nudges were already guarded
+# against planetary contexts (T015/T006); these tests extend that same discipline
+# to the generic CDAWeb magnetosphere/field/plasma/particle keywords, which are
+# equally planetary-archive physics vocabulary.
+# ===========================================================================
+
+
+@pytest.mark.parametrize(
+    "goal",
+    [
+        "Cassini Saturn magnetosphere magnetic field",
+        "Cassini MAG Saturn orbit",
+        "Cassini plasma near Saturn",
+    ],
+)
+def test_cassini_saturn_goals_lead_with_pds_not_cdaweb(goal):
+    """Cassini/Saturn goals are PDS-led and must not recommend CDAWeb."""
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": goal,
+    }))
+    assert data["status"] == "success"
+    assert data["ranked_sources"][0]["source"] == "pds"
+    assert data["recommended_sources"][0] == "pds"
+    assert "cdaweb" not in data["recommended_sources"]
+
+
+def test_cassini_mag_saturn_orbit_keeps_spice_geometry_context():
+    """An explicit orbit/geometry phrasing may still surface SPICE as context."""
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": "Cassini MAG Saturn orbit",
+    }))
+    assert data["recommended_sources"] == ["pds", "spice"]
+
+
+def test_cassini_plan_observation_leads_with_pds_no_cdaweb():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": (
+            "Cassini Saturn magnetosphere magnetic field survey 2006-01-01 to "
+            "2006-01-02"
+        ),
+    }))
+    assert data["status"] == "success"
+    assert data["inferred"]["target"] == "Cassini"
+    assert data["recommended_sources"][0] == "pds"
+    assert "cdaweb" not in data["recommended_sources"]
+    phases = {step["phase"] for step in data["plan"]}
+    assert "discover_pds" in phases
+    assert "discover_cdaweb" not in phases
+
+
+def test_planetary_magnetosphere_keywords_do_not_boost_cdaweb():
+    """The generic magnetosphere/magnetic keywords must not raise CDAWeb for a
+    planetary (Saturn) goal, mirroring the T015 boundary-nudge guard."""
+    from spedas_mcp.workflows import _score_sources
+
+    physics = _score_sources("cassini saturn magnetosphere magnetic field survey")
+    # The generic magnetosphere/field keyword matches are subtracted, so CDAWeb
+    # stays at most the single cross-source measurement nudge (+1) -- below the
+    # score>1 recommendation threshold -- while PDS leads the planetary goal.
+    assert physics["cdaweb"] <= 1
+    assert physics["pds"] > physics["cdaweb"]
+    # The bare magnetosphere/magnetic keywords must not lift CDAWeb above the
+    # selection threshold the way they did before the planetary guard (was 3).
+    no_physics = _score_sources("cassini saturn survey")
+    assert physics["cdaweb"] - no_physics["cdaweb"] <= 1
+
+
+def test_planetary_guard_does_not_regress_near_earth_magnetosphere():
+    """Near-Earth magnetosphere goals (no planetary body/mission) keep CDAWeb."""
+    server = create_server()
+    for goal in (
+        "Earth magnetosphere magnetic field bow shock",
+        "THEMIS magnetotail substorm magnetic field",
+        "MMS reconnection magnetopause plasma",
+    ):
+        data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+            "question": goal,
+        }))
+        assert data["recommended_sources"] == ["cdaweb"], goal
+
+
+# ---------------------------------------------------------------------------
+# T018: Voyager outer-heliosphere / heliopause magnetic-field routing.
+#
+# Voyager 1/2 are a *dual-archive* mission. Their planetary-flyby products
+# (Jupiter/Saturn/Uranus/Neptune encounters) live in the PDS PPI archive, but
+# their decades-long heliospheric MAG/PLS time-series — including the
+# termination-shock and heliopause crossings and the interstellar magnetic
+# field — are CDAWeb/SPDF observatory products (VOYAGER1/2 MAG and PLS
+# datasets), not PDS planetary bundles.
+#
+# Because "voyager" is registered as a planetary-context mission (correctly, for
+# the flybys), an outer-heliosphere goal used to score PDS=4/CDAWeb=2 and a goal
+# with no generic measurement word ("Voyager outer heliosphere termination
+# shock") scored CDAWeb=0 and routed to PDS *alone* — burying the CDAWeb
+# time-series that actually holds the data. A guarded heliospheric-context nudge
+# lifts CDAWeb for these goals while leaving the planetary-flyby routing intact.
+# ---------------------------------------------------------------------------
+
+def test_voyager_outer_heliosphere_bfield_routes_to_cdaweb():
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": "Voyager 1 outer heliosphere magnetic field time series at the heliopause",
+        "target": "Voyager",
+        "observables": ["magnetic field"],
+    }))
+    assert data["status"] == "success"
+    # The heliospheric time-series source must lead for an outer-heliosphere goal.
+    assert data["recommended_sources"][0] == "cdaweb"
+
+
+def test_voyager_heliopause_goal_with_no_measurement_word_still_includes_cdaweb():
+    """The starkest baseline failure: a heliopause goal with no generic
+    measurement word scored CDAWeb=0 and routed to PDS alone."""
+    from spedas_mcp.workflows import _score_sources
+
+    scores = _score_sources("voyager outer heliosphere termination shock heliopause")
+    assert scores["cdaweb"] >= scores["pds"]
+    assert scores["cdaweb"] > 0
+
+
+def test_voyager_interstellar_field_plan_recommends_cdaweb_first():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": "Voyager 1 interstellar magnetic field in the very local interstellar medium",
+    }))
+    assert data["status"] in {"success", "needs_input"}
+    assert "cdaweb" in data["recommended_sources"]
+    assert data["recommended_sources"][0] == "cdaweb"
+    assert data["inferred"]["target"] == "Voyager"
+
+
+def test_voyager_planetary_flyby_still_routes_to_pds():
+    """The heliospheric nudge must not regress the planetary-flyby archive
+    routing: a Jupiter/Neptune flyby goal stays PDS-led."""
+    server = create_server()
+    for goal in (
+        "Voyager 1 Jupiter flyby magnetic field",
+        "Voyager 2 Neptune flyby plasma observations",
+    ):
+        data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+            "question": goal,
+            "target": "Voyager",
+        }))
+        assert data["status"] == "success", goal
+        assert "pds" in data["recommended_sources"], goal
+        assert data["recommended_sources"][0] == "pds", goal
+
+
+def test_heliospheric_nudge_needs_heliospheric_terms():
+    """The nudge is specific: a bare planetary goal with no heliospheric term
+    must not gain a CDAWeb boost from this rule (no generic false positives)."""
+    from spedas_mcp.workflows import _score_sources
+
+    plain = _score_sources("cassini saturn magnetosphere magnetic field")
+    assert plain["pds"] > plain["cdaweb"]
+
+
+def test_heliopause_term_does_not_boost_planetary_flyby_context():
+    """If both a heliospheric term and a specific planet/flyby body are named,
+    the planetary-flyby body context wins so PDS still leads (guarded nudge)."""
+    from spedas_mcp.workflows import _score_sources
+
+    # "heliopause" mentioned in passing while the goal is a Jupiter flyby.
+    scores = _score_sources("voyager jupiter flyby on the way to the heliopause")
+    assert scores["pds"] >= scores["cdaweb"]
+
+
+# ===========================================================================
+# T019: New Horizons Pluto-flyby / SWAP / PEPSSI planetary-archive routing.
+#   New Horizons is a PDS PPI mission (NEW-HORIZONS_PPI, 12 datasets incl. the
+#   "Solar Wind" SWAP product and the PEPSSI energetic-particle product); it has
+#   NO CDAWeb time-series. Two gaps existed before this fix:
+#     1. "Pluto" was not a planetary-context body, so "Pluto flyby plasma"
+#        scored no PDS planetary boost and mis-routed to near-Earth CDAWeb.
+#     2. The bare "solar wind" near-Earth nudge fired unconditionally, so
+#        "New Horizons solar wind" (a PDS SWAP product) spuriously surfaced
+#        CDAWeb alongside PDS. Guarding it against planetary contexts (the same
+#        discipline as the T015 bow-shock / T013 high-latitude nudges) keeps
+#        genuine near-Earth/heliospheric solar-wind goals (OMNI/ACE/Wind/
+#        Ulysses) on CDAWeb while New-Horizons/Pluto solar wind stays PDS-led.
+#   SWAP/PEPSSI are added as PDS vocabulary so the instrument phrasing scores PDS.
+# ===========================================================================
+
+
+def test_new_horizons_pluto_flyby_swap_pepssi_routes_to_pds():
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": "New Horizons Pluto flyby SWAP and PEPSSI plasma and energetic particles",
+    }))
+    assert data["status"] == "success"
+    # PDS is New Horizons' only honest source; it must lead and outrank CDAWeb.
+    assert data["ranked_sources"][0]["source"] == "pds"
+    assert data["recommended_sources"][0] == "pds"
+    pds = next(r for r in data["ranked_sources"] if r["source"] == "pds")
+    cdaweb = next(r for r in data["ranked_sources"] if r["source"] == "cdaweb")
+    assert pds["score"] > cdaweb["score"]
+
+
+def test_new_horizons_solar_wind_stays_pds_led_not_cdaweb_led():
+    """New Horizons solar wind is the SWAP PDS product, not a CDAWeb time-series."""
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": "New Horizons solar wind during the cruise to Pluto",
+    }))
+    assert data["status"] == "success"
+    assert data["ranked_sources"][0]["source"] == "pds"
+    assert data["recommended_sources"][0] == "pds"
+    pds = next(r for r in data["ranked_sources"] if r["source"] == "pds")
+    cdaweb = next(r for r in data["ranked_sources"] if r["source"] == "cdaweb")
+    assert pds["score"] > cdaweb["score"]
+
+
+def test_pluto_flyby_plasma_routes_to_pds_not_cdaweb_led():
+    """A Pluto flyby is planetary-archive science; it must be PDS-led, not CDAWeb-led."""
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": "Pluto flyby plasma",
+    }))
+    assert data["status"] == "success"
+    # Before the fix Pluto was not a planetary-context body, so this scored
+    # CDAWeb=2 / PDS=1 and recommended ["cdaweb"] — a planetary flyby routed to
+    # the near-Earth archive. PDS must now lead.
+    assert data["ranked_sources"][0]["source"] == "pds"
+    assert data["recommended_sources"][0] == "pds"
+    pds = next(r for r in data["ranked_sources"] if r["source"] == "pds")
+    cdaweb = next(r for r in data["ranked_sources"] if r["source"] == "cdaweb")
+    assert pds["score"] > cdaweb["score"]
+
+
+def test_new_horizons_plan_infers_target_and_leads_with_pds():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": (
+            "New Horizons SWAP solar-wind plasma during the Pluto encounter on "
+            "2015-07-14"
+        ),
+    }))
+    assert data["status"] == "success"
+    assert data["inferred"]["target"] == "New Horizons"
+    assert data["inferred"]["start"] == "2015-07-14T00:00:00Z"
+    assert data["recommended_sources"][0] == "pds"
+    phases = {step["phase"] for step in data["plan"]}
+    assert {"discover_pds", "fetch_or_compute_pds"} <= phases
+
+
+def test_solar_wind_planetary_guard_does_not_regress_near_earth_goals():
+    """Guarding the 'solar wind' nudge must not drop CDAWeb for near-Earth/heliospheric solar-wind goals."""
+    server = create_server()
+    for goal in (
+        "OMNI solar wind during a geomagnetic storm",
+        "ACE solar wind plasma upstream of Earth",
+        "Wind spacecraft solar wind measurements",
+        "Ulysses high-latitude fast solar wind",
+    ):
+        data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+            "question": goal,
+        }))
+        assert data["status"] == "success", goal
+        assert data["recommended_sources"] == ["cdaweb"], goal
+
+
+def test_solar_wind_nudge_suppressed_in_planetary_context():
+    from spedas_mcp.workflows import _score_sources
+
+    # The +2 "solar wind" near-Earth nudge must fire for a non-planetary goal but
+    # be suppressed when a planetary body/mission is named (mirrors the T015
+    # bow-shock guard). The bare "solar wind" *keyword* (+1) may still count.
+    # Same trailing vocabulary, with and without a planetary body/mission named.
+    nearearth = _score_sources("flyby plasma solar wind")
+    planetary = _score_sources("new horizons pluto flyby plasma solar wind")
+    # The +2 near-Earth nudge fires only without a planetary context, so the
+    # planetary CDAWeb score is strictly lower despite the extra mission word.
+    assert planetary["cdaweb"] < nearearth["cdaweb"]
+    # And the suppressed nudge keeps PDS decisively ahead of CDAWeb.
+    assert planetary["pds"] > planetary["cdaweb"]
+
+
+def test_swap_pepssi_are_pds_vocabulary():
+    from spedas_mcp.workflows import _score_sources
+
+    # The New Horizons instrument acronyms must score for PDS (they name PDS PPI
+    # products), and must not fire inside unrelated words via substring matching.
+    scored = _score_sources("new horizons swap pepssi products")
+    assert scored["pds"] >= 3
+    # "swap" must not match inside e.g. "swapping"; "pepssi" is distinctive.
+    noisy = _score_sources("geotail swapping buffers")
+    assert noisy["pds"] == 0
+
+
+# ===========================================================================
+# Batch X T020 - STEREO solar-energetic-particle / solar-wind source routing.
+# ``_extract_target`` already maps "STEREO"/"STEREO-A"/"STEREO B"/"stereoa" to the
+# canonical "STEREO" label (#30 / Batch V T007), but the source router had no
+# matching CDAWeb keyword. A SEP/energetic-particle goal phrased without the
+# generic "solar wind"/"plasma"/"magnetic" measurement words ("STEREO-A SEP
+# SEPT", "STEREO-A IMPACT energetic electrons") scored only 1 on every family and
+# fell back to "all sources equally" -- surfacing the PDS planetary archive; and
+# "STEREO ahead spacecraft SEP" routed to SPICE alone on the bare "spacecraft"
+# geometry token. STEREO is an SPDF/CDAWeb mission (no PDS bundles, no SPICE
+# kernels in this context), so CDAWeb must lead. Fix: register "stereo"/"sept" as
+# CDAWeb keywords plus a planetary-guarded solar-energetic-particle nudge,
+# mirroring the Ulysses (T013) / PSP switchback (T014) lanes.
+# ===========================================================================
+
+
+@pytest.mark.parametrize(
+    "goal",
+    [
+        "STEREO-A SEP SEPT solar energetic particle event",
+        "STEREO-A IMPACT energetic electrons",
+        "STEREO-B energetic protons solar energetic particles",
+        "STEREO solar wind PLASTIC plasma",
+        "STEREO MAG magnetic field interval",
+        "STEREO ahead spacecraft solar energetic particles",
+    ],
+)
+def test_stereo_sep_solar_wind_routes_to_cdaweb(goal):
+    """STEREO heliophysics goals must lead with CDAWeb, never the PDS archive."""
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": goal,
+    }))
+    assert data["status"] == "success"
+    assert data["ranked_sources"][0]["source"] == "cdaweb"
+    assert "cdaweb" in data["recommended_sources"]
+    assert "pds" not in data["recommended_sources"]
+
+
+@pytest.mark.parametrize(
+    "goal,expected",
+    [
+        ("STEREO-A SEP SEPT", "STEREO"),
+        ("STEREO B PLASTIC solar wind", "STEREO"),
+        ("STEREO-B IMPACT", "STEREO"),
+        ("STEREO Ahead MAG magnetic field", "STEREO"),
+        ("STEREO Behind solar wind", "STEREO"),
+    ],
+)
+def test_stereo_alias_target_inference(goal, expected):
+    from spedas_mcp.workflows import _extract_target
+
+    assert _extract_target(goal) == expected
+
+
+def test_stereo_observation_plan_leads_with_cdaweb():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": (
+            "STEREO-A SEP SEPT solar energetic particle event on 2012-03-07"
+        ),
+    }))
+    assert data["status"] == "success"
+    assert data["inferred"]["target"] == "STEREO"
+    assert data["inferred"]["start"] == "2012-03-07T00:00:00Z"
+    assert data["recommended_sources"] == ["cdaweb"]
+    phases = {step["phase"] for step in data["plan"]}
+    assert {"discover_cdaweb", "fetch_or_compute_cdaweb"} <= phases
+
+
+def test_sept_keyword_does_not_match_september():
+    """The unambiguous SEPT acronym is word-boundary-anchored, so the month name
+    'September' (trailing letters) must not add to the CDAWeb score (T020)."""
+    from spedas_mcp.workflows import _score_sources
+
+    plain = _score_sources("monthly data review")
+    month = _score_sources("September monthly data review")
+    assert month["cdaweb"] <= plain["cdaweb"]
+
+
+@pytest.mark.parametrize(
+    "goal",
+    [
+        "Jupiter energetic ions in the magnetosphere from Juno",
+        "Cassini energetic electrons at Saturn",
+        "Galileo energetic ions at Jupiter",
+    ],
+)
+def test_planetary_energetic_particles_stay_pds_led(goal):
+    """The solar-energetic-particle CDAWeb nudge must be planetary-guarded so a
+    planetary energetic-particle goal still leads with PDS (T020)."""
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": goal,
+    }))
+    assert data["status"] == "success"
+    assert data["ranked_sources"][0]["source"] == "pds"
+    assert "cdaweb" not in data["recommended_sources"]

@@ -76,6 +76,24 @@ SOURCE_PROFILES: dict[str, dict[str, Any]] = {
             # CDAWeb; SPICE remains available for heliographic-latitude geometry
             # (NAIF body -55) via the high-latitude nudge below (T013).
             "ulysses",
+            # STEREO (Ahead/Behind) is an SPDF/CDAWeb twin-spacecraft heliophysics
+            # mission: its IMPACT (SEP/SEPT/MAG), PLASTIC (solar-wind plasma), and
+            # SECCHI/WAVES products live in CDAWeb (the ST[AB]_* dataset family),
+            # with no PDS planetary bundles. ``_extract_target`` already maps
+            # "STEREO"/"STEREO-A"/"STEREO B"/"stereoa" to the canonical "STEREO"
+            # label (#30 / Batch V T007), but the source router had no matching
+            # keyword, so a SEP/energetic-particle goal phrased without the generic
+            # "solar wind"/"plasma"/"magnetic" measurement words ("STEREO-A SEP
+            # SEPT", "STEREO-A IMPACT energetic electrons") scored only 1 on every
+            # family and fell back to "all sources equally" — surfacing the PDS
+            # planetary archive. Worse, "STEREO ahead spacecraft SEP" routed to
+            # SPICE alone (on the bare "spacecraft" geometry token). Registering the
+            # mission name and its unambiguous instrument acronym lifts these goals
+            # onto CDAWeb. The bare "impact"/"sep"/"mag"/"plastic" English words are
+            # *deliberately* excluded — only the whole-word acronym "sept" and the
+            # multi-word SEP phrases (nudge below) are unambiguous; this mirrors the
+            # parker/psp "fields" exclusion (T020).
+            "stereo", "sept",
         ],
     },
     "pds": {
@@ -91,9 +109,16 @@ SOURCE_PROFILES: dict[str, dict[str, Any]] = {
         "cache_tools": ["manage_data_cache(source_type=\"pds\")"],
         "keywords": [
             "pds", "ppi", "planetary", "jupiter", "saturn", "mars", "venus", "mercury",
-            "uranus", "neptune", "juno", "cassini", "voyager", "galileo", "maven",
-            "messenger", "new horizons", "pioneer", "planet", "archive",
+            "uranus", "neptune", "pluto", "juno", "cassini", "voyager", "galileo",
+            "maven", "messenger", "new horizons", "pioneer", "planet", "archive",
             "bundle", "dataset", "urn",
+            # New Horizons instruments archived in PDS PPI (NEW-HORIZONS_PPI): SWAP
+            # (Solar Wind Around Pluto, the "Solar Wind" product) and PEPSSI (Pluto
+            # Energetic Particle Spectrometer). Naming them lets instrument-phrased
+            # goals ("New Horizons SWAP/PEPSSI") score PDS — its only honest source,
+            # as New Horizons has no CDAWeb time-series (T019). Both are distinctive
+            # acronyms (word-boundary matched, so "swap" never fires in "swapping").
+            "swap", "pepssi",
             # Note: "ulysses" was moved to the CDAWeb keyword list above — it is an
             # SPDF/CDAWeb solar-wind mission, not a PDS planetary-archive one (T013).
         ],
@@ -150,6 +175,11 @@ def _blob(*parts: object) -> str:
 
 _PLANETARY_CONTEXT_TERMS = (
     "jupiter", "saturn", "mars", "venus", "mercury", "uranus", "neptune",
+    # Pluto is the New Horizons flyby target and has PDS PPI products
+    # (NEW-HORIZONS_PPI SWAP "Solar Wind" + PEPSSI). Without it, "Pluto flyby
+    # plasma" scored no PDS planetary boost and mis-routed to near-Earth CDAWeb
+    # (T019). Listed as a body alongside the other planets it sits among.
+    "pluto",
     "juno", "cassini", "galileo", "voyager", "maven", "messenger",
     "new horizons", "pioneer",
 )
@@ -189,22 +219,31 @@ _MEASUREMENT_PATTERNS = tuple(_word_pattern(t) for t in ("magnetic", "field", "p
 _GEOMETRY_HINT_PATTERNS = tuple(
     _word_pattern(t) for t in ("where", "location", "near", "encounter", "closest approach")
 )
-# Multi-word/phrase boundary structures and magnetotail/substorm vocabulary that
-# reinforce the near-Earth CDAWeb lane. The boundary terms (bow shock /
-# magnetopause / magnetosheath) are split out below so they can be guarded
-# against planetary contexts (T015).
+# Multi-word/phrase magnetotail/substorm vocabulary that reinforces the
+# near-Earth CDAWeb lane. The boundary terms (bow shock / magnetopause /
+# magnetosheath) and "solar wind" are split out below so they can be guarded
+# against planetary contexts (T015/T019).
+# Unconditional near-Earth CDAWeb vocabulary. These terms are Earth-specific
+# (or OMNI-specific) and never describe a genuine planetary PDS-archive context,
+# so they boost CDAWeb regardless of a named body/mission. "solar wind" is
+# *deliberately excluded* here and guarded below: the solar wind is measured at
+# Pluto too (New Horizons SWAP, archived in PDS as the "Solar Wind" product), so
+# a bare "solar wind" mention in a planetary context must not surface CDAWeb
+# (T019), mirroring the T015 bow-shock / T013 high-latitude planetary guards.
 _NEAR_EARTH_PATTERNS = tuple(
     _word_pattern(t) for t in (
-        "earth", "solar wind", "omni",
+        "earth", "omni",
         "magnetotail", "plasma sheet", "substorm",
     )
 )
-# Boundary structures that exist at Mars/Venus/Mercury too, not just Earth. They
-# only count as a near-Earth CDAWeb nudge when no planetary body/mission is named
-# — otherwise "MAVEN Mars bow shock" spuriously routes CDAWeb alongside PDS
-# (T015), mirroring the existing "radiation belt" guard.
+# Boundary structures that exist at Mars/Venus/Mercury too, not just Earth, plus
+# the bare "solar wind" phrase. They only count as a near-Earth CDAWeb nudge when
+# no planetary body/mission is named — otherwise "MAVEN Mars bow shock" or "New
+# Horizons solar wind" spuriously routes CDAWeb alongside PDS (T015/T019),
+# mirroring the "radiation belt" guard.
 _BOUNDARY_PATTERNS = tuple(_word_pattern(t) for t in ("bow shock", "magnetopause", "magnetosheath"))
 _RADIATION_BELT_PATTERN = _word_pattern("radiation belt")
+_SOLAR_WIND_PATTERN = _word_pattern("solar wind")
 # Ulysses-style high-latitude / fast-solar-wind heliospheric vocabulary. These
 # define the out-of-ecliptic polar-pass science the planner must route to CDAWeb
 # (measurements, +2) with SPICE for heliographic-latitude geometry (+1), guarded
@@ -223,6 +262,71 @@ _HIGH_LATITUDE_PATTERNS = tuple(
 _HELIO_OBSERVATORY_PATTERNS = tuple(
     _word_pattern(t) for t in ("switchback", "switchbacks", "sweap")
 )
+# STEREO-style solar-energetic-particle heliospheric science. The whole multi-word
+# phrases ("solar energetic particle(s)", "energetic electrons/protons/ions") are
+# unambiguous in-situ measurement vocabulary that belongs to CDAWeb (the
+# IMPACT/SEPT/HET/LET/SIT measurement source), so they reinforce CDAWeb (+2),
+# guarded against planetary contexts so an "energetic ions" mention near Jupiter
+# stays PDS-led — exactly like the switchback/high-latitude guards (T020). The
+# bare acronyms "sep"/"impact" are deliberately *not* here: "sep" collides with
+# the month abbreviation and "impact" is an everyday English word; the unambiguous
+# "sept" acronym is registered as a CDAWeb keyword above instead.
+_SEP_PARTICLE_PATTERNS = tuple(
+    _word_pattern(t) for t in (
+        "solar energetic particle", "solar energetic particles",
+        "energetic electrons", "energetic protons", "energetic ions",
+    )
+)
+# Generic measurement vocabulary that sits in the CDAWeb keyword list but is
+# *equally* planetary-archive physics ("Cassini Saturn magnetosphere magnetic
+# field", "Galileo Jupiter plasma"). For a near-Earth/heliophysics goal these
+# words rightly reinforce CDAWeb, but a Cassini/Juno/MAVEN-style planetary goal
+# names a PDS-only mission with no CDAWeb datasets, so leaving them in inflates
+# the CDAWeb score above the score>1 recommendation threshold and surfaces CDAWeb
+# alongside PDS for missions that have no CDAWeb data (Batch X T016). When a
+# planetary body/mission is named these matches are subtracted from CDAWeb,
+# mirroring the existing boundary (bow shock) and radiation-belt planetary guards
+# (T015/T006). Mission/observatory-specific CDAWeb tokens (omni/mms/themis/psp/
+# rbsp/...) are deliberately *not* listed here: a goal that names a near-Earth
+# observatory keeps its CDAWeb score even if it also mentions a planet.
+_GENERIC_CDAWEB_MEASUREMENT_PATTERNS = tuple(
+    _word_pattern(t) for t in (
+        "magnetosphere", "ionosphere", "magnetic", "electric", "particle", "plasma",
+    )
+)
+# Voyager-style outer-heliosphere / heliopause / interstellar science. Voyager
+# 1/2 are a *dual-archive* mission: their planetary-flyby products live in PDS
+# PPI, but their decades-long heliospheric MAG/PLS time-series — through the
+# termination shock and heliopause and into the interstellar magnetic field —
+# are CDAWeb/SPDF observatory products (the VOYAGER1/2 MAG and PLS datasets), not
+# PDS planetary bundles. Because "voyager" is (correctly, for the flybys) a
+# planetary-context mission, an outer-heliosphere goal otherwise scored
+# PDS>CDAWeb, and a goal with no generic measurement word ("Voyager outer
+# heliosphere termination shock") scored CDAWeb=0 and routed to PDS *alone* —
+# burying the CDAWeb time-series that actually holds the data. These heliospheric
+# terms reinforce CDAWeb (the time-series source) and suppress the planetary PDS
+# boost, guarded so a goal that also names a specific planetary-flyby body
+# (Jupiter/Saturn/Uranus/Neptune or "flyby") stays PDS-led (T018).
+_OUTER_HELIOSPHERE_PATTERNS = tuple(
+    _word_pattern(t) for t in (
+        "heliopause", "outer heliosphere", "termination shock", "heliosheath",
+        "interstellar magnetic field", "interstellar medium",
+        "very local interstellar medium", "vlism", "interstellar space",
+    )
+)
+# Specific planetary-flyby bodies (the outer planets Voyager encountered) and the
+# bare "flyby" term, whose archived products are PDS-led. Used only to *guard*
+# the outer-heliosphere nudge above: when one of these is named the goal is a
+# planetary-flyby/archive workflow, so a heliopause word mentioned in passing
+# ("Voyager Jupiter flyby on the way to the heliopause") must not pull the
+# routing onto CDAWeb. Earth/Mercury/Mars/Venus are deliberately excluded — they
+# are not on Voyager's outbound heliospheric trajectory and have their own
+# near-Earth/PDS handling above.
+_FLYBY_BODY_PATTERNS = tuple(
+    _word_pattern(t) for t in (
+        "jupiter", "jovian", "saturn", "saturnian", "uranus", "neptune", "flyby",
+    )
+)
 
 
 def _score_sources(text: str) -> dict[str, int]:
@@ -238,17 +342,47 @@ def _score_sources(text: str) -> dict[str, int]:
         scores["pds"] += 1
     if _any_match(_GEOMETRY_HINT_PATTERNS, text):
         scores["spice"] += 1
+
+    # Voyager outer-heliosphere / heliopause / interstellar context: the goal is a
+    # heliospheric CDAWeb time-series workflow, *unless* a specific planetary-flyby
+    # body (Jupiter/Saturn/Uranus/Neptune or "flyby") is also named — in which case
+    # it is a planetary-archive (PDS) flyby workflow and the heliospheric word is
+    # incidental. Computed before the planetary PDS boost so it can suppress it
+    # (Voyager itself is a planetary-context mission name); see _OUTER_HELIOSPHERE_
+    # PATTERNS (T018).
+    outer_heliosphere_context = _any_match(_OUTER_HELIOSPHERE_PATTERNS, text) and not _any_match(
+        _FLYBY_BODY_PATTERNS, text
+    )
+
     planetary_context = _any_match(_PLANETARY_CONTEXT_PATTERNS, text)
-    if planetary_context:
+    if planetary_context and not outer_heliosphere_context:
         scores["pds"] += 2
         scores["spice"] += 1
+        # Generic measurement keywords (magnetosphere / magnetic / plasma / ...)
+        # are equally planetary-archive physics vocabulary, so they must not
+        # inflate CDAWeb for a PDS-only planetary mission (Cassini/Juno/MAVEN
+        # have no CDAWeb datasets). Subtract those bare-keyword matches from the
+        # CDAWeb score, mirroring the boundary/radiation-belt planetary guards
+        # below (T015/T006). Floored at 0 so a planetary goal that *also* names a
+        # near-Earth observatory still keeps that observatory's CDAWeb token
+        # (e.g. "OMNI") -- only the generic physics words are removed (T016). The
+        # Voyager outer-heliosphere branch is excluded from this block so the
+        # heliospheric MAG/PLS time-series keeps its CDAWeb score (T018 × T016).
+        generic_cdaweb = sum(
+            1 for pattern in _GENERIC_CDAWEB_MEASUREMENT_PATTERNS if pattern.search(text)
+        )
+        scores["cdaweb"] = max(0, scores["cdaweb"] - generic_cdaweb)
     near_earth_context = _any_match(_NEAR_EARTH_PATTERNS, text)
-    # Boundary structures (bow shock / magnetopause / magnetosheath) and a bare
-    # "radiation belt" phrase are good CDAWeb nudges for Earth/near-Earth science,
-    # but not for explicitly planetary contexts: Mars/Venus bow shocks and Jupiter
-    # radiation belts are PDS planetary-archive science, not CDAWeb (T015/T006).
+    # Boundary structures (bow shock / magnetopause / magnetosheath), a bare
+    # "radiation belt" phrase, and a bare "solar wind" phrase are good CDAWeb
+    # nudges for Earth/near-Earth science, but not for explicitly planetary
+    # contexts: Mars/Venus bow shocks and Jupiter radiation belts are PDS
+    # planetary-archive science (T015/T006), and New Horizons "solar wind" is the
+    # PDS SWAP product, not a CDAWeb time-series (T019).
     if not planetary_context and (
-        _any_match(_BOUNDARY_PATTERNS, text) or _RADIATION_BELT_PATTERN.search(text)
+        _any_match(_BOUNDARY_PATTERNS, text)
+        or _RADIATION_BELT_PATTERN.search(text)
+        or _SOLAR_WIND_PATTERN.search(text)
     ):
         near_earth_context = True
     if near_earth_context:
@@ -265,6 +399,22 @@ def _score_sources(text: str) -> dict[str, int]:
     # measurements, +2) so a geometry (encounter -> SPICE) or archive nudge can
     # never overtake it, guarded against planetary contexts (T014).
     if not planetary_context and _any_match(_HELIO_OBSERVATORY_PATTERNS, text):
+        scores["cdaweb"] += 2
+
+    # STEREO-style solar-energetic-particle science: reinforce CDAWeb (the
+    # IMPACT/SEPT measurement source, +2) so a bare "spacecraft" geometry nudge or
+    # archive fallback can never overtake it, guarded against planetary contexts
+    # so "energetic ions at Jupiter" stays PDS-led (T020).
+    if not planetary_context and _any_match(_SEP_PARTICLE_PATTERNS, text):
+        scores["cdaweb"] += 2
+
+    # Voyager outer-heliosphere science: reinforce CDAWeb (the MAG/PLS time-series
+    # source, +2) so the heliospheric workflow leads the PDS planetary archive.
+    # The planetary PDS boost was already suppressed above for this context, so
+    # +2 is enough to put CDAWeb first even when "voyager" scored a lone PDS
+    # keyword. Guarded by _FLYBY_BODY_PATTERNS (folded into the context flag) so a
+    # Jupiter/Neptune flyby goal keeps its PDS lead (T018).
+    if outer_heliosphere_context:
         scores["cdaweb"] += 2
 
     if max(scores.values()) == 0:
