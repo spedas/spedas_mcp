@@ -223,6 +223,39 @@ _HIGH_LATITUDE_PATTERNS = tuple(
 _HELIO_OBSERVATORY_PATTERNS = tuple(
     _word_pattern(t) for t in ("switchback", "switchbacks", "sweap")
 )
+# Voyager-style outer-heliosphere / heliopause / interstellar science. Voyager
+# 1/2 are a *dual-archive* mission: their planetary-flyby products live in PDS
+# PPI, but their decades-long heliospheric MAG/PLS time-series — through the
+# termination shock and heliopause and into the interstellar magnetic field —
+# are CDAWeb/SPDF observatory products (the VOYAGER1/2 MAG and PLS datasets), not
+# PDS planetary bundles. Because "voyager" is (correctly, for the flybys) a
+# planetary-context mission, an outer-heliosphere goal otherwise scored
+# PDS>CDAWeb, and a goal with no generic measurement word ("Voyager outer
+# heliosphere termination shock") scored CDAWeb=0 and routed to PDS *alone* —
+# burying the CDAWeb time-series that actually holds the data. These heliospheric
+# terms reinforce CDAWeb (the time-series source) and suppress the planetary PDS
+# boost, guarded so a goal that also names a specific planetary-flyby body
+# (Jupiter/Saturn/Uranus/Neptune or "flyby") stays PDS-led (T018).
+_OUTER_HELIOSPHERE_PATTERNS = tuple(
+    _word_pattern(t) for t in (
+        "heliopause", "outer heliosphere", "termination shock", "heliosheath",
+        "interstellar magnetic field", "interstellar medium",
+        "very local interstellar medium", "vlism", "interstellar space",
+    )
+)
+# Specific planetary-flyby bodies (the outer planets Voyager encountered) and the
+# bare "flyby" term, whose archived products are PDS-led. Used only to *guard*
+# the outer-heliosphere nudge above: when one of these is named the goal is a
+# planetary-flyby/archive workflow, so a heliopause word mentioned in passing
+# ("Voyager Jupiter flyby on the way to the heliopause") must not pull the
+# routing onto CDAWeb. Earth/Mercury/Mars/Venus are deliberately excluded — they
+# are not on Voyager's outbound heliospheric trajectory and have their own
+# near-Earth/PDS handling above.
+_FLYBY_BODY_PATTERNS = tuple(
+    _word_pattern(t) for t in (
+        "jupiter", "jovian", "saturn", "saturnian", "uranus", "neptune", "flyby",
+    )
+)
 
 
 def _score_sources(text: str) -> dict[str, int]:
@@ -238,8 +271,20 @@ def _score_sources(text: str) -> dict[str, int]:
         scores["pds"] += 1
     if _any_match(_GEOMETRY_HINT_PATTERNS, text):
         scores["spice"] += 1
+
+    # Voyager outer-heliosphere / heliopause / interstellar context: the goal is a
+    # heliospheric CDAWeb time-series workflow, *unless* a specific planetary-flyby
+    # body (Jupiter/Saturn/Uranus/Neptune or "flyby") is also named — in which case
+    # it is a planetary-archive (PDS) flyby workflow and the heliospheric word is
+    # incidental. Computed before the planetary PDS boost so it can suppress it
+    # (Voyager itself is a planetary-context mission name); see _OUTER_HELIOSPHERE_
+    # PATTERNS (T018).
+    outer_heliosphere_context = _any_match(_OUTER_HELIOSPHERE_PATTERNS, text) and not _any_match(
+        _FLYBY_BODY_PATTERNS, text
+    )
+
     planetary_context = _any_match(_PLANETARY_CONTEXT_PATTERNS, text)
-    if planetary_context:
+    if planetary_context and not outer_heliosphere_context:
         scores["pds"] += 2
         scores["spice"] += 1
     near_earth_context = _any_match(_NEAR_EARTH_PATTERNS, text)
@@ -265,6 +310,15 @@ def _score_sources(text: str) -> dict[str, int]:
     # measurements, +2) so a geometry (encounter -> SPICE) or archive nudge can
     # never overtake it, guarded against planetary contexts (T014).
     if not planetary_context and _any_match(_HELIO_OBSERVATORY_PATTERNS, text):
+        scores["cdaweb"] += 2
+
+    # Voyager outer-heliosphere science: reinforce CDAWeb (the MAG/PLS time-series
+    # source, +2) so the heliospheric workflow leads the PDS planetary archive.
+    # The planetary PDS boost was already suppressed above for this context, so
+    # +2 is enough to put CDAWeb first even when "voyager" scored a lone PDS
+    # keyword. Guarded by _FLYBY_BODY_PATTERNS (folded into the context flag) so a
+    # Jupiter/Neptune flyby goal keeps its PDS lead (T018).
+    if outer_heliosphere_context:
         scores["cdaweb"] += 2
 
     if max(scores.values()) == 0:

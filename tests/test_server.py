@@ -1918,3 +1918,90 @@ def test_earth_bow_shock_still_routes_to_cdaweb():
     }))
     assert data["status"] == "success"
     assert data["recommended_sources"] == ["cdaweb"]
+
+
+# ---------------------------------------------------------------------------
+# T018: Voyager outer-heliosphere / heliopause magnetic-field routing.
+#
+# Voyager 1/2 are a *dual-archive* mission. Their planetary-flyby products
+# (Jupiter/Saturn/Uranus/Neptune encounters) live in the PDS PPI archive, but
+# their decades-long heliospheric MAG/PLS time-series — including the
+# termination-shock and heliopause crossings and the interstellar magnetic
+# field — are CDAWeb/SPDF observatory products (VOYAGER1/2 MAG and PLS
+# datasets), not PDS planetary bundles.
+#
+# Because "voyager" is registered as a planetary-context mission (correctly, for
+# the flybys), an outer-heliosphere goal used to score PDS=4/CDAWeb=2 and a goal
+# with no generic measurement word ("Voyager outer heliosphere termination
+# shock") scored CDAWeb=0 and routed to PDS *alone* — burying the CDAWeb
+# time-series that actually holds the data. A guarded heliospheric-context nudge
+# lifts CDAWeb for these goals while leaving the planetary-flyby routing intact.
+# ---------------------------------------------------------------------------
+
+def test_voyager_outer_heliosphere_bfield_routes_to_cdaweb():
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": "Voyager 1 outer heliosphere magnetic field time series at the heliopause",
+        "target": "Voyager",
+        "observables": ["magnetic field"],
+    }))
+    assert data["status"] == "success"
+    # The heliospheric time-series source must lead for an outer-heliosphere goal.
+    assert data["recommended_sources"][0] == "cdaweb"
+
+
+def test_voyager_heliopause_goal_with_no_measurement_word_still_includes_cdaweb():
+    """The starkest baseline failure: a heliopause goal with no generic
+    measurement word scored CDAWeb=0 and routed to PDS alone."""
+    from spedas_mcp.workflows import _score_sources
+
+    scores = _score_sources("voyager outer heliosphere termination shock heliopause")
+    assert scores["cdaweb"] >= scores["pds"]
+    assert scores["cdaweb"] > 0
+
+
+def test_voyager_interstellar_field_plan_recommends_cdaweb_first():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": "Voyager 1 interstellar magnetic field in the very local interstellar medium",
+    }))
+    assert data["status"] in {"success", "needs_input"}
+    assert "cdaweb" in data["recommended_sources"]
+    assert data["recommended_sources"][0] == "cdaweb"
+    assert data["inferred"]["target"] == "Voyager"
+
+
+def test_voyager_planetary_flyby_still_routes_to_pds():
+    """The heliospheric nudge must not regress the planetary-flyby archive
+    routing: a Jupiter/Neptune flyby goal stays PDS-led."""
+    server = create_server()
+    for goal in (
+        "Voyager 1 Jupiter flyby magnetic field",
+        "Voyager 2 Neptune flyby plasma observations",
+    ):
+        data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+            "question": goal,
+            "target": "Voyager",
+        }))
+        assert data["status"] == "success", goal
+        assert "pds" in data["recommended_sources"], goal
+        assert data["recommended_sources"][0] == "pds", goal
+
+
+def test_heliospheric_nudge_needs_heliospheric_terms():
+    """The nudge is specific: a bare planetary goal with no heliospheric term
+    must not gain a CDAWeb boost from this rule (no generic false positives)."""
+    from spedas_mcp.workflows import _score_sources
+
+    plain = _score_sources("cassini saturn magnetosphere magnetic field")
+    assert plain["pds"] > plain["cdaweb"]
+
+
+def test_heliopause_term_does_not_boost_planetary_flyby_context():
+    """If both a heliospheric term and a specific planet/flyby body are named,
+    the planetary-flyby body context wins so PDS still leads (guarded nudge)."""
+    from spedas_mcp.workflows import _score_sources
+
+    # "heliopause" mentioned in passing while the goal is a Jupiter flyby.
+    scores = _score_sources("voyager jupiter flyby on the way to the heliopause")
+    assert scores["pds"] >= scores["cdaweb"]
