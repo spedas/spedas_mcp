@@ -1365,3 +1365,52 @@ def test_browse_fdsn_datasets_bad_trange_validates_before_backend():
     data = json.loads(_call_tool(server, "browse_fdsn_datasets", {"trange": ["only-one"]}))
     assert data["status"] == "error"
     assert data["code"] == "invalid_argument"
+
+
+# ---------------------------------------------------------------------------
+# Van Allen Probes (RBSP) source routing. ``_extract_target`` already maps the
+# "van allen probes"/"rbsp" phrasing to the canonical "Van Allen Probes" label
+# (issue #30), but the source router previously had no matching CDAWeb keyword,
+# so a bare radiation-belt goal fell back to "recommend all three families
+# equally" instead of leading with CDAWeb. RBSP is a CDAWeb-only mission (no
+# SPICE kernels, no PDS bundles), so CDAWeb must win.
+# ---------------------------------------------------------------------------
+
+def test_van_allen_probes_radiation_belt_routes_to_cdaweb():
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": "Plan a Van Allen Probes radiation belt interval with electron flux and magnetic field",
+    }))
+    assert data["status"] == "success"
+    # CDAWeb must lead and outrank PDS/SPICE — RBSP is a CDAWeb-only mission.
+    assert data["ranked_sources"][0]["source"] == "cdaweb"
+    assert data["recommended_sources"] == ["cdaweb"]
+
+
+def test_rbsp_acronym_routes_to_cdaweb():
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": "RBSP EMFISIS and MagEIS radiation belt electron flux interval",
+    }))
+    assert data["status"] == "success"
+    assert data["ranked_sources"][0]["source"] == "cdaweb"
+    assert "cdaweb" in data["recommended_sources"]
+    assert "pds" not in data["recommended_sources"]
+    assert "spice" not in data["recommended_sources"]
+
+
+def test_van_allen_probes_observation_plan_leads_with_cdaweb():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": (
+            "Van Allen Probes radiation belt electron flux and EMFISIS magnetic "
+            "field during the 2015-03-17 storm"
+        ),
+    }))
+    assert data["status"] == "success"
+    # Mission and day-scale interval inferred from the goal text (issue #30).
+    assert data["inferred"]["target"] == "Van Allen Probes"
+    assert data["inferred"]["start"] == "2015-03-17T00:00:00Z"
+    assert data["recommended_sources"] == ["cdaweb"]
+    phases = {step["phase"] for step in data["plan"]}
+    assert {"discover_cdaweb", "fetch_or_compute_cdaweb"} <= phases
