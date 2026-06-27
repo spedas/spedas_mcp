@@ -240,6 +240,17 @@ def _mission_keyword_pattern(keyword: str) -> str:
 # ("fly solo", "a cluster of events"). ``solar orbiter`` is already covered by
 # the main keyword list above.
 #
+# "SolO" is the near-universal heliophysics shorthand for Solar Orbiter, and in
+# practice it is followed by an instrument acronym ("SolO MAG RTN", "SolO SWA
+# plasma", "SolO EPD") or a perihelion/encounter science term rather than the
+# generic words "spacecraft"/"mission" (T012). Without those qualifiers a goal
+# like "SolO perihelion MAG/SWA workflow" dropped the target entirely, so the
+# planner could not tell the agent which mission to browse even though it still
+# routed to CDAWeb + SPICE. The instrument/science qualifiers below recognise
+# that wording the same way the Cluster instrument-acronym branch does, while
+# staying conservative: a bare "solo", "fly solo", or "soloist" still does not
+# match. The instrument set is Solar Orbiter's in-situ + remote-sensing payload
+# (MAG, SWA, EPD, RPW; EUI, PHI, Metis, SoloHI, STIX).
 # Cluster is a four-spacecraft (C1-C4) constellation, so multi-spacecraft goals
 # are its most natural phrasing. The bare ``\bcluster\s+<qualifier>`` form missed
 # the canonical multi-point wording — "Cluster multi-spacecraft magnetopause",
@@ -251,6 +262,14 @@ def _mission_keyword_pattern(keyword: str) -> str:
 # of substorms", "clustering algorithm") still do not match.
 _QUALIFIED_MISSION_KEYWORDS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"\bsolo\s+(?:spacecraft|orbiter|mission|probe)\b", re.IGNORECASE), "Solar Orbiter"),
+    (
+        re.compile(
+            r"\bsolo\s+(?:mag|swa|epd|rpw|eui|phi|metis|solohi|stix"
+            r"|perihelion|periapsis|encounter)\b",
+            re.IGNORECASE,
+        ),
+        "Solar Orbiter",
+    ),
     (
         re.compile(
             r"\bcluster\s+(?:spacecraft|mission|constellation|satellites?"

@@ -376,6 +376,52 @@ def test_extract_target_explicit_spacecraft_still_works(goal, expected):
     assert _extract_target(goal) == expected
 
 
+# ---------------------------------------------------------------------------
+# T012: Solar Orbiter perihelion phrasing. "SolO" is the standard heliophysics
+# shorthand for Solar Orbiter and in practice is followed by an instrument
+# acronym ("SolO MAG RTN", "SolO SWA plasma") or a perihelion/encounter science
+# term, not the generic words "spacecraft"/"mission". Those forms previously
+# dropped the target, so the planner could not name the mission to browse even
+# though it routed to CDAWeb + SPICE. The instrument/science qualifiers must be
+# recognised, while bare/generic "solo" still must not false-positive.
+# ---------------------------------------------------------------------------
+
+@_pytest_b1.mark.parametrize(
+    "goal",
+    [
+        "SolO MAG RTN magnetic field near perihelion",
+        "SolO SWA plasma during the encounter",
+        "solo epd energetic particles",
+        "SolO RPW radio waves",
+        "SolO EUI imaging",
+        "SolO perihelion solar-wind workflow",
+        "solo periapsis heliocentric distance",
+        "SolO encounter geometry",
+    ],
+)
+def test_extract_target_solo_instrument_and_science_phrasing(goal):
+    from spedas_mcp.workflows import _extract_target, _extract_targets
+
+    assert _extract_target(goal) == "Solar Orbiter"
+    assert "Solar Orbiter" in _extract_targets(goal)
+
+
+def test_solo_perihelion_observation_plan_names_target_and_routes_cdaweb_spice():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": (
+            "SolO perihelion solar-wind workflow with MAG RTN magnetic field, "
+            "SWA plasma, and heliocentric geometry near 2022-03-26"
+        ),
+    }))
+    # The target is now inferred from bare "SolO" + instrument/science phrasing.
+    assert data["plan"][0]["target"] == "Solar Orbiter"
+    assert "Solar Orbiter" in data["inferred_targets"]
+    # Source routing stays correct: CDAWeb measurements + SPICE perihelion geometry.
+    assert "cdaweb" in data["recommended_sources"]
+    assert "spice" in data["recommended_sources"]
+
+
 def test_plan_spedas_observation_does_not_infer_target_for_generic_wind():
     server = create_server()
     data = json.loads(_call_tool(server, "plan_spedas_observation", {
