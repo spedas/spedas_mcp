@@ -100,10 +100,16 @@ file-backed calls, for example:
     "time": "2021-04-29T00:00:00Z",
     "time_end": "2021-04-29T06:00:00Z",
     "step": "10m",
-    "output_file": "runs/psp-perihelion/geometry/psp_eclipj2000_20210429.csv"
+    "output_file": "runs/psp-perihelion/geometry/psp_eclipj2000_20210429.csv",
+    "allow_kernel_download": true
   }
 }
 ```
+
+PSP kernels are ~266 MB. If they are not already cached, `get_ephemeris` returns
+a `needs_confirmation` / `kernel_download_required` response rather than
+downloading silently (issue #29). Pass `allow_kernel_download: true` (as above) to
+opt in, or pre-load with `manage_spice_kernels(action="load", mission="PSP")`.
 
 For a perihelion workflow, compute or derive heliocentric distance from the
 trajectory CSV and align it with the CDAWeb time series during analysis.

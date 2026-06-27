@@ -156,6 +156,12 @@ should the workflow call `manage_spice_kernels(action="load", mission="juno")` o
 
 ### 7. Compute trajectory once kernels are available
 
+If the JUNO kernels are not yet cached, `get_ephemeris` returns a
+`needs_confirmation` / `kernel_download_required` response instead of downloading
+silently (issue #29). Load them first with
+`manage_spice_kernels(action="load", mission="JUNO")`, or add
+`"allow_kernel_download": true` to the call below to download and proceed.
+
 ```json
 {
   "tool": "get_ephemeris",
@@ -166,7 +172,8 @@ should the workflow call `manage_spice_kernels(action="load", mission="juno")` o
     "time_end": "2016-08-28T00:00:00Z",
     "step": "10m",
     "frame": "J2000",
-    "output_file": "/path/to/work/runs/juno-jupiter-mag-pds-spice/data/spice/juno_jupiter_geometry_20160827.csv"
+    "output_file": "/path/to/work/runs/juno-jupiter-mag-pds-spice/data/spice/juno_jupiter_geometry_20160827.csv",
+    "allow_kernel_download": true
   }
 }
 ```

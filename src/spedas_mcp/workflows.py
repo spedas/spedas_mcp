@@ -58,10 +58,20 @@ SOURCE_PROFILES: dict[str, dict[str, Any]] = {
             "Geometry context for CDAWeb/PDS data windows",
             "Coordinate-frame-aware observation planning",
         ],
-        "not_for": ["fetching plasma data values by itself", "dataset/parameter metadata"],
+        "not_for": [
+            "fetching plasma data values by itself",
+            "dataset/parameter metadata",
+            # MMS and Cluster are CDAWeb magnetospheric missions with no SPICE
+            # kernels; their geometry comes from CDAWeb orbit products, not
+            # get_ephemeris. THEMIS A-E are the magnetospheric missions that do
+            # have SPICE kernels (issue #26).
+            "MMS/Cluster geometry (no SPICE kernels; use CDAWeb orbit products)",
+        ],
         "discovery_tools": ["browse_data_sources(source_type=\"spice\")", "load_data_source(source_type=\"spice\", source_id=...)", "browse_data_parameters(source_type=\"spice\", dataset_id=...)"],
         "fetch_tools": ["get_ephemeris", "compute_distance", "transform_coordinates"],
         "cache_tools": ["manage_data_cache(source_type=\"spice\")"],
+        # Note: "mms" is intentionally a CDAWeb keyword (above), not a SPICE
+        # keyword — MMS has no SPICE kernels, so SPICE discovery must not claim it.
         "keywords": [
             "spice", "spicey", "spiceypy", "ephemeris", "trajectory", "geometry",
             "position", "velocity", "distance", "coordinate", "coordinates", "frame",
