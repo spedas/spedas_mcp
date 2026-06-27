@@ -264,6 +264,283 @@ def _safe_tool(func):
     return wrapper
 
 
+# ---------------------------------------------------------------------------
+# Geometry/SPICE safety preflight (issues #26, #27, #29).
+#
+# The xhelio_spice geometry routines (get_state/get_trajectory/transform_vector)
+# resolve body names and *download* SPICE kernels on first use — generic kernels
+# (~120 MB, e.g. de440s.bsp) plus per-mission SPK files (PSP ~266 MB, up to
+# ~1 GB for some segmented missions). Two problems follow:
+#   * #26: an unsupported target (e.g. "MMS1", which is a CDAWeb mission with no
+#     SPICE kernels) bubbles up an opaque "Cannot resolve body name" error after
+#     touching the backend, with no recovery path.
+#   * #29: a supported-but-uncached target silently triggers a large download
+#     with no warning or confirmation, bypassing the explicit
+#     manage_spice_kernels(action='load') gate.
+#
+# Both are solved by a pure, network-free preflight that runs entirely in this
+# process *before* any xhelio_spice call: resolve_mission() is an in-memory
+# registry lookup, and kernel-cache presence is a stat() on the cache dir. The
+# preflight never downloads, so it is safe to run on every geometry call.
+# ---------------------------------------------------------------------------
+
+def _spice_resolve_target(name: str) -> dict[str, Any]:
+    """Resolve a geometry target/observer name without touching the network.
+
+    Returns a dict describing the resolution outcome::
+
+        {"resolved": True, "key": "PSP", "naif_id": -96, "has_kernels": True}
+        {"resolved": False}              # name not in the SPICE registry
+
+    Uses only the in-memory mission registry (no kernel download), so it is safe
+    to call on the request hot path. ``resolved=False`` means the name is not a
+    SPICE-supported body/mission (issue #26); the caller turns that into a
+    structured ``unsupported_spice_target`` error.
+    """
+    from xhelio_spice.missions import has_kernels, resolve_mission
+
+    try:
+        naif_id, key = resolve_mission(name)
+    except KeyError:
+        return {"resolved": False}
+    return {
+        "resolved": True,
+        "key": key,
+        "naif_id": naif_id,
+        "has_kernels": has_kernels(key),
+    }
+
+
+def _spice_supported_targets_sample(limit: int = 12) -> list[str]:
+    """Return a small sample of supported SPICE mission keys for error hints.
+
+    Kept compact so the ``unsupported_spice_target`` envelope stays well under
+    the stdio size limit; the agent is pointed at ``list_spice_missions`` for the
+    full catalog.
+    """
+    try:
+        from xhelio_spice import list_supported_missions
+    except Exception:  # pragma: no cover - backend not installed
+        return []
+    keys = [m.get("mission_key") for m in list_supported_missions() if m.get("mission_key")]
+    return sorted(keys)[:limit]
+
+
+def _unsupported_spice_target_error(target: str, *, role: str = "target") -> str:
+    """Structured error for a geometry name with no SPICE support (issue #26).
+
+    ``MMS``/``MMS1`` is the motivating case: it is a real CDAWeb magnetospheric
+    mission but has no SPICE kernels, so SPICE geometry is the wrong tool. The
+    response names magnetospheric SPICE alternatives (THEMIS A–E) and routes the
+    agent back to CDAWeb for MMS, without leaking a backend traceback or path.
+    """
+    suggestions = _suggest_spice_targets(target)
+    hint = (
+        "This name is not a SPICE-supported body/mission. "
+        "Use list_spice_missions to see supported targets. "
+        "For MMS/Cluster-style magnetospheric missions, SPICE has no kernels — "
+        "use the CDAWeb data layer (e.g. load_data_source(source_type='cdaweb', "
+        "source_id='mms')) for orbit/position products, or THEMIS A–E for "
+        "SPICE geometry."
+    )
+    return _error_response(
+        "unsupported_spice_target",
+        f"SPICE geometry {role} '{target}' is not a supported SPICE body or mission.",
+        hint=hint,
+        spice_target=target,
+        role=role,
+        suggested_targets=suggestions,
+        supported_targets_sample=_spice_supported_targets_sample(),
+    )
+
+
+def _suggest_spice_targets(name: str, limit: int = 5) -> list[str]:
+    """Best-effort "did you mean" suggestions among supported SPICE missions."""
+    import difflib
+
+    candidates = _spice_supported_targets_sample(limit=10_000)
+    if not candidates:
+        return []
+
+    def _norm(value: str) -> str:
+        return value.strip().lower().replace("-", "_")
+
+    cand = _norm(name)
+    prefix = [c for c in candidates if _norm(c).startswith(cand) or cand.startswith(_norm(c))]
+    if prefix:
+        return prefix[:limit]
+    close = difflib.get_close_matches(cand, [_norm(c) for c in candidates], n=limit, cutoff=0.6)
+    norm_to_orig = {_norm(c): c for c in candidates}
+    return [norm_to_orig[c] for c in close if c in norm_to_orig][:limit]
+
+
+def _spice_missing_kernels(mission_keys: list[str]) -> dict[str, Any]:
+    """Report which required kernel files are not yet cached (issue #29).
+
+    Pure disk inspection — never downloads. Returns::
+
+        {
+          "cached": True/False,           # all required files present?
+          "missing_files": [...],         # filenames not on disk
+          "missing_missions": [...],      # mission keys needing a download
+          "segmented_missions": [...],    # need a time range via manage_spice_kernels
+          "cache_dir": "<redacted>",      # cache root (path-redacted for clients)
+          "cache_size_mb": 12.3,
+        }
+
+    Generic kernels are always required (every geometry call furnishes them), so
+    they are folded into the check. A file counts as cached only if it exists on
+    disk with non-zero size — the same test the downloader uses.
+    """
+    from xhelio_spice.kernel_manager import get_kernel_manager
+    from xhelio_spice.missions import (
+        GENERIC_KERNELS,
+        MISSION_KERNELS,
+        SEGMENTED_MISSIONS,
+    )
+
+    km = get_kernel_manager()
+    cache_dir = km.kernel_dir
+
+    def _is_cached(filename: str) -> bool:
+        path = cache_dir / filename
+        try:
+            return path.exists() and path.stat().st_size > 0
+        except OSError:
+            return False
+
+    missing_missions: list[str] = []
+    segmented_missions: list[str] = []
+
+    # Generic kernels belong to the implicit "GENERIC" group.
+    generic_missing = [f for f in GENERIC_KERNELS if not _is_cached(f)]
+
+    missing_files: list[str] = list(generic_missing)
+    if generic_missing:
+        missing_missions.append("GENERIC")
+
+    for key in mission_keys:
+        if key in MISSION_KERNELS:
+            mission_missing = [f for f in MISSION_KERNELS[key] if not _is_cached(f)]
+            if mission_missing:
+                missing_files.extend(mission_missing)
+                missing_missions.append(key)
+        elif key in SEGMENTED_MISSIONS:
+            # Segmented missions select files by time range; we cannot know which
+            # segment files are needed here without the query window, so we treat
+            # them as requiring the explicit, time-aware load gate.
+            segmented_missions.append(key)
+
+    cached = not missing_files and not segmented_missions
+    return {
+        "cached": cached,
+        "missing_files": sorted(set(missing_files)),
+        "missing_missions": sorted(set(missing_missions)),
+        "segmented_missions": sorted(set(segmented_missions)),
+        "cache_dir": _sanitize_message(str(cache_dir)),
+        "cache_size_mb": round(km.get_cache_size_bytes() / (1024 * 1024), 2),
+    }
+
+
+def _kernel_download_required_error(
+    mission_keys: list[str],
+    preflight: dict[str, Any],
+    *,
+    tool: str,
+) -> str:
+    """Structured ``needs_confirmation`` response for an uncached geometry call (#29).
+
+    Returned instead of proceeding when required kernels are not on disk and the
+    caller has not opted in via ``allow_kernel_download=True``. It tells the agent
+    exactly which missions need loading and how to opt in, so a quick metadata
+    query never silently blocks on a 100 MB–1 GB transfer.
+    """
+    # Mission keys whose own SPK files are missing (drives the explicit
+    # per-mission load step). GENERIC is reported separately because it is loaded
+    # implicitly by any geometry call rather than via a mission= argument.
+    load_missions = [m for m in preflight["missing_missions"] if m != "GENERIC"]
+    load_missions.extend(preflight["segmented_missions"])
+    load_missions = sorted(set(load_missions))
+
+    # Surface every group whose download the gate is blocking — including the
+    # implicit GENERIC planetary kernels (~120 MB), which a frame transform or a
+    # natural-body observer needs even with no mission-specific SPK.
+    blocked = sorted(set(preflight["missing_missions"]) | set(preflight["segmented_missions"]))
+    if not blocked:
+        blocked = sorted(set(mission_keys))
+
+    next_steps = [
+        f"manage_spice_kernels(action='load', mission='{m}')" for m in load_missions
+    ]
+    next_steps.append(f"re-call {tool}(..., allow_kernel_download=True) to download and proceed")
+
+    payload: dict[str, Any] = {
+        "status": "needs_confirmation",
+        "code": "kernel_download_required",
+        "message": (
+            "Required SPICE kernels are not cached. Proceeding would download "
+            "kernel files (commonly 100 MB-1 GB per mission, e.g. PSP ~266 MB) "
+            "before any geometry is computed. Confirm before downloading."
+        ),
+        "tool": tool,
+        "missions": blocked,
+        "missing_kernel_files": preflight["missing_files"],
+        "segmented_missions_need_time_range": preflight["segmented_missions"],
+        "cache_dir": preflight["cache_dir"],
+        "cache_size_mb": preflight["cache_size_mb"],
+        "next_steps": next_steps,
+        "hint": (
+            "Load the missions explicitly with manage_spice_kernels(action='load', "
+            "mission=...), or pass allow_kernel_download=True to this tool to "
+            "download now. Use manage_spice_kernels(action='check_remote', "
+            "mission=...) to preview available kernel files first."
+        ),
+    }
+    return _size_guarded(_json(payload), tool=tool)
+
+
+def _spice_geometry_preflight(
+    names: list[tuple[str, str]],
+    *,
+    tool: str,
+    allow_kernel_download: bool,
+    require_kernels: bool = True,
+) -> str | None:
+    """Run the #26/#29 preflight for a geometry call; return an error envelope or None.
+
+    ``names`` is a list of ``(name, role)`` pairs for the target/observer/
+    spacecraft this call will pass to xhelio_spice; ``role`` (e.g. "target",
+    "observer", "spacecraft") is echoed back in an unsupported-target error so
+    the agent knows which argument to fix. The preflight:
+
+    1. Resolves each name in-memory; an unresolved name yields an
+       ``unsupported_spice_target`` error tagged with its role (issue #26).
+    2. If all names resolve and ``require_kernels`` is set, checks the on-disk
+       kernel cache; if anything required is missing and the caller has not set
+       ``allow_kernel_download=True``, returns a ``kernel_download_required``
+       confirmation envelope (issue #29).
+
+    Returns ``None`` when the call is safe to proceed (resolved + cached, or the
+    caller opted into downloads). Never performs any network I/O.
+    """
+    mission_keys: list[str] = []
+    for name, role in names:
+        if not name:
+            continue
+        resolution = _spice_resolve_target(name)
+        if not resolution["resolved"]:
+            return _unsupported_spice_target_error(name, role=role)
+        mission_keys.append(resolution["key"])
+
+    if not require_kernels or allow_kernel_download:
+        return None
+
+    preflight = _spice_missing_kernels(mission_keys)
+    if preflight["cached"]:
+        return None
+    return _kernel_download_required_error(mission_keys, preflight, tool=tool)
+
+
 def create_server() -> FastMCP:
     """Create and configure the unified SPEDAS MCP server."""
     mcp = FastMCP(
@@ -619,17 +896,40 @@ def create_server() -> FastMCP:
         output_file: str = "",
         time_end: str = "",
         step: str = "1h",
+        allow_kernel_download: bool = False,
     ) -> str:
-        """Get single-time state inline or timeseries trajectory written to CSV."""
+        """Get single-time state inline or timeseries trajectory written to CSV.
+
+        Validates ``target``/``observer`` against the SPICE mission registry
+        before any backend call: an unsupported name (e.g. ``MMS1``) returns a
+        structured ``unsupported_spice_target`` error with alternatives instead of
+        an opaque "Cannot resolve body name" (issue #26). If the required SPICE
+        kernels are not already cached, the call returns a ``needs_confirmation``
+        ``kernel_download_required`` response rather than silently downloading
+        100 MB-1 GB of kernels; pass ``allow_kernel_download=True`` (or pre-load
+        with ``manage_spice_kernels(action='load', mission=...)``) to proceed
+        (issue #29).
+        """
         from xhelio_spice import get_state, get_trajectory
         from xhelio_spice.kernel_manager import get_kernel_manager
 
+        preflight = _spice_geometry_preflight(
+            [(target, "target"), (observer, "observer")],
+            tool="get_ephemeris",
+            allow_kernel_download=allow_kernel_download,
+        )
+        if preflight is not None:
+            return preflight
+
         if time_end:
             if not output_file:
-                return _json({
-                    "status": "error",
-                    "message": "output_file is required when time_end is provided",
-                })
+                return _error_response(
+                    "invalid_argument",
+                    "output_file is required when time_end is provided",
+                    hint="Provide an output_file path for the trajectory CSV when time_end is set.",
+                    sanitize=False,
+                    tool="get_ephemeris",
+                )
             df = get_trajectory(
                 target=target,
                 observer=observer,
@@ -661,10 +961,32 @@ def create_server() -> FastMCP:
 
     @mcp.tool()
     @_safe_tool
-    def compute_distance(target1: str, target2: str, time_start: str, time_end: str, step: str = "1h") -> str:
-        """Compute distance between two SPICE targets over a time range."""
+    def compute_distance(
+        target1: str,
+        target2: str,
+        time_start: str,
+        time_end: str,
+        step: str = "1h",
+        allow_kernel_download: bool = False,
+    ) -> str:
+        """Compute distance between two SPICE targets over a time range.
+
+        Both targets are validated against the SPICE registry before any backend
+        call (unsupported names return ``unsupported_spice_target``, issue #26),
+        and the call returns a ``kernel_download_required`` confirmation rather
+        than silently downloading uncached kernels unless
+        ``allow_kernel_download=True`` (issue #29).
+        """
         import numpy as np
         from xhelio_spice import get_trajectory
+
+        preflight = _spice_geometry_preflight(
+            [(target1, "target1"), (target2, "target2"), ("SUN", "observer")],
+            tool="compute_distance",
+            allow_kernel_download=allow_kernel_download,
+        )
+        if preflight is not None:
+            return preflight
 
         df1 = get_trajectory(target1, observer="SUN", time_start=time_start, time_end=time_end, step=step)
         df2 = get_trajectory(target2, observer="SUN", time_start=time_start, time_end=time_end, step=step)
@@ -690,9 +1012,30 @@ def create_server() -> FastMCP:
         from_frame: str,
         to_frame: str,
         spacecraft: str | None = None,
+        allow_kernel_download: bool = False,
     ) -> str:
-        """Transform a 3D vector between SPICE coordinate frames."""
+        """Transform a 3D vector between SPICE coordinate frames.
+
+        Frame transforms always furnish the generic SPICE kernels, and RTN
+        transforms additionally need the ``spacecraft`` mission's kernels. To
+        avoid a silent 100 MB+ generic-kernel download on first use, the call
+        returns a ``kernel_download_required`` confirmation when required kernels
+        are not cached unless ``allow_kernel_download=True`` (issue #29). A named
+        ``spacecraft`` that is not SPICE-supported returns
+        ``unsupported_spice_target`` (issue #26).
+        """
         from xhelio_spice import transform_vector
+
+        # Only ``spacecraft`` is a body name; from_frame/to_frame are frames and
+        # are validated by the backend. Generic kernels are required regardless,
+        # so the cache gate runs even when no spacecraft is given.
+        preflight = _spice_geometry_preflight(
+            [(spacecraft, "spacecraft")] if spacecraft else [],
+            tool="transform_coordinates",
+            allow_kernel_download=allow_kernel_download,
+        )
+        if preflight is not None:
+            return preflight
 
         result = transform_vector(vector, time, from_frame=from_frame, to_frame=to_frame, spacecraft=spacecraft)
         return _json({

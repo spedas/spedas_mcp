@@ -700,7 +700,13 @@ def test_spice_keyerror_classified_as_geometry_error():
     assert code_plain == "invalid_argument"
 
 
-def test_get_ephemeris_invalid_body_now_geometry_error():
+def test_get_ephemeris_invalid_body_now_unsupported_spice_target():
+    # Issue #26: an unsupported target is now caught by the network-free preflight
+    # *before* the backend, so it returns the dedicated unsupported_spice_target
+    # error (with alternatives) rather than the generic geometry_error that only
+    # surfaced after touching xhelio_spice. The geometry_error classifier still
+    # covers genuinely unguarded SPICE failures (see
+    # test_spice_keyerror_classified_as_geometry_error).
     server = create_server()
     raw = _call_tool(server, "get_ephemeris", {
         "target": "NONEXISTENT_BODY",
@@ -708,7 +714,7 @@ def test_get_ephemeris_invalid_body_now_geometry_error():
     })
     payload = json.loads(raw)
     assert payload["status"] == "error"
-    assert payload["code"] == "geometry_error"
+    assert payload["code"] == "unsupported_spice_target"
     assert "list_spice_missions" in payload["hint"]
     assert "/Users/" not in raw
 
@@ -728,3 +734,245 @@ def test_error_response_sanitizes_string_extras():
     # ...while non-string extras and plain-text lists pass through untouched.
     assert payload["allowed"] == ["cdaweb", "pds"]
     assert payload["count"] == 3
+
+
+# ---------------------------------------------------------------------------
+# Batch L — geometry/SPICE safety: unsupported-target validation (#26) and a
+# pre-download confirmation gate (#29).
+#
+# These tests must NEVER trigger a real kernel download. They:
+#   * isolate the kernel cache to an empty tmp dir via XHELIO_SPICE_KERNEL_DIR
+#     and reset the KernelManager singleton, so "missing kernels" is deterministic;
+#   * monkeypatch xhelio_spice.get_state/get_trajectory/transform_vector to raise
+#     if ever called, proving the preflight short-circuits before the backend.
+# ---------------------------------------------------------------------------
+
+import pytest  # noqa: E402
+
+from spedas_mcp.server import (  # noqa: E402
+    _spice_missing_kernels,
+    _spice_resolve_target,
+)
+
+
+@pytest.fixture
+def empty_kernel_cache(tmp_path, monkeypatch):
+    """Point xhelio_spice at an empty kernel cache and reset its singleton.
+
+    Yields the cache dir. With no files present, every mission's required
+    kernels are "missing", so the #29 confirmation gate fires deterministically
+    regardless of the developer's real ~/.xhelio_spice cache.
+    """
+    import xhelio_spice.kernel_manager as km_mod
+
+    cache_dir = tmp_path / "kernels"
+    cache_dir.mkdir()
+    monkeypatch.setenv("XHELIO_SPICE_KERNEL_DIR", str(cache_dir))
+    monkeypatch.setattr(km_mod, "_instance", None)
+    yield cache_dir
+    # Reset the singleton again so later tests do not inherit the tmp cache.
+    monkeypatch.setattr(km_mod, "_instance", None)
+
+
+@pytest.fixture
+def no_backend_downloads(monkeypatch):
+    """Make any real xhelio_spice geometry/download call fail loudly.
+
+    The preflight is supposed to return before these run; if it does not, the
+    test fails with a clear marker instead of attempting a network download.
+    """
+    import xhelio_spice
+
+    def _boom(*args, **kwargs):  # pragma: no cover - only hit on regression
+        raise AssertionError("backend geometry call reached — preflight did not gate it")
+
+    monkeypatch.setattr(xhelio_spice, "get_state", _boom)
+    monkeypatch.setattr(xhelio_spice, "get_trajectory", _boom)
+    monkeypatch.setattr(xhelio_spice, "transform_vector", _boom)
+    return _boom
+
+
+# --- #26: unsupported-target validation ------------------------------------
+
+def test_resolve_target_distinguishes_supported_and_unsupported():
+    assert _spice_resolve_target("PSP")["resolved"] is True
+    assert _spice_resolve_target("psp")["key"] == "PSP"
+    # SUN/EARTH resolve but are covered by generic kernels, not mission kernels.
+    sun = _spice_resolve_target("SUN")
+    assert sun["resolved"] is True and sun["has_kernels"] is False
+    # MMS / MMS1 are CDAWeb missions with no SPICE kernels.
+    assert _spice_resolve_target("MMS1")["resolved"] is False
+    assert _spice_resolve_target("MMS")["resolved"] is False
+
+
+@pytest.mark.parametrize("bad_target", ["MMS1", "MMS"])
+def test_get_ephemeris_unsupported_target_is_structured(bad_target, no_backend_downloads):
+    server = create_server()
+    raw = _call_tool(server, "get_ephemeris", {
+        "target": bad_target,
+        "time": "2023-09-10T00:00:00",
+    })
+    payload = json.loads(raw)
+    assert payload["status"] == "error"
+    assert payload["code"] == "unsupported_spice_target"
+    assert payload["spice_target"] == bad_target
+    # Routes the agent to alternatives and CDAWeb for MMS, no raw traceback/path.
+    assert "list_spice_missions" in payload["hint"]
+    assert "cdaweb" in payload["hint"].lower()
+    assert payload["supported_targets_sample"]
+    assert "Cannot resolve body name" not in raw
+    assert "/Users/" not in raw and "\n" not in payload["message"]
+
+
+def test_get_ephemeris_unsupported_observer_is_structured(no_backend_downloads):
+    server = create_server()
+    raw = _call_tool(server, "get_ephemeris", {
+        "target": "PSP",
+        "observer": "MMS1",
+        "time": "2023-09-10T00:00:00",
+        "allow_kernel_download": True,  # prove it's the observer, not the cache gate
+    })
+    payload = json.loads(raw)
+    assert payload["status"] == "error"
+    assert payload["code"] == "unsupported_spice_target"
+    assert payload["spice_target"] == "MMS1"
+    assert payload["role"] == "observer"
+
+
+def test_compute_distance_unsupported_target_is_structured(no_backend_downloads):
+    server = create_server()
+    raw = _call_tool(server, "compute_distance", {
+        "target1": "PSP",
+        "target2": "MMS1",
+        "time_start": "2023-09-10T00:00:00",
+        "time_end": "2023-09-11T00:00:00",
+        "allow_kernel_download": True,
+    })
+    payload = json.loads(raw)
+    assert payload["status"] == "error"
+    assert payload["code"] == "unsupported_spice_target"
+    assert payload["spice_target"] == "MMS1"
+
+
+def test_transform_coordinates_unsupported_spacecraft_is_structured(no_backend_downloads):
+    server = create_server()
+    raw = _call_tool(server, "transform_coordinates", {
+        "vector": [1.0, 0.0, 0.0],
+        "time": "2023-09-10T00:00:00",
+        "from_frame": "RTN",
+        "to_frame": "J2000",
+        "spacecraft": "MMS1",
+        "allow_kernel_download": True,
+    })
+    payload = json.loads(raw)
+    assert payload["status"] == "error"
+    assert payload["code"] == "unsupported_spice_target"
+
+
+# --- #29: pre-download confirmation gate -----------------------------------
+
+def test_missing_kernels_reports_uncached_mission(empty_kernel_cache):
+    info = _spice_missing_kernels(["PSP"])
+    assert info["cached"] is False
+    assert "PSP" in info["missing_missions"]
+    assert "GENERIC" in info["missing_missions"]
+    # Cache dir is path-redacted so the envelope never leaks a local path.
+    assert "/Users/" not in info["cache_dir"]
+    assert info["missing_files"]
+
+
+def test_get_ephemeris_uncached_returns_needs_confirmation(empty_kernel_cache, no_backend_downloads):
+    server = create_server()
+    raw = _call_tool(server, "get_ephemeris", {
+        "target": "PSP",
+        "time": "2024-01-01T00:00:00",
+    })
+    payload = json.loads(raw)
+    assert payload["status"] == "needs_confirmation"
+    assert payload["code"] == "kernel_download_required"
+    assert "PSP" in payload["missions"]
+    assert payload["missing_kernel_files"]
+    # Tells the agent exactly how to opt in.
+    assert any("manage_spice_kernels" in step for step in payload["next_steps"])
+    assert any("allow_kernel_download" in step for step in payload["next_steps"])
+    # No path leak, single-line message, safely under the size limit.
+    assert "/Users/" not in raw
+    assert len(raw.encode("utf-8")) < _MAX_RESPONSE_BYTES
+
+
+def test_transform_coordinates_uncached_generic_kernels_gated(empty_kernel_cache, no_backend_downloads):
+    # Even with no spacecraft, a frame transform needs the generic kernels
+    # (~120 MB) — the gate must fire so that download is not silent either.
+    server = create_server()
+    raw = _call_tool(server, "transform_coordinates", {
+        "vector": [1.0, 2.0, 3.0],
+        "time": "2024-01-01T00:00:00",
+        "from_frame": "GSE",
+        "to_frame": "GSM",
+    })
+    payload = json.loads(raw)
+    assert payload["status"] == "needs_confirmation"
+    assert payload["code"] == "kernel_download_required"
+    assert "GENERIC" in payload["missions"]
+
+
+def test_get_ephemeris_cached_target_proceeds_to_backend(empty_kernel_cache, monkeypatch):
+    # When all required kernels are present on disk, the gate must NOT fire and
+    # the real geometry path runs. We fake-cache the generic + PSP files and stub
+    # get_state so no download or SPICE call is needed.
+    import xhelio_spice
+    from xhelio_spice.missions import GENERIC_KERNELS, MISSION_KERNELS
+
+    for fname in list(GENERIC_KERNELS) + list(MISSION_KERNELS["PSP"]):
+        (empty_kernel_cache / fname).write_bytes(b"x")  # non-zero size = "cached"
+
+    def _fake_get_state(target, observer, time, frame):
+        return {"x_km": 1.0, "y_km": 2.0, "z_km": 3.0, "target": target,
+                "observer": observer, "frame": frame, "time": time}
+
+    monkeypatch.setattr(xhelio_spice, "get_state", _fake_get_state)
+
+    server = create_server()
+    raw = _call_tool(server, "get_ephemeris", {
+        "target": "PSP",
+        "time": "2024-01-01T00:00:00",
+    })
+    payload = json.loads(raw)
+    assert payload["status"] == "success"
+    assert payload["x_km"] == 1.0
+
+
+def test_get_ephemeris_allow_kernel_download_bypasses_gate(empty_kernel_cache, monkeypatch):
+    # allow_kernel_download=True is the explicit opt-in: the gate is skipped even
+    # though the cache is empty, and the (stubbed) backend runs.
+    import xhelio_spice
+
+    def _fake_get_state(target, observer, time, frame):
+        return {"x_km": 9.0, "target": target, "observer": observer,
+                "frame": frame, "time": time}
+
+    monkeypatch.setattr(xhelio_spice, "get_state", _fake_get_state)
+
+    server = create_server()
+    raw = _call_tool(server, "get_ephemeris", {
+        "target": "PSP",
+        "time": "2024-01-01T00:00:00",
+        "allow_kernel_download": True,
+    })
+    payload = json.loads(raw)
+    assert payload["status"] == "success"
+    assert payload["x_km"] == 9.0
+
+
+def test_geometry_tools_expose_allow_kernel_download_param():
+    import asyncio
+
+    server = create_server()
+    tools = asyncio.run(server.list_tools())
+    schemas = {t.name: t.inputSchema for t in tools}
+    for name in ("get_ephemeris", "compute_distance", "transform_coordinates"):
+        props = schemas[name]["properties"]
+        assert "allow_kernel_download" in props, name
+        # Optional, defaults to the safe (gated) behavior.
+        assert name not in schemas[name].get("required", [])
+        assert props["allow_kernel_download"].get("default") is False
