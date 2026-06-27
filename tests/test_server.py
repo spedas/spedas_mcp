@@ -596,6 +596,56 @@ def test_psp_perihelion_observation_plan_has_discovery_and_geometry_steps():
 
 
 # ---------------------------------------------------------------------------
+# T006: THEMIS magnetotail substorm routing.
+# A magnetospheric goal phrased in pure physics terms ("THEMIS magnetotail
+# substorm") used to score only 1 on the bare "themis" token. With nothing above
+# the score>1 selection threshold, plan_observation fell back to "all sources
+# equally" and recommended the PDS planetary archive, which is explicitly
+# not_for near-Earth CDAWeb observatories. The magnetospheric/substorm
+# vocabulary must route these queries to CDAWeb alone.
+# ---------------------------------------------------------------------------
+
+def test_themis_magnetotail_substorm_routes_to_cdaweb_only():
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": "THEMIS magnetotail substorm injection workflow",
+        "target": "THEMIS",
+        "observables": ["magnetic field", "ion plasma", "particle injection"],
+    }))
+    assert data["status"] == "success"
+    assert data["recommended_sources"] == ["cdaweb"]
+    # The planetary archive must not be dredged up for a near-Earth study.
+    assert "pds" not in data["recommended_sources"]
+
+
+def test_themis_substorm_plan_recommends_cdaweb_not_pds():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": "THEMIS magnetotail substorm on 2008-02-26 around 04:35 UT",
+    }))
+    assert data["status"] == "success"
+    assert data["recommended_sources"] == ["cdaweb"]
+    # Target and a bounded window are inferred from the natural-language goal.
+    assert data["inferred"]["target"] == "THEMIS"
+    assert data["inferred"]["start"] == "2008-02-26T03:35:00Z"
+    assert data["inferred"]["stop"] == "2008-02-26T05:35:00Z"
+    phases = {step["phase"] for step in data["plan"]}
+    assert {"discover_cdaweb", "fetch_or_compute_cdaweb", "preserve_provenance"} <= phases
+    assert "discover_pds" not in phases
+
+
+def test_planetary_routing_not_regressed_by_magnetospheric_keywords():
+    """The T006 magnetospheric terms must not suppress PDS for planetary goals."""
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": "Juno magnetic field and plasma measurements near Jupiter",
+        "target": "Jupiter",
+    }))
+    assert data["status"] == "success"
+    assert "pds" in data["recommended_sources"]
+
+
+# ---------------------------------------------------------------------------
 # Issue #24: parameter-name consistency between discovery tools.
 # search_spedas_data_sources historically takes `question`; browse_data_sources
 # takes `query`. Accept `query` as a backward-compatible alias so agents that

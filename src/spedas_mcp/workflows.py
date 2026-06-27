@@ -32,6 +32,18 @@ SOURCE_PROFILES: dict[str, dict[str, Any]] = {
             "geotail", "psp", "solo", "heliophysics", "magnetosphere", "ionosphere",
             "solar wind", "timeseries", "time-series", "plasma", "magnetic", "electric",
             "particle", "cdf", "observatory", "near earth", "near-earth",
+            # Magnetospheric/substorm science vocabulary. THEMIS (and Cluster/MMS/
+            # Geotail) magnetotail substorm studies live entirely in CDAWeb, but a
+            # goal phrased purely in physics terms ("THEMIS magnetotail substorm")
+            # used to score only 1 on the bare "themis"/"magnetosphere" tokens.
+            # With no source above the score>1 selection threshold, plan_observation
+            # fell back to "all sources equally" and recommended the PDS planetary
+            # archive — which is explicitly not_for near-Earth CDAWeb observatories.
+            # Naming the magnetospheric terms here lifts the in-domain query above
+            # the threshold so it routes to CDAWeb alone (T006). The cross-source
+            # near-Earth nudge below adds the multi-word phrases.
+            "magnetotail", "substorm", "injection", "reconnection", "aurora",
+            "auroral", "electrojet", "ring current", "geomagnetic",
         ],
     },
     "pds": {
@@ -117,7 +129,13 @@ def _score_sources(text: str) -> dict[str, int]:
     if any(term in text for term in ["jupiter", "saturn", "cassini", "juno", "galileo", "voyager"]):
         scores["pds"] += 2
         scores["spice"] += 1
-    if any(term in text for term in ["earth", "magnetopause", "bow shock", "solar wind", "omni"]):
+    if any(term in text for term in [
+        "earth", "magnetopause", "bow shock", "solar wind", "omni",
+        # Magnetotail/substorm phrasing is unambiguously near-Earth CDAWeb science
+        # (T006). These reinforce CDAWeb the same way "magnetopause"/"bow shock"
+        # already do, so a geometry/archive nudge can never overtake it.
+        "magnetotail", "magnetosheath", "plasma sheet", "substorm", "radiation belt",
+    ]):
         scores["cdaweb"] += 2
 
     if max(scores.values()) == 0:
