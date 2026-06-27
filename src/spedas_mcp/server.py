@@ -661,7 +661,12 @@ def create_server() -> FastMCP:
         observables: list[str] | None = None,
         data_sources: list[str] | None = None,
     ) -> str:
-        """Plan a SPEDAS science workflow before choosing data-layer or geometry calls."""
+        """Plan a SPEDAS science workflow before choosing data-layer or geometry calls.
+
+        Infers ISO dates and mission names from ``science_goal`` when ``start``,
+        ``stop``, or ``target`` are omitted; explicit parameters always win and
+        inferred values are reported under ``inferred`` for transparency.
+        """
         from spedas_mcp.workflows import plan_observation
 
         return _json(plan_observation(

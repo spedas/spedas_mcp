@@ -976,3 +976,105 @@ def test_geometry_tools_expose_allow_kernel_download_param():
         # Optional, defaults to the safe (gated) behavior.
         assert name not in schemas[name].get("required", [])
         assert props["allow_kernel_download"].get("default") is False
+
+
+# ---------------------------------------------------------------------------
+# Issue #30: plan_spedas_observation should extract dates and mission names
+# from the natural-language science_goal before declaring "needs_input".
+# Explicit start/stop/target parameters must still override anything inferred.
+# ---------------------------------------------------------------------------
+
+def test_plan_observation_infers_mms_datetime_from_goal_text():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": "MMS magnetopause crossing magnetic field and ion data on 2015-10-16 around 13:06 UT",
+    }))
+    assert data["status"] == "success"
+    assert data["needs_user_input"] == []
+    scope = next(step for step in data["plan"] if step["phase"] == "scope")
+    # Single "around" datetime -> symmetric +/- 1 hour window.
+    assert scope["time_range"] == {
+        "start": "2015-10-16T12:06:00Z",
+        "stop": "2015-10-16T14:06:00Z",
+    }
+    assert scope["target"] == "MMS"
+    inferred = data["inferred"]
+    assert inferred["start"] == "2015-10-16T12:06:00Z"
+    assert inferred["stop"] == "2015-10-16T14:06:00Z"
+    assert inferred["target"] == "MMS"
+    assert "cdaweb" in data["recommended_sources"]
+
+
+def test_plan_observation_infers_psp_date_only_from_goal_text():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": "Parker Solar Probe perihelion solar wind magnetic field near 2021-11-21",
+    }))
+    assert data["status"] == "success"
+    assert data["needs_user_input"] == []
+    scope = next(step for step in data["plan"] if step["phase"] == "scope")
+    # Date-only goal -> full-day interval [00:00:00Z, next day 00:00:00Z).
+    assert scope["time_range"] == {
+        "start": "2021-11-21T00:00:00Z",
+        "stop": "2021-11-22T00:00:00Z",
+    }
+    assert scope["target"] == "Parker Solar Probe"
+    inferred = data["inferred"]
+    assert inferred["start"] == "2021-11-21T00:00:00Z"
+    assert inferred["stop"] == "2021-11-22T00:00:00Z"
+    assert inferred["target"] == "Parker Solar Probe"
+
+
+def test_plan_observation_explicit_params_override_extracted_dates():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": "MMS magnetopause crossing on 2015-10-16 around 13:06 UT",
+        "start": "2017-01-01T00:00:00Z",
+        "stop": "2017-01-02T00:00:00Z",
+        "target": "Cluster",
+    }))
+    assert data["status"] == "success"
+    scope = next(step for step in data["plan"] if step["phase"] == "scope")
+    assert scope["time_range"] == {
+        "start": "2017-01-01T00:00:00Z",
+        "stop": "2017-01-02T00:00:00Z",
+    }
+    assert scope["target"] == "Cluster"
+    # Explicit values win; they are not listed as inferred.
+    assert "start" not in data["inferred"]
+    assert "stop" not in data["inferred"]
+    assert "target" not in data["inferred"]
+
+
+def test_plan_observation_does_not_infer_wind_mission_from_solar_wind_phrase():
+    # "solar wind" is a plasma observable, not the Wind spacecraft. A goal that
+    # only mentions the solar wind (no actual mission) must not silently claim
+    # target="Wind" — that would misrepresent the science.
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": "Characterize solar wind turbulence on 2018-03-01",
+    }))
+    assert "target" not in data["inferred"]
+    scope = next(step for step in data["plan"] if step["phase"] == "scope")
+    assert scope["target"] is None
+
+
+def test_plan_observation_infers_wind_spacecraft_when_named_explicitly():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": "Wind spacecraft magnetic field upstream of Earth on 2018-03-01",
+    }))
+    assert data["inferred"]["target"] == "Wind"
+
+
+def test_plan_observation_without_date_still_needs_input_with_helpful_fields():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": "MMS magnetopause crossing magnetic field and ion data",
+    }))
+    assert data["status"] == "needs_input"
+    assert set(data["needs_user_input"]) == {"start", "stop"}
+    # Target was still inferable and surfaced to help the caller.
+    assert data["inferred"]["target"] == "MMS"
+    scope = next(step for step in data["plan"] if step["phase"] == "scope")
+    assert scope["target"] == "MMS"
