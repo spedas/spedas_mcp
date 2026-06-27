@@ -260,6 +260,149 @@ def test_plan_spedas_observation_reports_invalid_sources_and_missing_time():
     assert set(missing_time["needs_user_input"]) == {"start", "stop"}
 
 
+# ---------------------------------------------------------------------------
+# Issue #30 / zhipu-1 B1: the date-shaped regex can match impossible tokens
+# (2015-13-40, 2015-02-30, 9999-99-99). These must be treated as "no parse"
+# and never raise a raw ValueError out of the public planner tools.
+# ---------------------------------------------------------------------------
+
+import pytest as _pytest_b1  # noqa: E402
+
+
+@_pytest_b1.mark.parametrize(
+    "goal",
+    [
+        "magnetopause crossing on 2015-13-40",
+        "event on 2015-02-30 around noon",
+        "study 9999-99-99",
+        "burst at 2015-10-16 25:61",
+    ],
+)
+def test_plan_spedas_observation_impossible_date_does_not_crash(goal):
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {"science_goal": goal}))
+    # No raw ValueError escapes; the tool returns a structured, parse-free plan.
+    assert data["status"] == "needs_input"
+    assert data["inferred"] == {}
+    assert {"start", "stop"} <= set(data["needs_user_input"])
+
+
+def test_extract_time_range_drops_impossible_dates():
+    from spedas_mcp.workflows import _extract_time_range
+
+    for goal in ("2015-13-40", "2015-02-30", "9999-99-99", "2020-00-10"):
+        assert _extract_time_range(goal) == (None, None)
+
+
+def test_extract_time_range_valid_date_still_parses():
+    from spedas_mcp.workflows import _extract_time_range
+
+    assert _extract_time_range("event on 2015-10-16") == (
+        "2015-10-16T00:00:00Z",
+        "2015-10-17T00:00:00Z",
+    )
+
+
+def test_plan_spedas_observation_is_safe_tool_wrapped(monkeypatch):
+    """B1 defense in depth: an unexpected backend error converts to an envelope.
+
+    Force a non-ValueError out of the workflow impl to prove the ``@_safe_tool``
+    decorator wraps ``plan_spedas_observation`` (not just the helper parse fix).
+    """
+    import spedas_mcp.workflows as workflows_mod
+
+    def _boom(*args, **kwargs):
+        raise OSError("planner exploded at /Users/secret/path")
+
+    monkeypatch.setattr(workflows_mod, "plan_observation", _boom)
+    server = create_server()
+    raw = _call_tool(server, "plan_spedas_observation", {"science_goal": "x"})
+    out = json.loads(raw)
+    assert out["status"] == "error"
+    assert out["tool"] == "plan_spedas_observation"
+    assert "/Users/" not in raw
+
+
+def test_plan_spedas_observation_schema_preserved():
+    server = create_server()
+    tools = asyncio.run(server.list_tools())
+    tool = next(t for t in tools if t.name == "plan_spedas_observation")
+    props = set(tool.inputSchema.get("properties", {}))
+    assert {"science_goal", "start", "stop", "target", "observables", "data_sources"} <= props
+    assert tool.inputSchema.get("required") == ["science_goal"]
+
+
+# ---------------------------------------------------------------------------
+# Issue #30 / zhipu-1 SF1: mission alias false positives. Generic words must
+# not be inferred as spacecraft, while explicit spacecraft phrasing still works.
+# ---------------------------------------------------------------------------
+
+@_pytest_b1.mark.parametrize(
+    "goal",
+    ["solo", "fly solo", "cluster", "a cluster of substorms", "wind speed", "solar-wind", "solar wind", "wind direction"],
+)
+def test_extract_target_no_false_positive(goal):
+    from spedas_mcp.workflows import _extract_target
+
+    assert _extract_target(goal) is None
+
+
+@_pytest_b1.mark.parametrize(
+    "goal,expected",
+    [
+        ("Solar Orbiter magnetometer", "Solar Orbiter"),
+        ("SolO spacecraft data", "Solar Orbiter"),
+        ("solo mission overview", "Solar Orbiter"),
+        ("Wind spacecraft plasma", "Wind"),
+        ("Wind mission magnetic field", "Wind"),
+        ("Cluster mission multi-point study", "Cluster"),
+        ("Cluster constellation crossing", "Cluster"),
+    ],
+)
+def test_extract_target_explicit_spacecraft_still_works(goal, expected):
+    from spedas_mcp.workflows import _extract_target
+
+    assert _extract_target(goal) == expected
+
+
+def test_plan_spedas_observation_does_not_infer_target_for_generic_wind():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": "characterise solar-wind speed near the bow shock",
+        "start": "2015-10-16T00:00:00Z",
+        "stop": "2015-10-16T06:00:00Z",
+    }))
+    assert "target" not in data["inferred"]
+
+
+# ---------------------------------------------------------------------------
+# Issue #30 / zhipu-1 nice-to-have: a non-positive interval (start >= stop)
+# should be flagged rather than silently succeeding.
+# ---------------------------------------------------------------------------
+
+def test_plan_spedas_observation_flags_start_after_stop():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": "study near 2015-10-16",
+        "start": "2015-10-20T00:00:00Z",
+    }))
+    assert data["status"] == "needs_input"
+    assert data["time_range_warning"]
+    assert {"start", "stop"} <= set(data["needs_user_input"])
+
+
+def test_plan_spedas_observation_valid_interval_no_warning():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": "magnetopause study",
+        "start": "2015-10-16T00:00:00Z",
+        "stop": "2015-10-16T06:00:00Z",
+        "data_sources": ["cdaweb"],
+    }))
+    assert data["status"] == "success"
+    assert data["time_range_warning"] is None
+
+
 def test_psp_perihelion_workflow_routes_to_cdaweb_and_spice():
     server = create_server()
     data = json.loads(_call_tool(server, "search_spedas_data_sources", {

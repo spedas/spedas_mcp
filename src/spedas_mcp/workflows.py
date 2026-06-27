@@ -139,12 +139,14 @@ _MISSION_KEYWORDS: list[tuple[str, str]] = [
     ("van allen probes", "Van Allen Probes"),
     ("van allen probe", "Van Allen Probes"),
     ("new horizons", "New Horizons"),
+    # ``solo`` and ``cluster`` are common English words, so they are matched only
+    # in explicit spacecraft phrasing (see ``_QUALIFIED_MISSION_KEYWORDS`` below)
+    # rather than as bare tokens, which produced false positives (SF1: a bare
+    # "solo" -> Solar Orbiter, "cluster" -> Cluster).
     ("psp", "Parker Solar Probe"),
-    ("solo", "Solar Orbiter"),
     ("rbsp", "Van Allen Probes"),
     ("mms", "MMS"),
     ("themis", "THEMIS"),
-    ("cluster", "Cluster"),
     ("stereo", "STEREO"),
     ("dscovr", "DSCOVR"),
     ("geotail", "Geotail"),
@@ -158,6 +160,17 @@ _MISSION_KEYWORDS: list[tuple[str, str]] = [
     ("ace", "ACE"),
     ("wind", "Wind"),
     ("omni", "OMNI"),
+]
+
+# Missions whose short names collide with ordinary English ("solo", "cluster")
+# are only inferred from explicit spacecraft/mission phrasing. Each pattern is a
+# case-insensitive regex matched against the goal text. This preserves real
+# references ("SolO spacecraft", "Cluster mission") while ignoring generic uses
+# ("fly solo", "a cluster of events"). ``solar orbiter`` is already covered by
+# the main keyword list above.
+_QUALIFIED_MISSION_KEYWORDS: list[tuple[re.Pattern[str], str]] = [
+    (re.compile(r"\bsolo\s+(?:spacecraft|orbiter|mission|probe)\b", re.IGNORECASE), "Solar Orbiter"),
+    (re.compile(r"\bcluster\s+(?:spacecraft|mission|constellation|satellites?)\b", re.IGNORECASE), "Cluster"),
 ]
 
 # ISO date with an optional trailing time. The date is required; the time
@@ -187,14 +200,25 @@ def _extract_target(text: str) -> str | None:
     Matching is conservative: a keyword only matches on word boundaries so a
     short token like ``ace`` does not fire inside ``"surface"`` or ``"space"``.
     The bare word ``wind`` is additionally guarded against the plasma phrase
-    ``"solar wind"`` so a goal about the solar wind is not misread as the Wind
-    spacecraft.
+    ``"solar wind"`` / ``"solar-wind"`` and generic phrases like ``"wind speed"``
+    so a goal about the solar wind is not misread as the Wind spacecraft.
+    Spacecraft whose short names are everyday words (``solo``, ``cluster``) are
+    only inferred from explicit phrasing (see ``_QUALIFIED_MISSION_KEYWORDS``).
     """
     lowered = text.lower()
+    # Explicit, qualified spacecraft phrasing takes precedence over plain keywords.
+    for pattern, label in _QUALIFIED_MISSION_KEYWORDS:
+        if pattern.search(text):
+            return label
     for keyword, label in _MISSION_KEYWORDS:
         if keyword == "wind":
-            # Match "wind" as a mission only when it is not part of "solar wind".
-            if re.search(r"(?<![a-z0-9])(?<!solar )wind(?![a-z0-9])", lowered):
+            # Match "wind" as a mission only in spacecraft phrasing, never inside
+            # "solar wind"/"solar-wind" or generic phrases like "wind speed".
+            if re.search(
+                r"(?<![a-z0-9])(?<!solar )(?<!solar-)wind(?![a-z0-9])"
+                r"(?!\s+(?:speed|velocity|direction|stream|streams|profile|data))",
+                lowered,
+            ):
                 return label
             continue
         if re.search(rf"(?<![a-z0-9]){re.escape(keyword)}(?![a-z0-9])", lowered):
@@ -212,14 +236,24 @@ def _extract_time_range(text: str) -> tuple[str | None, str | None]:
       +1 hour as ``stop``.
     - One date with no time: a full-day interval ``[00:00:00Z, next day)``.
 
-    Returns ``(None, None)`` when no date is present.
+    ``_DATETIME_RE`` matches date-*shaped* tokens, including impossible ones like
+    ``2015-13-40`` or ``2015-02-30``. Such tokens are validated by
+    ``_parse_datetime``/``_parse_utc_date`` and silently dropped, so an
+    impossible date is treated as "no parse" rather than raising a raw
+    ``ValueError`` out of the public planner tools (issue #30, blocker B1).
+
+    Returns ``(None, None)`` when no parseable date is present.
     """
-    matches = list(_DATETIME_RE.finditer(text))
+    matches = [m for m in _DATETIME_RE.finditer(text) if _is_valid_match(m)]
     if not matches:
         return None, None
 
     if len(matches) >= 2:
-        return _iso_start(matches[0]), _iso_stop(matches[-1])
+        start = _iso_start(matches[0])
+        stop = _iso_stop(matches[-1])
+        if start is None or stop is None:
+            return None, None
+        return start, stop
 
     match = matches[0]
     date = match.group("date")
@@ -232,11 +266,16 @@ def _extract_time_range(text: str) -> tuple[str | None, str | None]:
             time = loose.group("time")
     if time is None:
         # Date-only: widen to a full UTC day.
-        start_day = datetime.strptime(date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        start_day = _parse_utc_date(date)
+        if start_day is None:
+            return None, None
         stop_day = start_day + timedelta(days=1)
         return _format_iso(start_day), _format_iso(stop_day)
 
     instant = _parse_iso_instant(date, time)
+    if instant is None:
+        # An impossible date or time component; fall back to no parse.
+        return None, None
     lowered = text.lower()
     if any(word in lowered for word in _APPROX_WORDS):
         return (
@@ -246,29 +285,78 @@ def _extract_time_range(text: str) -> tuple[str | None, str | None]:
     return _format_iso(instant), _format_iso(instant + timedelta(hours=1))
 
 
-def _parse_iso_instant(date: str, time: str) -> datetime:
-    fmt = "%Y-%m-%d %H:%M:%S" if time.count(":") == 2 else "%Y-%m-%d %H:%M"
-    return datetime.strptime(f"{date} {time}", fmt).replace(tzinfo=timezone.utc)
-
-
-def _iso_start(match: re.Match[str]) -> str:
+def _is_valid_match(match: re.Match[str]) -> bool:
+    """Return ``True`` only when the matched date (and time, if any) is real."""
     date, time = match.group("date"), match.group("time")
     if time is None:
-        return _format_iso(datetime.strptime(date, "%Y-%m-%d").replace(tzinfo=timezone.utc))
-    return _format_iso(_parse_iso_instant(date, time))
+        return _parse_utc_date(date) is not None
+    return _parse_iso_instant(date, time) is not None
 
 
-def _iso_stop(match: re.Match[str]) -> str:
+def _parse_utc_date(date: str) -> datetime | None:
+    """Parse ``YYYY-MM-DD`` to a UTC datetime, or ``None`` if impossible."""
+    try:
+        return datetime.strptime(date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    except ValueError:
+        return None
+
+
+def _parse_iso_instant(date: str, time: str) -> datetime | None:
+    """Parse a date+time to a UTC datetime, or ``None`` if impossible."""
+    fmt = "%Y-%m-%d %H:%M:%S" if time.count(":") == 2 else "%Y-%m-%d %H:%M"
+    try:
+        return datetime.strptime(f"{date} {time}", fmt).replace(tzinfo=timezone.utc)
+    except ValueError:
+        return None
+
+
+def _iso_start(match: re.Match[str]) -> str | None:
+    date, time = match.group("date"), match.group("time")
+    if time is None:
+        start = _parse_utc_date(date)
+        return _format_iso(start) if start is not None else None
+    instant = _parse_iso_instant(date, time)
+    return _format_iso(instant) if instant is not None else None
+
+
+def _iso_stop(match: re.Match[str]) -> str | None:
     date, time = match.group("date"), match.group("time")
     if time is None:
         # A bare end date is inclusive of that whole UTC day.
-        end = datetime.strptime(date, "%Y-%m-%d").replace(tzinfo=timezone.utc) + timedelta(days=1)
-        return _format_iso(end)
-    return _format_iso(_parse_iso_instant(date, time))
+        end = _parse_utc_date(date)
+        return _format_iso(end + timedelta(days=1)) if end is not None else None
+    instant = _parse_iso_instant(date, time)
+    return _format_iso(instant) if instant is not None else None
 
 
 def _format_iso(dt: datetime) -> str:
     return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _parse_iso8601(value: str | None) -> datetime | None:
+    """Best-effort parse of an ISO-8601 timestamp for ordering comparisons.
+
+    Returns ``None`` (rather than raising) for ``None`` or any value that does
+    not parse, so callers can compare bounds only when both are real timestamps.
+    Accepts a trailing ``Z`` and date-only values.
+    """
+    if not value:
+        return None
+    text = value.strip()
+    if text.endswith(("Z", "z")):
+        text = text[:-1] + "+00:00"
+    try:
+        return datetime.fromisoformat(text)
+    except ValueError:
+        return None
+
+
+def _ge_safe(a: datetime, b: datetime) -> bool:
+    """``a >= b`` that tolerates a naive/aware mismatch (assume UTC if naive)."""
+    if (a.tzinfo is None) != (b.tzinfo is None):
+        a = a.replace(tzinfo=a.tzinfo or timezone.utc)
+        b = b.replace(tzinfo=b.tzinfo or timezone.utc)
+    return a >= b
 
 
 def _ranked_sources(question: str = "", target: str | None = None, observables: list[str] | None = None) -> list[dict[str, Any]]:
@@ -390,6 +478,21 @@ def plan_observation(
     needs_user_input = [
         field for field, value in {"start": start, "stop": stop, "science_goal": science_goal}.items() if not value
     ]
+
+    # Sanity check: a non-positive interval (start >= stop) is never usable. This
+    # most often surfaces when an explicit ``start`` is combined with an inferred
+    # ``stop`` (or vice versa). Compared only when both bounds parse as ISO so
+    # non-ISO explicit values are passed through untouched rather than rejected.
+    time_range_warning: str | None = None
+    start_dt, stop_dt = _parse_iso8601(start), _parse_iso8601(stop)
+    if start_dt is not None and stop_dt is not None and _ge_safe(start_dt, stop_dt):
+        time_range_warning = (
+            f"start ({start}) is not before stop ({stop}); confirm the intended time range"
+        )
+        if "start" not in needs_user_input:
+            needs_user_input.append("start")
+        if "stop" not in needs_user_input:
+            needs_user_input.append("stop")
     steps: list[dict[str, Any]] = [
         {
             "phase": "scope",
@@ -450,6 +553,7 @@ def plan_observation(
         "needs_user_input": needs_user_input,
         "inferred": inferred,
         "invalid_sources": invalid_sources,
+        "time_range_warning": time_range_warning,
         "low_level_tools_remain_available": True,
     }
 

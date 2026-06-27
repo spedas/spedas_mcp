@@ -653,6 +653,7 @@ def create_server() -> FastMCP:
         )
 
     @mcp.tool()
+    @_safe_tool
     def plan_spedas_observation(
         science_goal: str,
         start: str | None = None,
