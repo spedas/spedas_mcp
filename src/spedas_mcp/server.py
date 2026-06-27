@@ -133,7 +133,6 @@ def _unknown_source_type_error(source_type: str, allowed: list[str]) -> str:
         "invalid_argument",
         f"unknown source_type: {source_type}",
         hint=f"Pass one of: {', '.join(allowed)}.",
-        sanitize=False,
         allowed=allowed,
     )
 
@@ -952,7 +951,6 @@ def create_server() -> FastMCP:
             "unknown_source_id",
             f"Source ID '{source_id}' not found in {source_type} catalog.",
             hint=" ".join(hint_parts),
-            sanitize=False,
             source_type=source_type,
             source_id=source_id,
             suggestions=suggestions,
