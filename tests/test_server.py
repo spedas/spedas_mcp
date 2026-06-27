@@ -1689,3 +1689,232 @@ def test_van_allen_probes_observation_plan_leads_with_cdaweb():
     assert data["recommended_sources"] == ["cdaweb"]
     phases = {step["phase"] for step in data["plan"]}
     assert {"discover_cdaweb", "fetch_or_compute_cdaweb"} <= phases
+
+
+# ===========================================================================
+# Batch W integration (T011-T015): combined routing/alias fixes.
+#   T011 - Geotail plasma-sheet substring false positives (word-boundary matcher)
+#   T012 - Solar Orbiter / SolO instrument+science alias
+#   T013 - Ulysses high-latitude solar wind -> CDAWeb (not PDS)
+#   T014 - Parker Solar Probe switchback -> CDAWeb (FIELDS/SWEAP)
+#   T015 - MAVEN Mars bow-shock planetary guard (boundary words not near-Earth)
+# Each fix touches src/spedas_mcp/workflows.py (`_score_sources` /
+# `_QUALIFIED_MISSION_KEYWORDS`); these tests guard the combined behavior and the
+# cross-topic regression guards that must all hold simultaneously.
+# ===========================================================================
+
+
+# --- T011: Geotail plasma-sheet substring false positives ------------------
+
+@pytest.mark.parametrize(
+    "goal",
+    [
+        "Geotail plasma sheet interval workflow",
+        "Geotail current sheet flapping in the plasma sheet",
+        "Geotail magnetotail plasma sheet mapping survey",
+        "Geotail plasma sheet ion flows with return-flow signatures",
+    ],
+)
+def test_geotail_plasma_sheet_routes_to_cdaweb_only(goal):
+    """ppi/urn substrings inside flapping/mapping/return must not surface PDS."""
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": goal,
+    }))
+    assert data["status"] == "success"
+    assert data["recommended_sources"] == ["cdaweb"]
+    assert "pds" not in data["recommended_sources"]
+
+
+def test_score_sources_no_ppi_substring_false_positive():
+    from spedas_mcp.workflows import _score_sources
+
+    # "flapping"/"mapping" contain "ppi"; "return" contains "urn"; "marshalling"
+    # contains "mars" -- none of these should add to the PDS score.
+    base = _score_sources("geotail plasma sheet survey")
+    noisy = _score_sources(
+        "geotail current sheet flapping mapping return-flow marshalling survey"
+    )
+    assert noisy["pds"] <= base["pds"]
+
+
+def test_score_sources_real_pds_tokens_still_match():
+    from spedas_mcp.workflows import _score_sources
+
+    # Genuine whole-word PDS vocabulary must still score after the word-boundary
+    # hardening (T011 must not break real matches).
+    scored = _score_sources("juno pds ppi bundle near saturn")
+    assert scored["pds"] >= 3
+
+
+# --- T012: Solar Orbiter / SolO instrument+science alias --------------------
+
+@pytest.mark.parametrize(
+    "goal",
+    [
+        "SolO MAG RTN magnetic field near perihelion",
+        "SolO SWA proton plasma during encounter",
+        "SolO EPD energetic particles survey",
+        "SolO RPW radio and plasma waves",
+        "SolO EUI imaging campaign",
+        "SolO STIX flare observations",
+        "SolO perihelion solar-wind workflow with MAG and SWA",
+        "SolO periapsis geometry context",
+    ],
+)
+def test_extract_target_solo_instrument_and_science_phrasing(goal):
+    from spedas_mcp.workflows import _extract_target, _extract_targets
+
+    assert _extract_target(goal) == "Solar Orbiter"
+    assert "Solar Orbiter" in _extract_targets(goal)
+
+
+@pytest.mark.parametrize("goal", ["solo", "fly solo", "soloist performance", "a solo run"])
+def test_solo_instrument_alias_preserves_false_positive_guard(goal):
+    from spedas_mcp.workflows import _extract_target
+
+    assert _extract_target(goal) is None
+
+
+def test_solo_perihelion_observation_plan_names_target_and_routes_cdaweb_spice():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": (
+            "SolO perihelion MAG RTN magnetic field and SWA solar wind plasma with "
+            "heliocentric geometry on 2023-04-10"
+        ),
+    }))
+    assert data["status"] == "success"
+    assert data["inferred"]["target"] == "Solar Orbiter"
+    assert "cdaweb" in data["recommended_sources"]
+    assert "spice" in data["recommended_sources"]
+
+
+# --- T013: Ulysses high-latitude solar wind --------------------------------
+
+@pytest.mark.parametrize(
+    "goal",
+    [
+        "Ulysses high-latitude solar wind survey over the south polar pass",
+        "Ulysses fast solar wind at high heliographic latitude",
+        "Ulysses high-latitude pass",
+        "Ulysses south polar pass",
+    ],
+)
+def test_ulysses_high_latitude_solar_wind_routes_to_cdaweb_not_pds(goal):
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": goal,
+    }))
+    assert data["status"] == "success"
+    assert data["recommended_sources"] == ["cdaweb"]
+    assert "pds" not in data["recommended_sources"]
+
+
+def test_ulysses_hyphenated_solar_wind_phrasing_routes_to_cdaweb():
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": "Plan a Ulysses polar pass solar-wind workflow",
+    }))
+    assert data["status"] == "success"
+    assert data["recommended_sources"] == ["cdaweb"]
+
+
+def test_ulysses_high_latitude_plan_infers_target_and_leads_with_cdaweb():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": (
+            "Ulysses fast solar wind at high heliographic latitude during the "
+            "1994-09-13 south polar pass"
+        ),
+    }))
+    assert data["status"] == "success"
+    assert data["inferred"]["target"] == "Ulysses"
+    assert data["recommended_sources"][0] == "cdaweb"
+
+
+def test_ulysses_high_latitude_does_not_regress_planetary_routing():
+    """A high-latitude mention in a planetary context must stay PDS-led."""
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": "Cassini high-latitude orbit at Saturn",
+    }))
+    assert data["status"] == "success"
+    assert data["recommended_sources"][0] == "pds"
+
+
+# --- T014: Parker Solar Probe switchback -----------------------------------
+
+def test_psp_switchback_full_name_routes_to_cdaweb_not_pds():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": (
+            "switchback interval study using Parker Solar Probe SWEAP and FIELDS "
+            "on 2021-04-29"
+        ),
+    }))
+    assert data["status"] == "success"
+    assert data["recommended_sources"] == ["cdaweb"]
+    assert "pds" not in data["recommended_sources"]
+
+
+def test_psp_switchback_encounter_survey_keeps_cdaweb_above_spice():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": "Parker Solar Probe encounter 8 switchback survey 2021-04-29",
+    }))
+    assert data["status"] == "success"
+    assert data["recommended_sources"] == ["cdaweb"]
+    assert data["inferred"]["target"] == "Parker Solar Probe"
+    phases = {step["phase"] for step in data["plan"]}
+    assert "discover_cdaweb" in phases
+    assert "discover_pds" not in phases
+
+
+def test_psp_switchback_with_perihelion_geometry_keeps_spice():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": "Analyze switchbacks in PSP solar wind near perihelion 2021-11-21",
+    }))
+    assert data["status"] == "success"
+    assert data["recommended_sources"] == ["cdaweb", "spice"]
+
+
+def test_psp_switchback_routing_does_not_regress_planetary_fields_goals():
+    """The deliberately-excluded bare 'fields' must not flip planetary goals."""
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": "MESSENGER magnetic fields near Mercury",
+    }))
+    assert data["status"] == "success"
+    assert data["recommended_sources"][0] == "pds"
+
+
+# --- T015: MAVEN Mars bow-shock planetary guard ----------------------------
+
+def test_maven_mars_bow_shock_routes_to_pds_not_cdaweb():
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": "MAVEN Mars bow shock and magnetosheath induced-magnetosphere study",
+    }))
+    assert data["status"] == "success"
+    assert data["recommended_sources"] == ["pds"]
+
+
+def test_maven_mars_bow_shock_does_not_boost_cdaweb_via_boundary_nudge():
+    from spedas_mcp.workflows import _score_sources
+
+    plain = _score_sources("maven mars induced magnetosphere study")
+    boundary = _score_sources("maven mars bow shock magnetopause induced magnetosphere study")
+    # Adding the boundary words must not raise CDAWeb for a planetary (Mars) goal.
+    assert boundary["cdaweb"] <= plain["cdaweb"]
+
+
+def test_earth_bow_shock_still_routes_to_cdaweb():
+    """Non-planetary bow-shock goals must keep their near-Earth CDAWeb nudge."""
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": "Earth bow shock crossing in the solar wind with MMS",
+    }))
+    assert data["status"] == "success"
+    assert data["recommended_sources"] == ["cdaweb"]
