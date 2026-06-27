@@ -1918,3 +1918,103 @@ def test_earth_bow_shock_still_routes_to_cdaweb():
     }))
     assert data["status"] == "success"
     assert data["recommended_sources"] == ["cdaweb"]
+
+
+# ===========================================================================
+# Batch X T020 - STEREO solar-energetic-particle / solar-wind source routing.
+# ``_extract_target`` already maps "STEREO"/"STEREO-A"/"STEREO B"/"stereoa" to the
+# canonical "STEREO" label (#30 / Batch V T007), but the source router had no
+# matching CDAWeb keyword. A SEP/energetic-particle goal phrased without the
+# generic "solar wind"/"plasma"/"magnetic" measurement words ("STEREO-A SEP
+# SEPT", "STEREO-A IMPACT energetic electrons") scored only 1 on every family and
+# fell back to "all sources equally" -- surfacing the PDS planetary archive; and
+# "STEREO ahead spacecraft SEP" routed to SPICE alone on the bare "spacecraft"
+# geometry token. STEREO is an SPDF/CDAWeb mission (no PDS bundles, no SPICE
+# kernels in this context), so CDAWeb must lead. Fix: register "stereo"/"sept" as
+# CDAWeb keywords plus a planetary-guarded solar-energetic-particle nudge,
+# mirroring the Ulysses (T013) / PSP switchback (T014) lanes.
+# ===========================================================================
+
+
+@pytest.mark.parametrize(
+    "goal",
+    [
+        "STEREO-A SEP SEPT solar energetic particle event",
+        "STEREO-A IMPACT energetic electrons",
+        "STEREO-B energetic protons solar energetic particles",
+        "STEREO solar wind PLASTIC plasma",
+        "STEREO MAG magnetic field interval",
+        "STEREO ahead spacecraft solar energetic particles",
+    ],
+)
+def test_stereo_sep_solar_wind_routes_to_cdaweb(goal):
+    """STEREO heliophysics goals must lead with CDAWeb, never the PDS archive."""
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": goal,
+    }))
+    assert data["status"] == "success"
+    assert data["ranked_sources"][0]["source"] == "cdaweb"
+    assert "cdaweb" in data["recommended_sources"]
+    assert "pds" not in data["recommended_sources"]
+
+
+@pytest.mark.parametrize(
+    "goal,expected",
+    [
+        ("STEREO-A SEP SEPT", "STEREO"),
+        ("STEREO B PLASTIC solar wind", "STEREO"),
+        ("STEREO-B IMPACT", "STEREO"),
+        ("STEREO Ahead MAG magnetic field", "STEREO"),
+        ("STEREO Behind solar wind", "STEREO"),
+    ],
+)
+def test_stereo_alias_target_inference(goal, expected):
+    from spedas_mcp.workflows import _extract_target
+
+    assert _extract_target(goal) == expected
+
+
+def test_stereo_observation_plan_leads_with_cdaweb():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": (
+            "STEREO-A SEP SEPT solar energetic particle event on 2012-03-07"
+        ),
+    }))
+    assert data["status"] == "success"
+    assert data["inferred"]["target"] == "STEREO"
+    assert data["inferred"]["start"] == "2012-03-07T00:00:00Z"
+    assert data["recommended_sources"] == ["cdaweb"]
+    phases = {step["phase"] for step in data["plan"]}
+    assert {"discover_cdaweb", "fetch_or_compute_cdaweb"} <= phases
+
+
+def test_sept_keyword_does_not_match_september():
+    """The unambiguous SEPT acronym is word-boundary-anchored, so the month name
+    'September' (trailing letters) must not add to the CDAWeb score (T020)."""
+    from spedas_mcp.workflows import _score_sources
+
+    plain = _score_sources("monthly data review")
+    month = _score_sources("September monthly data review")
+    assert month["cdaweb"] <= plain["cdaweb"]
+
+
+@pytest.mark.parametrize(
+    "goal",
+    [
+        "Jupiter energetic ions in the magnetosphere from Juno",
+        "Cassini energetic electrons at Saturn",
+        "Galileo energetic ions at Jupiter",
+    ],
+)
+def test_planetary_energetic_particles_stay_pds_led(goal):
+    """The solar-energetic-particle CDAWeb nudge must be planetary-guarded so a
+    planetary energetic-particle goal still leads with PDS (T020)."""
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": goal,
+    }))
+    assert data["status"] == "success"
+    assert data["ranked_sources"][0]["source"] == "pds"
+    assert "cdaweb" not in data["recommended_sources"]

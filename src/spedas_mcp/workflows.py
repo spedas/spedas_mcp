@@ -76,6 +76,24 @@ SOURCE_PROFILES: dict[str, dict[str, Any]] = {
             # CDAWeb; SPICE remains available for heliographic-latitude geometry
             # (NAIF body -55) via the high-latitude nudge below (T013).
             "ulysses",
+            # STEREO (Ahead/Behind) is an SPDF/CDAWeb twin-spacecraft heliophysics
+            # mission: its IMPACT (SEP/SEPT/MAG), PLASTIC (solar-wind plasma), and
+            # SECCHI/WAVES products live in CDAWeb (the ST[AB]_* dataset family),
+            # with no PDS planetary bundles. ``_extract_target`` already maps
+            # "STEREO"/"STEREO-A"/"STEREO B"/"stereoa" to the canonical "STEREO"
+            # label (#30 / Batch V T007), but the source router had no matching
+            # keyword, so a SEP/energetic-particle goal phrased without the generic
+            # "solar wind"/"plasma"/"magnetic" measurement words ("STEREO-A SEP
+            # SEPT", "STEREO-A IMPACT energetic electrons") scored only 1 on every
+            # family and fell back to "all sources equally" — surfacing the PDS
+            # planetary archive. Worse, "STEREO ahead spacecraft SEP" routed to
+            # SPICE alone (on the bare "spacecraft" geometry token). Registering the
+            # mission name and its unambiguous instrument acronym lifts these goals
+            # onto CDAWeb. The bare "impact"/"sep"/"mag"/"plastic" English words are
+            # *deliberately* excluded — only the whole-word acronym "sept" and the
+            # multi-word SEP phrases (nudge below) are unambiguous; this mirrors the
+            # parker/psp "fields" exclusion (T020).
+            "stereo", "sept",
         ],
     },
     "pds": {
@@ -223,6 +241,21 @@ _HIGH_LATITUDE_PATTERNS = tuple(
 _HELIO_OBSERVATORY_PATTERNS = tuple(
     _word_pattern(t) for t in ("switchback", "switchbacks", "sweap")
 )
+# STEREO-style solar-energetic-particle heliospheric science. The whole multi-word
+# phrases ("solar energetic particle(s)", "energetic electrons/protons/ions") are
+# unambiguous in-situ measurement vocabulary that belongs to CDAWeb (the
+# IMPACT/SEPT/HET/LET/SIT measurement source), so they reinforce CDAWeb (+2),
+# guarded against planetary contexts so an "energetic ions" mention near Jupiter
+# stays PDS-led — exactly like the switchback/high-latitude guards (T020). The
+# bare acronyms "sep"/"impact" are deliberately *not* here: "sep" collides with
+# the month abbreviation and "impact" is an everyday English word; the unambiguous
+# "sept" acronym is registered as a CDAWeb keyword above instead.
+_SEP_PARTICLE_PATTERNS = tuple(
+    _word_pattern(t) for t in (
+        "solar energetic particle", "solar energetic particles",
+        "energetic electrons", "energetic protons", "energetic ions",
+    )
+)
 
 
 def _score_sources(text: str) -> dict[str, int]:
@@ -265,6 +298,13 @@ def _score_sources(text: str) -> dict[str, int]:
     # measurements, +2) so a geometry (encounter -> SPICE) or archive nudge can
     # never overtake it, guarded against planetary contexts (T014).
     if not planetary_context and _any_match(_HELIO_OBSERVATORY_PATTERNS, text):
+        scores["cdaweb"] += 2
+
+    # STEREO-style solar-energetic-particle science: reinforce CDAWeb (the
+    # IMPACT/SEPT measurement source, +2) so a bare "spacecraft" geometry nudge or
+    # archive fallback can never overtake it, guarded against planetary contexts
+    # so "energetic ions at Jupiter" stays PDS-led (T020).
+    if not planetary_context and _any_match(_SEP_PARTICLE_PATTERNS, text):
         scores["cdaweb"] += 2
 
     if max(scores.values()) == 0:
