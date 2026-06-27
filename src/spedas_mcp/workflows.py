@@ -148,12 +148,27 @@ def _score_sources(text: str) -> dict[str, int]:
         scores["pds"] += 2
         scores["spice"] += 1
     near_earth_context = any(term in text for term in [
-        "earth", "magnetopause", "bow shock", "solar wind", "omni",
+        "earth", "solar wind", "omni",
         # Magnetotail/substorm phrasing is unambiguously near-Earth CDAWeb science
-        # (T006). These reinforce CDAWeb the same way "magnetopause"/"bow shock"
-        # already do, so a geometry/archive nudge can never overtake it.
-        "magnetotail", "magnetosheath", "plasma sheet", "substorm",
+        # (T006). These reinforce CDAWeb so a geometry/archive nudge can never
+        # overtake it. (Boundary structures that also exist at other planets —
+        # "bow shock"/"magnetopause"/"magnetosheath" — are handled below, guarded
+        # against planetary context.)
+        "magnetotail", "plasma sheet", "substorm",
     ])
+    # Plasma-boundary structures ("bow shock", "magnetopause", "magnetosheath")
+    # are classic near-Earth CDAWeb science, but they are NOT Earth-exclusive:
+    # Mars/Venus/Mercury (induced or intrinsic) magnetospheres have their own bow
+    # shock and magnetopause, archived in PDS (e.g. MAVEN at Mars), not CDAWeb.
+    # Treating these tokens as unconditionally near-Earth added a spurious +2 to
+    # CDAWeb for a "MAVEN Mars bow shock" goal, misrouting a planetary study to an
+    # Earth/CDAWeb source (T015). Only count them as near-Earth when no planetary
+    # body/mission is named — same guard already used for "radiation belt" below.
+    boundary_context = any(
+        term in text for term in ["bow shock", "magnetopause", "magnetosheath"]
+    )
+    if boundary_context and not planetary_context:
+        near_earth_context = True
     # A bare "radiation belt" phrase is a good CDAWeb nudge for Earth/RBSP-style
     # heliophysics goals, but not for explicitly planetary/Juno/Cassini contexts:
     # Jupiter radiation belts are PDS planetary-archive science, not CDAWeb.

@@ -646,6 +646,83 @@ def test_planetary_routing_not_regressed_by_magnetospheric_keywords():
 
 
 # ---------------------------------------------------------------------------
+# T015: MAVEN Mars bow-shock / induced-magnetosphere routing.
+# "bow shock"/"magnetopause"/"magnetosheath" are plasma-boundary structures that
+# exist at Mars/Venus/Mercury too, not just Earth. The near-Earth nudge used to
+# treat them as unconditionally Earth/CDAWeb science, adding a spurious +2 to
+# CDAWeb for a "MAVEN Mars bow shock" goal and recommending an Earth/CDAWeb route
+# alongside the correct PDS planetary archive. The boundary tokens must only
+# count as near-Earth when no planetary body/mission is named.
+# ---------------------------------------------------------------------------
+
+def test_maven_mars_bow_shock_routes_to_pds_not_cdaweb():
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": "MAVEN Mars bow shock and magnetosheath induced-magnetosphere study",
+        "target": "MAVEN",
+    }))
+    assert data["status"] == "success"
+    # The planetary archive must lead; the near-Earth bow-shock/magnetosheath
+    # logic must not misroute Mars to an Earth/CDAWeb source. With no generic
+    # measurement observables forcing source-ambiguity, the boundary tokens no
+    # longer boost CDAWeb above the score>1 selection threshold.
+    assert data["recommended_sources"] == ["pds"]
+    # PDS must rank strictly above CDAWeb for this Mars planetary goal.
+    ranked = {r["source"]: r["score"] for r in data["ranked_sources"]}
+    assert ranked["pds"] > ranked["cdaweb"]
+
+
+def test_maven_mars_bow_shock_does_not_boost_cdaweb_via_boundary_nudge():
+    """The boundary nudge ("bow shock"/"magnetopause"/"magnetosheath") must not
+    add the Earth/CDAWeb +2 when a planetary body/mission is named."""
+    server = create_server()
+    earthless = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": "MAVEN Mars bow shock and magnetopause crossing",
+        "target": "MAVEN",
+    }))
+    plain = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": "MAVEN Mars crossing",
+        "target": "MAVEN",
+    }))
+    earthless_cdaweb = next(
+        r["score"] for r in earthless["ranked_sources"] if r["source"] == "cdaweb"
+    )
+    plain_cdaweb = next(
+        r["score"] for r in plain["ranked_sources"] if r["source"] == "cdaweb"
+    )
+    # Adding "bow shock"/"magnetopause" to a Mars goal must not raise CDAWeb's
+    # score (no Earth nudge); both stay PDS-led.
+    assert earthless_cdaweb == plain_cdaweb
+    assert earthless["recommended_sources"] == ["pds"]
+
+
+def test_maven_mars_bow_shock_plan_recommends_pds_not_cdaweb():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": "MAVEN Mars bow shock crossing on 2015-10-16",
+    }))
+    assert data["status"] == "success"
+    assert data["recommended_sources"] == ["pds"]
+    assert data["inferred"]["target"] == "MAVEN"
+    phases = {step["phase"] for step in data["plan"]}
+    assert {"discover_pds", "fetch_or_compute_pds", "preserve_provenance"} <= phases
+    # No spurious Earth/CDAWeb route for a Mars planetary study.
+    assert "discover_cdaweb" not in phases
+
+
+def test_earth_bow_shock_still_routes_to_cdaweb():
+    """The planetary guard must not regress genuine near-Earth bow-shock goals."""
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": "Earth bow shock crossing in the solar wind with MMS",
+        "target": "MMS",
+        "observables": ["magnetic field", "ion plasma"],
+    }))
+    assert data["status"] == "success"
+    assert data["recommended_sources"] == ["cdaweb"]
+
+
+# ---------------------------------------------------------------------------
 # Issue #24: parameter-name consistency between discovery tools.
 # search_spedas_data_sources historically takes `question`; browse_data_sources
 # takes `query`. Accept `query` as a backward-compatible alias so agents that
