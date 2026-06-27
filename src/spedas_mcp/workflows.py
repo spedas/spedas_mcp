@@ -238,7 +238,7 @@ def _extract_time_range(text: str) -> tuple[str | None, str | None]:
 
     ``_DATETIME_RE`` matches date-*shaped* tokens, including impossible ones like
     ``2015-13-40`` or ``2015-02-30``. Such tokens are validated by
-    ``_parse_datetime``/``_parse_utc_date`` and silently dropped, so an
+    ``_parse_iso_instant``/``_parse_utc_date`` and silently dropped, so an
     impossible date is treated as "no parse" rather than raising a raw
     ``ValueError`` out of the public planner tools (issue #30, blocker B1).
 
