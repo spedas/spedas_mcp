@@ -589,6 +589,8 @@ def create_server() -> FastMCP:
                         "transform_timeseries_coordinates",
                         "generate_fac_matrix",
                         "analyze_minvar_coordinates",
+                        "dynamic_power_spectrum",
+                        "wavelet_transform",
                     ],
                 },
                 "compatibility_low_level": {
@@ -1681,6 +1683,85 @@ def create_server() -> FastMCP:
             tslide=tslide,
             time_col=time_col,
             vector_cols=vector_cols,
+        ))
+
+    # ------------------------------------------------------------------
+    # Analysis layer (Phase 2: spectral & wave analysis, issue #15). Same
+    # optional pyspedas backend; the wavelet tool additionally needs PyWavelets
+    # (pulled in by spedas-mcp[analysis]). Both are file-in / file-out: the bulk
+    # time x frequency spectrogram is written to output_dir and only paths plus
+    # compact ranges/shape are returned (artifact-first).
+    # ------------------------------------------------------------------
+
+    @mcp.tool()
+    @_safe_tool
+    def dynamic_power_spectrum(
+        input_file: str,
+        output_dir: str,
+        data_col: str | None = None,
+        nboxpoints: int = 256,
+        nshiftpoints: int = 128,
+        bin: int = 3,
+        nohanning: bool = False,
+        time_col: str = "time",
+    ) -> str:
+        """Analysis: sliding-window Welch dynamic power spectrum of a scalar channel.
+
+        Backend: pyspedas dpwrspc. Reads a fetched CSV/JSON artifact, computes a
+        time x frequency power matrix over the selected data_col, writes it to
+        output_dir/dynamic_power_spectrum.npz, and returns only paths plus
+        time/frequency ranges and shape. Pair with a renderer to view the
+        spectrogram. Requires spedas-mcp[analysis].
+        """
+        from spedas_mcp.analysis.spectral import dynamic_power_spectrum as _impl
+
+        return _json(_impl(
+            input_file=input_file,
+            output_dir=output_dir,
+            data_col=data_col,
+            nboxpoints=nboxpoints,
+            nshiftpoints=nshiftpoints,
+            bin=bin,
+            nohanning=nohanning,
+            time_col=time_col,
+        ))
+
+    @mcp.tool()
+    @_safe_tool
+    def wavelet_transform(
+        input_file: str,
+        output_dir: str,
+        data_col: str | None = None,
+        wavename: str = "morl",
+        min_period: float | None = None,
+        max_period: float | None = None,
+        compute_significance: bool = False,
+        siglvl: float = 0.95,
+        time_col: str = "time",
+    ) -> str:
+        """Analysis: continuous wavelet transform (Morlet/Paul/DOG) of a scalar channel.
+
+        Backend: PyWavelets cwt over Torrence & Compo scales, optionally limited
+        to [min_period, max_period]. With compute_significance=True, per-scale
+        95% red-noise significance (pyspedas wave_signif) is saved alongside the
+        power so a renderer can contour significant regions. The time x frequency
+        power matrix is written to output_dir/wavelet_transform.npz; only paths
+        plus frequency/period ranges and shape are returned. Significance and
+        wide scale ranges are compute-heavy, so significance is opt-in. Requires
+        spedas-mcp[analysis].
+        """
+        from spedas_mcp.analysis.spectral import wavelet_transform as _impl
+
+        return _json(_impl(
+            input_file=input_file,
+            output_dir=output_dir,
+            data_col=data_col,
+            wavename=wavename,
+            min_period=min_period,
+            max_period=max_period,
+            compute_significance=compute_significance,
+            siglvl=siglvl,
+            time_col=time_col,
         ))
 
     return mcp

@@ -52,6 +52,8 @@ def test_server_has_expected_tools():
         "transform_timeseries_coordinates",
         "generate_fac_matrix",
         "analyze_minvar_coordinates",
+        "dynamic_power_spectrum",
+        "wavelet_transform",
     } <= names
 
 

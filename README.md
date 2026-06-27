@@ -59,17 +59,28 @@ SPICE is exposed as a data source category, but geometry operations are clearer 
 
 ### 4. Analysis tools (optional `pyspedas` backend)
 
-Phase-1 coordinate transforms over fetched artifacts. These tools require the
-optional `analysis` extra (`pip install 'spedas-mcp[analysis]'`, which installs
-`pyspedas`). `pyspedas` is **not** part of the base install; the tools import it
+Phase-1 coordinate transforms and Phase-2 time-frequency analysis over fetched
+artifacts. These tools require the optional `analysis` extra
+(`pip install 'spedas-mcp[analysis]'`, which installs `pyspedas>=2.0` and, through it,
+`PyWavelets`). `pyspedas` is **not** part of the base install; the tools import it
 lazily and return a clear `status="error"` with an install hint when the extra is
 missing. They are file-in / file-out: inputs are paths to fetched CSV/JSON
 products, bulk outputs are written to disk, and only paths plus compact summaries
 are returned (never raw arrays).
 
+Phase 1 — coordinate transforms:
+
 - `transform_timeseries_coordinates(input_file, coord_in, coord_out, output_file, time_col="time", vector_cols=None)` — transform an Nx3 vector time-series between `gse`/`gsm`/`sm`/`gei`/`geo`/`mag`/`j2000` (`pyspedas` `cotrans`).
 - `generate_fac_matrix(mag_file, output_file, other_dim="xgse", pos_file=None, time_col="time", vector_cols=None, mag_coord="gse")` — build per-sample field-aligned-coordinate (FAC) 3×3 rotation matrices (`fac_matrix_make`). Position-dependent modes (`rgeo`/`mrgeo`/`phigeo`/`mphigeo`/`phism`/`mphism`) require a GEI `pos_file`.
 - `analyze_minvar_coordinates(input_file, output_dir, twindow=None, tslide=None, time_col="time", vector_cols=None)` — minimum-variance analysis / LMN boundary-normal frame (`minvar`/`minvar_matrix_make`). Full-interval mode returns eigenvalues, eigenvectors, the normal vector, and the intermediate/min ratio; sliding-window mode (set `twindow`) writes per-window rotation matrices.
+
+Phase 2 — time-frequency / wave analysis (issue #15). Each reads a single scalar
+channel and writes the bulk `time × frequency` spectrogram (with its axes) to a
+compressed `.npz` under `output_dir`, returning only the path, ranges, and shape.
+Pair the spectrogram with a downstream renderer to view it.
+
+- `dynamic_power_spectrum(input_file, output_dir, data_col=None, nboxpoints=256, nshiftpoints=128, bin=3, nohanning=False, time_col="time")` — sliding Hanning-window Welch dynamic power spectrum (`pyspedas` `dpwrspc`). Returns `{spectrogram_file, data_col, shape, time_range, freq_range, ...}`.
+- `wavelet_transform(input_file, output_dir, data_col=None, wavename="morl", min_period=None, max_period=None, compute_significance=False, siglvl=0.95, time_col="time")` — continuous wavelet transform (Morlet/Paul/DOG) via PyWavelets over Torrence & Compo scales, optionally limited to a period band. `compute_significance=True` adds the per-scale 95% red-noise significance (`pyspedas` `wave_signif`); it is opt-in because significance and wide scale ranges are compute-heavy. Returns `{spectrogram_file, data_col, wavename, shape, time_range, freq_range, period_range, significance_computed, ...}`.
 
 ### 5. Compatibility low-level tools
 

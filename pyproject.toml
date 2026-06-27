@@ -36,7 +36,7 @@ mcp = ["mcp>=1.26.0"]
 # Optional pyspedas-backed analysis layer (Phase 1: coordinate transforms).
 # Not part of the base install; analysis tools import pyspedas lazily and return
 # a clear "install spedas-mcp[analysis]" error when this extra is absent.
-analysis = ["pyspedas>=1.6.0"]
+analysis = ["pyspedas>=2.0"]
 dev = [
     "pytest>=7.0",
     "mcp>=1.26.0",
