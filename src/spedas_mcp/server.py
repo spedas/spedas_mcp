@@ -264,6 +264,57 @@ def _safe_tool(func):
     return wrapper
 
 
+def _summarize_pydantic_validation(exc: BaseException) -> str:
+    """Render a pydantic argument ``ValidationError`` as a compact, URL-free message.
+
+    The raw ``str(ValidationError)`` embeds the full input dict and a public
+    ``errors.pydantic.dev`` doc URL (issue #57). We rebuild a short, deterministic
+    one-line summary from the structured ``.errors()`` entries instead, naming only
+    the offending parameter(s) and what is wrong — never the input values or a URL.
+    """
+    try:
+        errors = exc.errors()  # type: ignore[attr-defined]
+    except Exception:  # pragma: no cover - non-standard ValidationError shape
+        return _sanitize_message(str(exc))
+    parts: list[str] = []
+    for err in errors:
+        loc = err.get("loc") or ()
+        field = ".".join(str(part) for part in loc) if loc else "(arguments)"
+        kind = err.get("type", "")
+        if kind == "missing":
+            parts.append(f"missing required argument '{field}'")
+        elif kind in {"unexpected_keyword_argument", "extra_forbidden", "no_such_attribute"}:
+            parts.append(f"unexpected argument '{field}'")
+        else:
+            # Keep pydantic's short human message but strip any embedded URL/path.
+            msg = _sanitize_message(str(err.get("msg", "is invalid")))
+            parts.append(f"argument '{field}' {msg}")
+    if not parts:
+        return _sanitize_message(str(exc))
+    return "Invalid arguments: " + "; ".join(parts) + "."
+
+
+def _find_validation_error(exc: BaseException) -> BaseException | None:
+    """Return the underlying pydantic argument ``ValidationError``, if any.
+
+    FastMCP validates tool arguments against a generated pydantic model *before*
+    calling the (already ``_safe_tool``-wrapped) tool body, then re-raises the
+    failure wrapped in a ``ToolError`` (``Error executing tool <name>: ...``). That
+    path bypasses the structured-error contract and leaks the raw pydantic text
+    plus an ``errors.pydantic.dev`` URL to the client (issue #57). Walk the
+    exception chain and identify a pydantic ``ValidationError`` by class name so we
+    do not need to import pydantic here.
+    """
+    seen: set[int] = set()
+    cur: BaseException | None = exc
+    while cur is not None and id(cur) not in seen:
+        seen.add(id(cur))
+        if type(cur).__name__ == "ValidationError" and hasattr(cur, "errors"):
+            return cur
+        cur = cur.__cause__ or cur.__context__
+    return None
+
+
 # ---------------------------------------------------------------------------
 # Geometry/SPICE safety preflight (issues #26, #27, #29).
 #
@@ -2225,7 +2276,68 @@ def create_server() -> FastMCP:
             format=format,
         ))
 
+    _install_argument_validation_guard(mcp)
     return mcp
+
+
+def _install_argument_validation_guard(mcp: FastMCP) -> None:
+    """Route FastMCP argument-validation failures through the structured contract.
+
+    ``_safe_tool`` only wraps a tool's *body*, but FastMCP validates arguments
+    against a generated pydantic model and raises *before* the body runs, so a
+    bad/missing/misnamed argument escapes as a raw ``ToolError`` carrying the
+    pydantic text and an ``errors.pydantic.dev`` URL (issue #57). We wrap the
+    server's ``call_tool`` entry point: when the failure is an argument
+    ``ValidationError`` we return the same ``{status:"error", code, message, hint}``
+    envelope every other error uses (sanitized, naming the offending argument and
+    pointing at the tool's documented parameters). Non-validation errors are left
+    untouched — the tool body already converts those via ``_safe_tool``.
+    """
+    import functools
+
+    from mcp.server.fastmcp.utilities.func_metadata import _convert_to_content
+
+    original_call_tool = mcp.call_tool
+
+    def _convert_like_tool(name: str, envelope: str) -> Any:
+        """Convert an error string to the same content shape the named tool emits.
+
+        Tools annotated ``-> str`` get an inferred output schema, so a successful
+        return is converted to a ``(content, structured)`` tuple; reusing the tool's
+        own ``convert_result`` keeps our injected error response shape-identical to a
+        normal response (so clients and the test helper unpack it the same way).
+        """
+        tool = mcp._tool_manager.get_tool(name)
+        if tool is not None:
+            try:
+                return tool.fn_metadata.convert_result(envelope)
+            except Exception:  # pragma: no cover - fall back to bare content
+                pass
+        return _convert_to_content(envelope)
+
+    @functools.wraps(original_call_tool)
+    async def call_tool(name: str, arguments: dict[str, Any]) -> Any:
+        try:
+            return await original_call_tool(name, arguments)
+        except Exception as exc:  # noqa: BLE001 - convert arg-validation to envelope
+            validation = _find_validation_error(exc)
+            if validation is None:
+                raise
+            logger.warning("Tool %s argument validation failed: %s", name, validation)
+            envelope = _error_response(
+                "invalid_arguments",
+                _summarize_pydantic_validation(validation),
+                hint=(
+                    "Check the argument names/types against the tool's documented "
+                    "parameters; analysis tools that emit a single artifact take "
+                    "output_file, those that emit multiple files take output_dir."
+                ),
+                sanitize=False,  # already sanitized by _summarize_pydantic_validation
+                tool=name,
+            )
+            return _convert_like_tool(name, envelope)
+
+    mcp.call_tool = call_tool  # type: ignore[method-assign]
 
 
 def serve() -> None:
