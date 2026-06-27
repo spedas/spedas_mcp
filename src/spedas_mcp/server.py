@@ -109,8 +109,33 @@ def _error_response(
     }
     if hint is not None:
         payload["hint"] = hint
-    payload.update(extra)
+    if sanitize:
+        # Honor the docstring contract: redact paths/URLs from string extras too,
+        # so backend internals cannot leak through context fields (issues
+        # #25/#27). _sanitize_message only strips absolute paths/URLs and
+        # collapses whitespace, so plain IDs/frame names survive untouched.
+        for key, value in extra.items():
+            payload[key] = _sanitize_message(value) if isinstance(value, str) else value
+    else:
+        payload.update(extra)
     return _json(payload)
+
+
+def _unknown_source_type_error(source_type: str, allowed: list[str]) -> str:
+    """Uniform structured error for an unrecognized ``source_type`` routing arg.
+
+    The unified data-layer tools previously returned a bespoke legacy shape with
+    no ``code``/``message`` and a duplicate error key, so agents could not branch
+    on it like every other error (issue #27). This routes them through
+    ``_error_response`` instead.
+    """
+    return _error_response(
+        "invalid_argument",
+        f"unknown source_type: {source_type}",
+        hint=f"Pass one of: {', '.join(allowed)}.",
+        sanitize=False,
+        allowed=allowed,
+    )
 
 
 def _size_guarded(raw: str, **context: Any) -> str:
@@ -166,6 +191,26 @@ _EXCEPTION_CODES: tuple[tuple[type[BaseException], str, str | None], ...] = (
 )
 
 
+# Hint shared by every geometry/SPICE classification path.
+_GEOMETRY_HINT = (
+    "Check body/frame names against list_spice_missions and "
+    "list_coordinate_frames; not every body has loaded kernels."
+)
+
+# Substrings that mark a ``KeyError`` as a geometry lookup failure (unresolvable
+# body/frame/mission/kernel) raised by xhelio_spice, rather than a generic dict
+# miss. Matched case-insensitively against the exception text.
+_GEOMETRY_KEYERROR_SIGNALS = (
+    "body name",
+    "frame",
+    "mission",
+    "kernel",
+    "ephemeris",
+    "observer",
+    "target",
+)
+
+
 def _classify_exception(exc: BaseException) -> tuple[str, str | None]:
     """Return a ``(code, hint)`` pair for a backend exception (issue #27).
 
@@ -173,15 +218,21 @@ def _classify_exception(exc: BaseException) -> tuple[str, str | None]:
     fallback so we do not need to import optional backends just to classify their
     errors. Anything unrecognized degrades to a generic ``backend_error``.
     """
+    # A geometry ``KeyError`` (e.g. xhelio_spice "Cannot resolve body name 'X'")
+    # must reach the geometry-specific code/hint, not the generic
+    # ``KeyError -> invalid_argument`` mapping below, so SPICE callers get an
+    # actionable recovery path (issue #27). Detect it by message signal before
+    # the ordered isinstance table runs.
+    if isinstance(exc, KeyError):
+        text = str(exc).lower()
+        if any(signal in text for signal in _GEOMETRY_KEYERROR_SIGNALS):
+            return "geometry_error", _GEOMETRY_HINT
     for exc_type, code, hint in _EXCEPTION_CODES:
         if isinstance(exc, exc_type):
             return code, hint
     name = type(exc).__name__
     if "Spice" in name or name.endswith("SpiceyError"):
-        return "geometry_error", (
-            "Check body/frame names against list_spice_missions and "
-            "list_coordinate_frames; not every body has loaded kernels."
-        )
+        return "geometry_error", _GEOMETRY_HINT
     if "ValidationError" in name:
         return "invalid_argument", "One or more arguments are missing or the wrong type."
     return "backend_error", None
@@ -1029,7 +1080,7 @@ def create_server() -> FastMCP:
             return _wrap_data_payload(source, browse_pds_missions(query=query), query=query)
         if source == "spice":
             return _wrap_data_payload(source, _filter_json_records(list_spice_missions(), query), query=query, note="SPICE is exposed as the geometry data-source category.")
-        return _json({"status": "error", "error": f"unknown source_type: {source_type}", "allowed": ["all", "cdaweb", "pds", "spice"]})
+        return _unknown_source_type_error(source_type, ["all", "cdaweb", "pds", "spice"])
 
     @mcp.tool()
     def load_data_source(source_type: str, source_id: str) -> str:
@@ -1087,7 +1138,7 @@ def create_server() -> FastMCP:
                 source_id=source_id,
                 note="SPICE source loading returns the global coordinate-frame catalog; use geometry tools with mission/target arguments for mission-specific context.",
             )
-        return _json({"status": "error", "error": f"unknown source_type: {source_type}", "allowed": ["cdaweb", "pds", "spice"]})
+        return _unknown_source_type_error(source_type, ["cdaweb", "pds", "spice"])
 
     @mcp.tool()
     def browse_data_parameters(
@@ -1108,7 +1159,7 @@ def create_server() -> FastMCP:
                 dataset_id=dataset_id,
                 note="SPICE does not expose measurement parameters; use frames/targets/observer geometry instead.",
             )
-        return _json({"status": "error", "error": f"unknown source_type: {source_type}", "allowed": ["cdaweb", "pds", "spice"]})
+        return _unknown_source_type_error(source_type, ["cdaweb", "pds", "spice"])
 
     @mcp.tool()
     def fetch_data_product(
@@ -1125,27 +1176,43 @@ def create_server() -> FastMCP:
         source = _normalize_source_type(source_type)
         if source == "cdaweb":
             if start is None or stop is None or output_dir is None:
-                return _json({"status": "error", "error": "cdaweb fetch requires start, stop, and output_dir"})
+                return _error_response(
+                    "invalid_argument",
+                    "cdaweb fetch requires start, stop, and output_dir",
+                    hint="Provide start, stop (ISO timestamps) and an output_dir for the written product.",
+                    sanitize=False,
+                    source_type="cdaweb",
+                )
             return _wrap_data_payload(source, fetch_data(dataset_id=dataset_id, parameters=parameters, start=start, stop=stop, output_dir=output_dir, format=format), dataset_id=dataset_id)
         if source == "pds":
             if start is None or stop is None or output_dir is None:
-                return _json({"status": "error", "source_type": "pds", "error": "pds fetch requires start, stop, and output_dir"})
+                return _error_response(
+                    "invalid_argument",
+                    "pds fetch requires start, stop, and output_dir",
+                    hint="Provide start, stop (ISO timestamps) and an output_dir for the written product.",
+                    sanitize=False,
+                    source_type="pds",
+                )
             if limit is not None:
-                return _json({
-                    "status": "error",
-                    "source_type": "pds",
-                    "error": "PDS fetch_data_product does not support a limit argument yet; narrow start/stop/parameters or omit limit.",
-                    "unsupported_argument": "limit",
-                })
+                return _error_response(
+                    "invalid_argument",
+                    "PDS fetch_data_product does not support a limit argument yet; narrow start/stop/parameters or omit limit.",
+                    hint="Omit limit and narrow start/stop/parameters instead.",
+                    sanitize=False,
+                    source_type="pds",
+                    unsupported_argument="limit",
+                )
             return _wrap_data_payload(source, fetch_pds_data(dataset_id=dataset_id, parameters=parameters, start=start, stop=stop, output_dir=output_dir, format=format), dataset_id=dataset_id)
         if source == "spice":
-            return _json({
-                "status": "error",
-                "source_type": "spice",
-                "error": "SPICE is geometry/ephemeris, not a measurement product fetch. Use get_ephemeris, compute_distance, or transform_coordinates.",
-                "recommended_tools": ["get_ephemeris", "compute_distance", "transform_coordinates"],
-            })
-        return _json({"status": "error", "error": f"unknown source_type: {source_type}", "allowed": ["cdaweb", "pds", "spice"]})
+            return _error_response(
+                "invalid_argument",
+                "SPICE is geometry/ephemeris, not a measurement product fetch. Use get_ephemeris, compute_distance, or transform_coordinates.",
+                hint="Route SPICE requests to get_ephemeris, compute_distance, or transform_coordinates.",
+                sanitize=False,
+                source_type="spice",
+                recommended_tools=["get_ephemeris", "compute_distance", "transform_coordinates"],
+            )
+        return _unknown_source_type_error(source_type, ["cdaweb", "pds", "spice"])
 
     @mcp.tool()
     def manage_data_cache(
@@ -1176,7 +1243,7 @@ def create_server() -> FastMCP:
             return _wrap_data_payload(source, manage_pds_cache(action=action, mission=mission), note=cache_note)
         if source == "spice":
             return _wrap_data_payload(source, manage_spice_kernels(action=action, mission=mission), note=cache_note)
-        return _json({"status": "error", "error": f"unknown source_type: {source_type}", "allowed": ["all", "cdaweb", "pds", "spice"]})
+        return _unknown_source_type_error(source_type, ["all", "cdaweb", "pds", "spice"])
 
     # ------------------------------------------------------------------
     # Analysis layer (Phase 1: coordinate transforms). Optional pyspedas
@@ -1185,6 +1252,7 @@ def create_server() -> FastMCP:
     # ------------------------------------------------------------------
 
     @mcp.tool()
+    @_safe_tool
     def transform_timeseries_coordinates(
         input_file: str,
         coord_in: str,
@@ -1211,6 +1279,7 @@ def create_server() -> FastMCP:
         ))
 
     @mcp.tool()
+    @_safe_tool
     def generate_fac_matrix(
         mag_file: str,
         output_file: str,
@@ -1240,6 +1309,7 @@ def create_server() -> FastMCP:
         ))
 
     @mcp.tool()
+    @_safe_tool
     def analyze_minvar_coordinates(
         input_file: str,
         output_dir: str,

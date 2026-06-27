@@ -168,7 +168,11 @@ def test_transform_rejects_unknown_frames(vector_csv, tmp_path):
         output_file=str(tmp_path / "out.csv"),
     )
     assert out["status"] == "error"
-    assert "coord_in" in out["error"]
+    # Uniform error envelope (issue #27): code/message replace the legacy
+    # ``error`` key.
+    assert out["code"] == "invalid_argument"
+    assert "coord_in" in out["message"]
+    assert "error" not in out
     assert "gse" in out["supported_frames"]
 
 
@@ -189,7 +193,8 @@ def test_fac_position_mode_requires_pos_file(vector_csv, tmp_path):
         other_dim="rgeo",  # position-dependent
     )
     assert out["status"] == "error"
-    assert "pos_file" in out["error"]
+    assert out["code"] == "invalid_argument"
+    assert "pos_file" in out["message"]
     assert "rgeo" in out["modes_requiring_pos"]
 
 
@@ -216,7 +221,8 @@ def test_missing_analysis_extra_returns_clean_error(vector_csv, tmp_path, monkey
         output_file=str(tmp_path / "out.csv"),
     )
     assert out["status"] == "error"
-    assert "spedas-mcp[analysis]" in out["error"]
+    assert out["code"] == "dependency_missing"
+    assert "spedas-mcp[analysis]" in out["message"]
 
 
 # --------------------------------------------------------------------------
@@ -280,7 +286,7 @@ def test_transform_handles_cotrans_failure(vector_csv, tmp_path, monkeypatch):
         output_file=str(tmp_path / "out.csv"),
     )
     assert out["status"] == "error"
-    assert "cotrans failed" in out["error"]
+    assert "cotrans failed" in out["message"]
 
 
 def test_fac_matrix_shape_and_file(vector_csv, tmp_path, monkeypatch):
@@ -383,7 +389,7 @@ def test_load_rejects_missing_vector_cols(vector_csv, tmp_path, monkeypatch):
         vector_cols=["bx", "by", "missing"],
     )
     assert out["status"] == "error"
-    assert "missing" in out["error"]
+    assert "missing" in out["message"]
 
 
 def test_load_missing_file(tmp_path, monkeypatch):
@@ -395,7 +401,7 @@ def test_load_missing_file(tmp_path, monkeypatch):
         output_file=str(tmp_path / "out.csv"),
     )
     assert out["status"] == "error"
-    assert "does not exist" in out["error"]
+    assert "does not exist" in out["message"]
 
 
 # --------------------------------------------------------------------------

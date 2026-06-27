@@ -562,3 +562,169 @@ def test_wrapped_tool_responses_stay_within_size_limit():
     for source_type in ("cdaweb", "pds", "spice"):
         raw = _call_tool(server, "browse_data_sources", {"source_type": source_type})
         assert len(raw.encode("utf-8")) <= _MAX_RESPONSE_BYTES, source_type
+
+
+# ---------------------------------------------------------------------------
+# Batch K should-fixes — complete the uniform error contract (#27)
+# ---------------------------------------------------------------------------
+
+import inspect  # noqa: E402
+
+from spedas_mcp.server import _classify_exception  # noqa: E402
+
+
+def _assert_uniform_error(payload: dict) -> None:
+    """Every user-facing tool error must carry status/code/message (issue #27)."""
+    assert payload["status"] == "error"
+    assert isinstance(payload.get("code"), str) and payload["code"]
+    assert isinstance(payload.get("message"), str) and payload["message"]
+    # The legacy duplicate ``error`` key must be gone from converted surfaces.
+    assert "error" not in payload, payload
+
+
+def test_data_layer_unknown_source_type_uses_uniform_envelope():
+    server = create_server()
+    # All five unified data-layer routing tools must report an unknown
+    # source_type through the uniform envelope, not the legacy status/error shape.
+    cases = [
+        ("browse_data_sources", {"source_type": "bogus"}),
+        ("load_data_source", {"source_type": "bogus", "source_id": "x"}),
+        ("browse_data_parameters", {"source_type": "bogus", "dataset_id": "x"}),
+        ("fetch_data_product", {"source_type": "bogus", "dataset_id": "x", "parameters": ["a"]}),
+        ("manage_data_cache", {"source_type": "bogus"}),
+    ]
+    for tool, args in cases:
+        payload = json.loads(_call_tool(server, tool, args))
+        _assert_uniform_error(payload)
+        assert payload["code"] == "invalid_argument", tool
+        assert "bogus" in payload["message"], tool
+        assert payload["allowed"], tool
+
+
+def test_fetch_data_product_arg_validation_uses_uniform_envelope():
+    server = create_server()
+    # Missing required cdaweb args.
+    cdaweb = json.loads(_call_tool(server, "fetch_data_product", {
+        "source_type": "cdaweb", "dataset_id": "x", "parameters": ["a"],
+    }))
+    _assert_uniform_error(cdaweb)
+    assert cdaweb["code"] == "invalid_argument"
+    # Missing required pds args.
+    pds = json.loads(_call_tool(server, "fetch_data_product", {
+        "source_type": "pds", "dataset_id": "x", "parameters": ["a"],
+    }))
+    _assert_uniform_error(pds)
+    assert pds["source_type"] == "pds"
+    # SPICE measurement-fetch rejection keeps its recommended_tools extra.
+    spice = json.loads(_call_tool(server, "fetch_data_product", {
+        "source_type": "spice", "dataset_id": "juno", "parameters": ["ephemeris"],
+    }))
+    _assert_uniform_error(spice)
+    assert "get_ephemeris" in spice["recommended_tools"]
+
+
+def test_no_legacy_status_error_returns_on_data_layer_and_analysis_surfaces():
+    """Static guard: no remaining ``{"status":"error","error":...}`` tool returns.
+
+    Greps the rendered source of the unified data-layer routing tools and the
+    three analysis tools for the legacy duplicate-``error``-key shape so the
+    uniform contract (issue #27) cannot silently regress.
+    """
+    from spedas_mcp import server as server_mod
+    from spedas_mcp.analysis import coords as coords_mod
+
+    # The legacy shape always pairs a status="error" dict with a bare "error":
+    # key. The uniform envelope uses code=/message= instead. Assert the literal
+    # ``"error":`` key does not appear as a dict key in either module's source.
+    for mod in (server_mod, coords_mod):
+        src = inspect.getsource(mod)
+        assert '"error":' not in src, (
+            f"legacy status/error/error return still present in {mod.__name__}"
+        )
+
+
+def test_analysis_tools_are_wrapped_in_safe_tool():
+    server = create_server()
+    # Unexpected exceptions from pyspedas/OS/file-writes must surface as the
+    # structured envelope, not a raw traceback. A non-existent input_file makes
+    # the impl raise ValueError, which _safe_tool/_error must convert.
+    # transform: bad frame -> impl _error (uniform) ; missing file -> ValueError.
+    bad_frame = json.loads(_call_tool(server, "transform_timeseries_coordinates", {
+        "input_file": "/nonexistent/in.csv",
+        "coord_in": "not_a_frame",
+        "coord_out": "gse",
+        "output_file": "/tmp/out.csv",
+    }))
+    _assert_uniform_error(bad_frame)
+    assert bad_frame["code"] == "invalid_argument"
+
+    missing_file = json.loads(_call_tool(server, "analyze_minvar_coordinates", {
+        "input_file": "/nonexistent/path/in.csv",
+        "output_dir": "/tmp",
+    }))
+    _assert_uniform_error(missing_file)
+
+
+def test_analysis_safe_tool_converts_unexpected_exception(monkeypatch):
+    server = create_server()
+    # Force an unexpected (non-ValueError) exception out of the impl to prove the
+    # @_safe_tool decorator — not just the impl's own try/except — wraps it.
+    import spedas_mcp.analysis.coords as coords_mod
+
+    def _boom(*args, **kwargs):
+        raise OSError("disk write failed at /Users/secret/path")
+
+    monkeypatch.setattr(coords_mod, "generate_fac_matrix", _boom)
+    raw = _call_tool(server, "generate_fac_matrix", {
+        "mag_file": "m.npy", "output_file": "o.npy",
+    })
+    payload = json.loads(raw)
+    _assert_uniform_error(payload)
+    # _safe_tool tags the failing tool and sanitizes the path out of the message.
+    assert payload["tool"] == "generate_fac_matrix"
+    assert "/Users/" not in raw
+
+
+def test_spice_keyerror_classified_as_geometry_error():
+    # A geometry KeyError (xhelio_spice "Cannot resolve body name 'X'") must be
+    # classified as geometry_error with a geometry hint, not the generic
+    # KeyError -> invalid_argument mapping (issue #27 should-fix #3).
+    code, hint = _classify_exception(KeyError("Cannot resolve body name 'NOPE'"))
+    assert code == "geometry_error"
+    assert hint and "list_spice_missions" in hint
+    # A frame-resolution KeyError too.
+    code_f, _ = _classify_exception(KeyError("frame 'BOGUS' is not recognized"))
+    assert code_f == "geometry_error"
+    # A plain dict-miss KeyError stays a generic invalid_argument.
+    code_plain, _ = _classify_exception(KeyError("some_internal_dict_key"))
+    assert code_plain == "invalid_argument"
+
+
+def test_get_ephemeris_invalid_body_now_geometry_error():
+    server = create_server()
+    raw = _call_tool(server, "get_ephemeris", {
+        "target": "NONEXISTENT_BODY",
+        "time": "2020-01-01T00:00:00",
+    })
+    payload = json.loads(raw)
+    assert payload["status"] == "error"
+    assert payload["code"] == "geometry_error"
+    assert "list_spice_missions" in payload["hint"]
+    assert "/Users/" not in raw
+
+
+def test_error_response_sanitizes_string_extras():
+    raw = _error_response(
+        "unknown_source_id",
+        "lookup failed",
+        leaked_path="cache at /Users/x/.cdawebmcp/MMS1.json here",
+        allowed=["cdaweb", "pds"],
+        count=3,
+    )
+    payload = json.loads(raw)
+    # String extras are path-redacted to honor the docstring contract (#25/#27)...
+    assert "/Users/" not in payload["leaked_path"]
+    assert "<path>" in payload["leaked_path"]
+    # ...while non-string extras and plain-text lists pass through untouched.
+    assert payload["allowed"] == ["cdaweb", "pds"]
+    assert payload["count"] == 3

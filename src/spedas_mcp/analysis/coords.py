@@ -47,8 +47,27 @@ FAC_MODES = (
 FAC_MODES_REQUIRING_POS = ("rgeo", "mrgeo", "phigeo", "mphigeo", "phism", "mphism")
 
 
-def _error(message: str, **extra: Any) -> dict[str, Any]:
-    return {"status": "error", "error": message, **extra}
+def _error(
+    message: str,
+    *,
+    code: str = "invalid_argument",
+    hint: str | None = None,
+    **extra: Any,
+) -> dict[str, Any]:
+    """Build the uniform structured error payload for analysis tools.
+
+    Mirrors the server's ``_error_response`` envelope so analysis errors share the
+    same ``{status: "error", code, message, ...}`` contract as every other
+    user-facing tool error (issue #27) instead of the legacy
+    ``{status, error}`` shape. The server wraps these dicts with ``_json`` and the
+    ``_safe_tool`` size guard; truly-unexpected exceptions are converted to the
+    same envelope by ``_safe_tool``'s exception handler.
+    """
+    payload: dict[str, Any] = {"status": "error", "code": code, "message": message}
+    if hint is not None:
+        payload["hint"] = hint
+    payload.update(extra)
+    return payload
 
 
 def _load_time_and_vectors(
@@ -182,7 +201,7 @@ def transform_timeseries_coordinates(
     try:
         pyspedas = require_pyspedas()
     except AnalysisDependencyError as exc:
-        return _error(str(exc))
+        return _error(str(exc), code="dependency_missing")
 
     try:
         import numpy as np
@@ -267,7 +286,7 @@ def generate_fac_matrix(
     try:
         pyspedas = require_pyspedas()
     except AnalysisDependencyError as exc:
-        return _error(str(exc))
+        return _error(str(exc), code="dependency_missing")
 
     try:
         import numpy as np
@@ -363,7 +382,7 @@ def analyze_minvar_coordinates(
     try:
         pyspedas = require_pyspedas()
     except AnalysisDependencyError as exc:
-        return _error(str(exc))
+        return _error(str(exc), code="dependency_missing")
 
     try:
         import numpy as np
