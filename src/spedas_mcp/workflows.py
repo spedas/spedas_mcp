@@ -91,9 +91,16 @@ SOURCE_PROFILES: dict[str, dict[str, Any]] = {
         "cache_tools": ["manage_data_cache(source_type=\"pds\")"],
         "keywords": [
             "pds", "ppi", "planetary", "jupiter", "saturn", "mars", "venus", "mercury",
-            "uranus", "neptune", "juno", "cassini", "voyager", "galileo", "maven",
-            "messenger", "new horizons", "pioneer", "planet", "archive",
+            "uranus", "neptune", "pluto", "juno", "cassini", "voyager", "galileo",
+            "maven", "messenger", "new horizons", "pioneer", "planet", "archive",
             "bundle", "dataset", "urn",
+            # New Horizons instruments archived in PDS PPI (NEW-HORIZONS_PPI): SWAP
+            # (Solar Wind Around Pluto, the "Solar Wind" product) and PEPSSI (Pluto
+            # Energetic Particle Spectrometer). Naming them lets instrument-phrased
+            # goals ("New Horizons SWAP/PEPSSI") score PDS — its only honest source,
+            # as New Horizons has no CDAWeb time-series (T019). Both are distinctive
+            # acronyms (word-boundary matched, so "swap" never fires in "swapping").
+            "swap", "pepssi",
             # Note: "ulysses" was moved to the CDAWeb keyword list above — it is an
             # SPDF/CDAWeb solar-wind mission, not a PDS planetary-archive one (T013).
         ],
@@ -150,6 +157,11 @@ def _blob(*parts: object) -> str:
 
 _PLANETARY_CONTEXT_TERMS = (
     "jupiter", "saturn", "mars", "venus", "mercury", "uranus", "neptune",
+    # Pluto is the New Horizons flyby target and has PDS PPI products
+    # (NEW-HORIZONS_PPI SWAP "Solar Wind" + PEPSSI). Without it, "Pluto flyby
+    # plasma" scored no PDS planetary boost and mis-routed to near-Earth CDAWeb
+    # (T019). Listed as a body alongside the other planets it sits among.
+    "pluto",
     "juno", "cassini", "galileo", "voyager", "maven", "messenger",
     "new horizons", "pioneer",
 )
@@ -189,22 +201,31 @@ _MEASUREMENT_PATTERNS = tuple(_word_pattern(t) for t in ("magnetic", "field", "p
 _GEOMETRY_HINT_PATTERNS = tuple(
     _word_pattern(t) for t in ("where", "location", "near", "encounter", "closest approach")
 )
-# Multi-word/phrase boundary structures and magnetotail/substorm vocabulary that
-# reinforce the near-Earth CDAWeb lane. The boundary terms (bow shock /
-# magnetopause / magnetosheath) are split out below so they can be guarded
-# against planetary contexts (T015).
+# Multi-word/phrase magnetotail/substorm vocabulary that reinforces the
+# near-Earth CDAWeb lane. The boundary terms (bow shock / magnetopause /
+# magnetosheath) and "solar wind" are split out below so they can be guarded
+# against planetary contexts (T015/T019).
+# Unconditional near-Earth CDAWeb vocabulary. These terms are Earth-specific
+# (or OMNI-specific) and never describe a genuine planetary PDS-archive context,
+# so they boost CDAWeb regardless of a named body/mission. "solar wind" is
+# *deliberately excluded* here and guarded below: the solar wind is measured at
+# Pluto too (New Horizons SWAP, archived in PDS as the "Solar Wind" product), so
+# a bare "solar wind" mention in a planetary context must not surface CDAWeb
+# (T019), mirroring the T015 bow-shock / T013 high-latitude planetary guards.
 _NEAR_EARTH_PATTERNS = tuple(
     _word_pattern(t) for t in (
-        "earth", "solar wind", "omni",
+        "earth", "omni",
         "magnetotail", "plasma sheet", "substorm",
     )
 )
-# Boundary structures that exist at Mars/Venus/Mercury too, not just Earth. They
-# only count as a near-Earth CDAWeb nudge when no planetary body/mission is named
-# — otherwise "MAVEN Mars bow shock" spuriously routes CDAWeb alongside PDS
-# (T015), mirroring the existing "radiation belt" guard.
+# Boundary structures that exist at Mars/Venus/Mercury too, not just Earth, plus
+# the bare "solar wind" phrase. They only count as a near-Earth CDAWeb nudge when
+# no planetary body/mission is named — otherwise "MAVEN Mars bow shock" or "New
+# Horizons solar wind" spuriously routes CDAWeb alongside PDS (T015/T019),
+# mirroring the "radiation belt" guard.
 _BOUNDARY_PATTERNS = tuple(_word_pattern(t) for t in ("bow shock", "magnetopause", "magnetosheath"))
 _RADIATION_BELT_PATTERN = _word_pattern("radiation belt")
+_SOLAR_WIND_PATTERN = _word_pattern("solar wind")
 # Ulysses-style high-latitude / fast-solar-wind heliospheric vocabulary. These
 # define the out-of-ecliptic polar-pass science the planner must route to CDAWeb
 # (measurements, +2) with SPICE for heliographic-latitude geometry (+1), guarded
@@ -243,12 +264,16 @@ def _score_sources(text: str) -> dict[str, int]:
         scores["pds"] += 2
         scores["spice"] += 1
     near_earth_context = _any_match(_NEAR_EARTH_PATTERNS, text)
-    # Boundary structures (bow shock / magnetopause / magnetosheath) and a bare
-    # "radiation belt" phrase are good CDAWeb nudges for Earth/near-Earth science,
-    # but not for explicitly planetary contexts: Mars/Venus bow shocks and Jupiter
-    # radiation belts are PDS planetary-archive science, not CDAWeb (T015/T006).
+    # Boundary structures (bow shock / magnetopause / magnetosheath), a bare
+    # "radiation belt" phrase, and a bare "solar wind" phrase are good CDAWeb
+    # nudges for Earth/near-Earth science, but not for explicitly planetary
+    # contexts: Mars/Venus bow shocks and Jupiter radiation belts are PDS
+    # planetary-archive science (T015/T006), and New Horizons "solar wind" is the
+    # PDS SWAP product, not a CDAWeb time-series (T019).
     if not planetary_context and (
-        _any_match(_BOUNDARY_PATTERNS, text) or _RADIATION_BELT_PATTERN.search(text)
+        _any_match(_BOUNDARY_PATTERNS, text)
+        or _RADIATION_BELT_PATTERN.search(text)
+        or _SOLAR_WIND_PATTERN.search(text)
     ):
         near_earth_context = True
     if near_earth_context:

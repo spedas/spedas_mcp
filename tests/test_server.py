@@ -1918,3 +1918,125 @@ def test_earth_bow_shock_still_routes_to_cdaweb():
     }))
     assert data["status"] == "success"
     assert data["recommended_sources"] == ["cdaweb"]
+
+
+# ===========================================================================
+# T019: New Horizons Pluto-flyby / SWAP / PEPSSI planetary-archive routing.
+#   New Horizons is a PDS PPI mission (NEW-HORIZONS_PPI, 12 datasets incl. the
+#   "Solar Wind" SWAP product and the PEPSSI energetic-particle product); it has
+#   NO CDAWeb time-series. Two gaps existed before this fix:
+#     1. "Pluto" was not a planetary-context body, so "Pluto flyby plasma"
+#        scored no PDS planetary boost and mis-routed to near-Earth CDAWeb.
+#     2. The bare "solar wind" near-Earth nudge fired unconditionally, so
+#        "New Horizons solar wind" (a PDS SWAP product) spuriously surfaced
+#        CDAWeb alongside PDS. Guarding it against planetary contexts (the same
+#        discipline as the T015 bow-shock / T013 high-latitude nudges) keeps
+#        genuine near-Earth/heliospheric solar-wind goals (OMNI/ACE/Wind/
+#        Ulysses) on CDAWeb while New-Horizons/Pluto solar wind stays PDS-led.
+#   SWAP/PEPSSI are added as PDS vocabulary so the instrument phrasing scores PDS.
+# ===========================================================================
+
+
+def test_new_horizons_pluto_flyby_swap_pepssi_routes_to_pds():
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": "New Horizons Pluto flyby SWAP and PEPSSI plasma and energetic particles",
+    }))
+    assert data["status"] == "success"
+    # PDS is New Horizons' only honest source; it must lead and outrank CDAWeb.
+    assert data["ranked_sources"][0]["source"] == "pds"
+    assert data["recommended_sources"][0] == "pds"
+    pds = next(r for r in data["ranked_sources"] if r["source"] == "pds")
+    cdaweb = next(r for r in data["ranked_sources"] if r["source"] == "cdaweb")
+    assert pds["score"] > cdaweb["score"]
+
+
+def test_new_horizons_solar_wind_stays_pds_led_not_cdaweb_led():
+    """New Horizons solar wind is the SWAP PDS product, not a CDAWeb time-series."""
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": "New Horizons solar wind during the cruise to Pluto",
+    }))
+    assert data["status"] == "success"
+    assert data["ranked_sources"][0]["source"] == "pds"
+    assert data["recommended_sources"][0] == "pds"
+    pds = next(r for r in data["ranked_sources"] if r["source"] == "pds")
+    cdaweb = next(r for r in data["ranked_sources"] if r["source"] == "cdaweb")
+    assert pds["score"] > cdaweb["score"]
+
+
+def test_pluto_flyby_plasma_routes_to_pds_not_cdaweb_led():
+    """A Pluto flyby is planetary-archive science; it must be PDS-led, not CDAWeb-led."""
+    server = create_server()
+    data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+        "question": "Pluto flyby plasma",
+    }))
+    assert data["status"] == "success"
+    # Before the fix Pluto was not a planetary-context body, so this scored
+    # CDAWeb=2 / PDS=1 and recommended ["cdaweb"] — a planetary flyby routed to
+    # the near-Earth archive. PDS must now lead.
+    assert data["ranked_sources"][0]["source"] == "pds"
+    assert data["recommended_sources"][0] == "pds"
+    pds = next(r for r in data["ranked_sources"] if r["source"] == "pds")
+    cdaweb = next(r for r in data["ranked_sources"] if r["source"] == "cdaweb")
+    assert pds["score"] > cdaweb["score"]
+
+
+def test_new_horizons_plan_infers_target_and_leads_with_pds():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": (
+            "New Horizons SWAP solar-wind plasma during the Pluto encounter on "
+            "2015-07-14"
+        ),
+    }))
+    assert data["status"] == "success"
+    assert data["inferred"]["target"] == "New Horizons"
+    assert data["inferred"]["start"] == "2015-07-14T00:00:00Z"
+    assert data["recommended_sources"][0] == "pds"
+    phases = {step["phase"] for step in data["plan"]}
+    assert {"discover_pds", "fetch_or_compute_pds"} <= phases
+
+
+def test_solar_wind_planetary_guard_does_not_regress_near_earth_goals():
+    """Guarding the 'solar wind' nudge must not drop CDAWeb for near-Earth/heliospheric solar-wind goals."""
+    server = create_server()
+    for goal in (
+        "OMNI solar wind during a geomagnetic storm",
+        "ACE solar wind plasma upstream of Earth",
+        "Wind spacecraft solar wind measurements",
+        "Ulysses high-latitude fast solar wind",
+    ):
+        data = json.loads(_call_tool(server, "search_spedas_data_sources", {
+            "question": goal,
+        }))
+        assert data["status"] == "success", goal
+        assert data["recommended_sources"] == ["cdaweb"], goal
+
+
+def test_solar_wind_nudge_suppressed_in_planetary_context():
+    from spedas_mcp.workflows import _score_sources
+
+    # The +2 "solar wind" near-Earth nudge must fire for a non-planetary goal but
+    # be suppressed when a planetary body/mission is named (mirrors the T015
+    # bow-shock guard). The bare "solar wind" *keyword* (+1) may still count.
+    # Same trailing vocabulary, with and without a planetary body/mission named.
+    nearearth = _score_sources("flyby plasma solar wind")
+    planetary = _score_sources("new horizons pluto flyby plasma solar wind")
+    # The +2 near-Earth nudge fires only without a planetary context, so the
+    # planetary CDAWeb score is strictly lower despite the extra mission word.
+    assert planetary["cdaweb"] < nearearth["cdaweb"]
+    # And the suppressed nudge keeps PDS decisively ahead of CDAWeb.
+    assert planetary["pds"] > planetary["cdaweb"]
+
+
+def test_swap_pepssi_are_pds_vocabulary():
+    from spedas_mcp.workflows import _score_sources
+
+    # The New Horizons instrument acronyms must score for PDS (they name PDS PPI
+    # products), and must not fire inside unrelated words via substring matching.
+    scored = _score_sources("new horizons swap pepssi products")
+    assert scored["pds"] >= 3
+    # "swap" must not match inside e.g. "swapping"; "pepssi" is distinctive.
+    noisy = _score_sources("geotail swapping buffers")
+    assert noisy["pds"] == 0
