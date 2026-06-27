@@ -197,9 +197,40 @@ def _mission_keyword_pattern(keyword: str) -> str:
 # references ("SolO spacecraft", "Cluster mission") while ignoring generic uses
 # ("fly solo", "a cluster of events"). ``solar orbiter`` is already covered by
 # the main keyword list above.
+#
+# Cluster is a four-spacecraft (C1-C4) constellation, so multi-spacecraft goals
+# are its most natural phrasing. The bare ``\bcluster\s+<qualifier>`` form missed
+# the canonical multi-point wording — "Cluster multi-spacecraft magnetopause",
+# "multi-point Cluster timing", "Cluster C1 C2 C3 C4", "Cluster FGM" — silently
+# dropping the target so the planner could not route to CDAWeb Cluster products.
+# The patterns below also recognise the multi-point qualifier on either side of
+# "Cluster", the C1-C4 spacecraft designators, and the core Cluster instrument
+# acronyms. They stay conservative: a bare "cluster" or generic uses ("a cluster
+# of substorms", "clustering algorithm") still do not match.
 _QUALIFIED_MISSION_KEYWORDS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"\bsolo\s+(?:spacecraft|orbiter|mission|probe)\b", re.IGNORECASE), "Solar Orbiter"),
-    (re.compile(r"\bcluster\s+(?:spacecraft|mission|constellation|satellites?)\b", re.IGNORECASE), "Cluster"),
+    (
+        re.compile(
+            r"\bcluster\s+(?:spacecraft|mission|constellation|satellites?"
+            r"|multi[- ]?spacecraft|multi[- ]?point|four[- ]?spacecraft)\b",
+            re.IGNORECASE,
+        ),
+        "Cluster",
+    ),
+    (
+        re.compile(
+            r"\b(?:multi[- ]?spacecraft|multi[- ]?point|four[- ]?spacecraft)\s+cluster\b",
+            re.IGNORECASE,
+        ),
+        "Cluster",
+    ),
+    (
+        re.compile(
+            r"\bcluster\s+(?:c[1-4]\b|fgm|cis|peace|staff|whisper|edi|aspoc)",
+            re.IGNORECASE,
+        ),
+        "Cluster",
+    ),
 ]
 
 # ISO date with an optional trailing time. The date is required; the time

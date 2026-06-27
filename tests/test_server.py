@@ -482,6 +482,63 @@ def test_plan_spedas_observation_single_target_has_singleton_targets_list():
 
 
 # ---------------------------------------------------------------------------
+# T010: Cluster is a four-spacecraft constellation, so multi-spacecraft phrasing
+# is its most natural wording. The qualified-keyword matcher must recognise the
+# multi-point/C1-C4/instrument forms, while still rejecting generic "cluster"
+# uses (no false positive for "a cluster of substorms").
+# ---------------------------------------------------------------------------
+
+@_pytest_b1.mark.parametrize(
+    "goal",
+    [
+        "Cluster multi-spacecraft magnetopause crossing",
+        "Cluster multi-point magnetopause timing",
+        "multi-spacecraft Cluster magnetopause study",
+        "multi-point Cluster timing analysis",
+        "Cluster four-spacecraft timing",
+        "Cluster C1 C2 C3 C4 magnetopause",
+        "Cluster C3 boundary crossing",
+        "Cluster FGM magnetopause crossing",
+        "Cluster CIS ion moments",
+    ],
+)
+def test_extract_target_cluster_multispacecraft_phrasing(goal):
+    from spedas_mcp.workflows import _extract_target
+
+    assert _extract_target(goal) == "Cluster"
+
+
+@_pytest_b1.mark.parametrize(
+    "goal",
+    [
+        "a cluster of substorms",
+        "a cluster of events near the magnetopause",
+        "clustering algorithm for boundary detection",
+        "star cluster catalogue",
+    ],
+)
+def test_extract_target_cluster_no_false_positive(goal):
+    from spedas_mcp.workflows import _extract_target
+
+    assert _extract_target(goal) is None
+
+
+def test_plan_spedas_observation_infers_cluster_for_multispacecraft_goal():
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": (
+            "Cluster multi-spacecraft magnetopause crossing on 2002-03-30 "
+            "around 10:00 UT using FGM magnetic field"
+        ),
+    }))
+    assert data["inferred"].get("target") == "Cluster"
+    # The natural-language date/time should still be inferred alongside the target.
+    assert data["inferred"].get("start") == "2002-03-30T09:00:00Z"
+    assert data["inferred"].get("stop") == "2002-03-30T11:00:00Z"
+    assert data["status"] == "success"
+
+
+# ---------------------------------------------------------------------------
 # Issue #30 / zhipu-1 nice-to-have: a non-positive interval (start >= stop)
 # should be flagged rather than silently succeeding.
 # ---------------------------------------------------------------------------
