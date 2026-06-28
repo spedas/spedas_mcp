@@ -143,6 +143,8 @@ def test_browse_missing_dependency(monkeypatch):
     assert out["code"] == "missing_dependency"
     assert out["extra"] == "fdsn"
     assert "spedas-mcp[fdsn]" in out["hint"]
+    assert "Original import failed with ImportError" in out["message"]
+    assert "import error:" not in out["message"]
 
 
 # --------------------------------------------------------------------------

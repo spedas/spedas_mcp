@@ -28,6 +28,7 @@ Design contract (mirrors the optional :mod:`spedas_mcp.analysis` layer):
 from __future__ import annotations
 
 from typing import Any
+import importlib.util
 
 
 class DataSourceDependencyError(RuntimeError):
@@ -99,6 +100,19 @@ def require_hapiclient():
     return hapi_fn
 
 
+def _optional_module_state(name: str) -> str:
+    """Return a compact diagnostic for an optional dependency without importing it."""
+    try:
+        spec = importlib.util.find_spec(name)
+    except Exception as exc:  # pragma: no cover - import machinery edge case
+        return f"unavailable ({type(exc).__name__}: {exc})"
+    if spec is None:
+        return "not installed"
+    if spec.origin is None:
+        return "namespace package only (no importable module file)"
+    return "installed"
+
+
 def require_mth5():
     """Lazily import and return the ``pyspedas.mth5`` module.
 
@@ -121,10 +135,18 @@ def require_mth5():
     try:
         import pyspedas.mth5 as mth5_module  # noqa: F401
     except Exception as exc:  # pragma: no cover - exercised via monkeypatch in tests
+        component_state = {
+            "pyspedas.mth5": _optional_module_state("pyspedas.mth5"),
+            "mth5": _optional_module_state("mth5"),
+            "obspy": _optional_module_state("obspy"),
+        }
         raise DataSourceDependencyError(
             "This tool requires the optional FDSN/MTH5 backend "
-            "(pyspedas with mth5 + obspy). These are intentionally not part of "
-            f"the base install. (import error: {exc})",
+            "(pyspedas with mth5 + obspy), which is not fully importable in "
+            "this environment. These packages are intentionally not part of "
+            "the base install. "
+            f"Dependency check: {component_state}. "
+            f"Original import failed with {type(exc).__name__}.",
             extra="fdsn",
         ) from exc
     return mth5_module

@@ -86,9 +86,20 @@ def test_browse_lists_datasets(monkeypatch):
     assert out["dataset_count"] == 3
     ids = {d["id"] for d in out["datasets"]}
     assert {"OMNI_HRO2_1MIN", "AC_H0_MFI", "NO_TITLE_DS"} == ids
-    # Entry without a title still has the key (None).
+    assert out["title_count"] == 2
+    # Entry without a title omits the misleading null title key.
     no_title = next(d for d in out["datasets"] if d["id"] == "NO_TITLE_DS")
-    assert no_title["title"] is None
+    assert "title" not in no_title
+
+
+def test_browse_all_missing_titles_omits_nulls_and_adds_note(monkeypatch):
+    _install_fake_hapiclient(monkeypatch, catalog={"catalog": [{"id": "DS1"}, {"id": "DS2"}]})
+    out = hapi.browse_hapi_catalog("https://cdaweb.gsfc.nasa.gov/hapi")
+    assert out["status"] == "success"
+    assert out["dataset_count"] == 2
+    assert out["title_count"] == 0
+    assert all("title" not in d for d in out["datasets"])
+    assert "did not include dataset titles" in out["note"]
 
 
 def test_browse_query_filters(monkeypatch):

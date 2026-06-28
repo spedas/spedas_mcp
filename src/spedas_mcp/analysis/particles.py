@@ -55,7 +55,10 @@ from . import AnalysisDependencyError, require_pyspedas
 # Per-slice distribution fields consumed by the pyspedas particle algorithms.
 # ``data``/``energy``/``theta``/``phi``/``dtheta``/``dphi``/``denergy``/``bins``
 # are per-slice 2D arrays of shape ``(n_energy, n_angle)``; stacked over time
-# they are 3D ``(n_time, n_energy, n_angle)``. ``charge``/``mass`` are scalars.
+# they are 3D ``(n_time, n_energy, n_angle)``. ``magf`` is the per-slice
+# magnetic-field vector consumed by ``moments_3d`` for field-aligned tensor
+# decomposition; it may be supplied as ``(3,)`` or ``(T,3)``. ``charge``/``mass``
+# are scalars.
 _SLICE_FIELDS = (
     "data",
     "energy",
@@ -67,10 +70,11 @@ _SLICE_FIELDS = (
     "bins",
 )
 _SCALAR_FIELDS = ("charge", "mass")
+_VECTOR_FIELDS = ("magf",)
 
 # Fields each backend strictly requires. moments_3d needs the full set; the
 # spectra functions need only the geometry + data they average over.
-_MOMENTS_REQUIRED = set(_SLICE_FIELDS) | set(_SCALAR_FIELDS)
+_MOMENTS_REQUIRED = set(_SLICE_FIELDS) | set(_SCALAR_FIELDS) | set(_VECTOR_FIELDS)
 _SPECTRA_REQUIRED = {
     "energy": {"data", "energy", "bins"},
     "phi": {"data", "theta", "dtheta", "phi", "dphi", "bins"},
@@ -94,10 +98,12 @@ DIST_SCHEMA_DOC = (
     "Distribution artifact schema (file-in). Provide an .npz (preferred) or a "
     "JSON object with these keys: 'times' (T Unix seconds), 'data' (T,E,A flux), "
     "'energy' (T,E,A or E,A eV), 'denergy', 'theta', 'dtheta', 'phi', 'dphi', "
-    "'bins' (same shape as 'data'; 1=active, 0=inactive), and scalars 'charge' "
-    "(in e) and 'mass' (in eV/(km/s)^2, pyspedas convention). E=energy bins, "
-    "A=solid-angle bins. Per-slice 2D fields may be given once (E,A) and are "
-    "broadcast across all T slices."
+    "'bins' (same shape as 'data'; 1=active, 0=inactive), 'magf' ((T,3) "
+    "magnetic-field vector per distribution slice, or (3,) broadcast to all "
+    "slices; required by moments_3d for field-aligned temperature/pressure "
+    "decomposition), and scalars 'charge' (in e) and 'mass' (in eV/(km/s)^2, "
+    "pyspedas convention). E=energy bins, A=solid-angle bins. Per-slice 2D "
+    "fields may be given once (E,A) and are broadcast across all T slices."
 )
 
 MAG_SCHEMA_DOC = (
@@ -244,6 +250,28 @@ def _normalize_distribution(
         else:
             raise ValueError(
                 f"field '{field}' must be 2D (E,A) or 3D (T,E,A); got ndim {arr.ndim}"
+            )
+        cubes[field] = arr
+
+    for field in _VECTOR_FIELDS:
+        if field not in raw:
+            continue
+        arr = np.asarray(raw[field], dtype="float64")
+        if arr.ndim == 1:
+            if arr.shape[0] != 3:
+                raise ValueError(
+                    f"field '{field}' 1D vector must have length 3; got {arr.shape[0]}"
+                )
+            arr = np.broadcast_to(arr, (n_time, 3)).copy()
+        elif arr.ndim == 2:
+            if arr.shape != (n_time, 3):
+                raise ValueError(
+                    f"field '{field}' must have shape (T,3) matching data slices; "
+                    f"got {arr.shape}, expected {(n_time, 3)}"
+                )
+        else:
+            raise ValueError(
+                f"field '{field}' must be 1D (3,) or 2D (T,3); got ndim {arr.ndim}"
             )
         cubes[field] = arr
 

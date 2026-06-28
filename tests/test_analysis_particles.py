@@ -63,6 +63,7 @@ def _make_dist_arrays(n_time: int = 3, n_energy: int = 8, n_theta: int = 4, n_ph
         "phi": phi,
         "dphi": dphi,
         "bins": bins,
+        "magf": np.tile(np.array([0.0, 0.0, 5.0]), (n_time, 1)),
         "charge": 1.0,
         "mass": 5.68e-6,  # electron mass in pyspedas eV/(km/s)^2 units
     }
@@ -215,6 +216,33 @@ def test_moments_rejects_single_energy_bound(dist_npz, tmp_path):
         str(dist_npz), str(tmp_path / "mom"), energy_range_ev=[100.0]
     )
     assert out["status"] == "error"
+
+
+def test_moments_missing_magf_is_structured_invalid_argument(tmp_path, monkeypatch):
+    _install_fake_pyspedas(monkeypatch)
+    arrays = _make_dist_arrays()
+    arrays.pop("magf")
+    dist = tmp_path / "dist_without_magf.npz"
+    np.savez(dist, **arrays)
+
+    out = particles.compute_particle_moments(str(dist), str(tmp_path / "mom"))
+
+    assert out["status"] == "error"
+    assert out["code"] == "invalid_argument"
+    assert "magf" in out["message"]
+
+
+def test_moments_accepts_single_magf_vector_broadcast(tmp_path, monkeypatch):
+    _install_fake_pyspedas(monkeypatch)
+    arrays = _make_dist_arrays()
+    arrays["magf"] = np.array([0.0, 0.0, 5.0])
+    dist = tmp_path / "dist_single_magf.npz"
+    np.savez(dist, **arrays)
+
+    out = particles.compute_particle_moments(str(dist), str(tmp_path / "mom"))
+
+    assert out["status"] == "success"
+    assert out["n_time"] == 3
 
 
 def test_spectra_rejects_unknown_type(dist_npz, tmp_path):
@@ -766,6 +794,7 @@ def test_real_pitch_angle_beam_peaks_along_b(tmp_path):
         "phi": phi,
         "dphi": dphi,
         "bins": bins,
+        "magf": np.array([0.0, 0.0, 5.0]),
         "charge": 1.0,
         "mass": 5.68e-6,
     }

@@ -29,8 +29,18 @@ from typing import Any
 
 from . import AnalysisDependencyError, require_pyspedas
 
-# Coordinate frames supported by pyspedas cotrans (cotrans_lib.subcotrans).
+# Coordinate frames supported by pyspedas cotrans (cotrans_lib.subcotrans). These
+# are geocentric / near-Earth frames; this tool deliberately does not implement
+# heliospheric RTN/spacecraft-frame rotations.
 SUPPORTED_FRAMES = ("gse", "gsm", "sm", "gei", "geo", "mag", "j2000")
+UNSUPPORTED_HELIOSPHERIC_FRAMES = ("rtn", "rtp", "sc", "spacecraft", "srf")
+EARTH_FRAME_DOMAIN_NOTE = (
+    "transform_timeseries_coordinates uses pyspedas cotrans geophysical Earth-frame "
+    "rotations (GSE/GSM/SM/GEI/GEO/MAG/J2000). It is not valid for heliospheric "
+    "RTN/RTP or instrument/spacecraft-frame vectors such as PSP/Solar Orbiter MAG "
+    "products unless those vectors were first converted into a supported Earth frame "
+    "with explicit provenance."
+)
 
 # FAC reference modes supported by pyspedas fac_matrix_make, and the subset that
 # additionally requires a spacecraft-position series.
@@ -45,6 +55,98 @@ FAC_MODES = (
     "ygsm",
 )
 FAC_MODES_REQUIRING_POS = ("rgeo", "mrgeo", "phigeo", "mphigeo", "phism", "mphism")
+
+
+def _candidate_sidecars(input_path: Path) -> list[Path]:
+    """Return sidecar filenames that may carry fetch/data provenance."""
+    return [
+        input_path.with_suffix(input_path.suffix + ".provenance.json"),
+        input_path.with_suffix(input_path.suffix + ".metadata.json"),
+        input_path.with_suffix(".provenance.json"),
+        input_path.with_suffix(".metadata.json"),
+    ]
+
+
+def _frame_from_text(text: str | None) -> str | None:
+    """Best-effort frame inference from dataset IDs, filenames, or column names."""
+    if not text:
+        return None
+    import re
+
+    lowered = text.lower()
+    # Match frame-like tokens at separators/boundaries. This intentionally avoids
+    # guessing plain "mag" as MAG, because mission/product names often contain it
+    # as an instrument noun rather than a coordinate frame.
+    for frame in ("rtn", "rtp", "gse", "gsm", "gei", "geo", "j2000", "sm", "sc", "srf"):
+        if re.search(rf"(?<![a-z0-9]){re.escape(frame)}(?![a-z0-9])", lowered):
+            return "spacecraft" if frame in {"sc", "srf"} else frame
+        if re.search(rf"[_./-]{re.escape(frame)}([_./-]|$)", lowered):
+            return "spacecraft" if frame in {"sc", "srf"} else frame
+    return None
+
+
+def _load_frame_provenance(input_file: str, vector_cols: list[str] | None = None) -> dict[str, Any] | None:
+    """Load/infer source coordinate-frame provenance for a fetched artifact.
+
+    This is deliberately conservative: it only returns a frame when the sidecar,
+    dataset/file name, or vector column names contain an explicit frame token such
+    as ``RTN``/``GSE``/``GSM``/``SC``. Unknown provenance remains ``None`` so generic
+    user CSVs are not blocked.
+    """
+    path = Path(input_file)
+    evidence: dict[str, Any] = {}
+    for sidecar in _candidate_sidecars(path):
+        if not sidecar.exists():
+            continue
+        try:
+            payload = json.loads(sidecar.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if isinstance(payload, dict):
+            frame = payload.get("coordinate_frame") or payload.get("source_frame")
+            if isinstance(frame, str) and frame.strip():
+                return {"frame": frame.strip().lower(), "source": "sidecar", "sidecar": str(sidecar), "provenance": payload}
+            for key in ("dataset_id", "product_id", "source_dataset", "parameters"):
+                candidate = payload.get(key)
+                frame = _frame_from_text(json.dumps(candidate, default=str))
+                if frame:
+                    return {"frame": frame, "source": f"sidecar.{key}", "sidecar": str(sidecar), "provenance": payload}
+            evidence["sidecar"] = str(sidecar)
+
+    for label, text in (
+        ("filename", path.name),
+        ("parent", path.parent.name),
+        ("vector_cols", " ".join(vector_cols or [])),
+    ):
+        frame = _frame_from_text(text)
+        if frame:
+            return {"frame": frame, "source": label, **evidence}
+    return None
+
+
+def _provenance_frame_guard(input_file: str, coord_in_l: str, vector_cols: list[str] | None = None) -> dict[str, Any] | None:
+    """Return a structured error if source-frame provenance contradicts coord_in."""
+    prov = _load_frame_provenance(input_file, vector_cols)
+    if prov is None:
+        return None
+    frame = str(prov.get("frame", "")).lower()
+    if frame in UNSUPPORTED_HELIOSPHERIC_FRAMES:
+        return _error(
+            f"input artifact appears to be in unsupported heliospheric/spacecraft frame '{frame}', "
+            f"but coord_in='{coord_in_l}' requests an Earth-frame cotrans rotation",
+            hint=EARTH_FRAME_DOMAIN_NOTE,
+            supported_frames=list(SUPPORTED_FRAMES),
+            unsupported_heliospheric_frames=list(UNSUPPORTED_HELIOSPHERIC_FRAMES),
+            input_frame_provenance=prov,
+        )
+    if frame in SUPPORTED_FRAMES and frame != coord_in_l:
+        return _error(
+            f"coord_in='{coord_in_l}' does not match input artifact frame provenance '{frame}'",
+            hint="Pass the true coord_in from the artifact provenance or regenerate the input with explicit frame metadata.",
+            supported_frames=list(SUPPORTED_FRAMES),
+            input_frame_provenance=prov,
+        )
+    return None
 
 
 def _error(
@@ -197,13 +299,33 @@ def transform_timeseries_coordinates(
     coord_in_l = (coord_in or "").strip().lower()
     coord_out_l = (coord_out or "").strip().lower()
     if coord_in_l not in SUPPORTED_FRAMES:
+        extra = {}
+        hint = None
+        if coord_in_l in UNSUPPORTED_HELIOSPHERIC_FRAMES:
+            hint = EARTH_FRAME_DOMAIN_NOTE
+            extra["unsupported_heliospheric_frames"] = list(UNSUPPORTED_HELIOSPHERIC_FRAMES)
         return _error(
-            f"unsupported coord_in '{coord_in}'", supported_frames=list(SUPPORTED_FRAMES)
+            f"unsupported coord_in '{coord_in}'",
+            hint=hint,
+            supported_frames=list(SUPPORTED_FRAMES),
+            **extra,
         )
     if coord_out_l not in SUPPORTED_FRAMES:
+        extra = {}
+        hint = None
+        if coord_out_l in UNSUPPORTED_HELIOSPHERIC_FRAMES:
+            hint = EARTH_FRAME_DOMAIN_NOTE
+            extra["unsupported_heliospheric_frames"] = list(UNSUPPORTED_HELIOSPHERIC_FRAMES)
         return _error(
-            f"unsupported coord_out '{coord_out}'", supported_frames=list(SUPPORTED_FRAMES)
+            f"unsupported coord_out '{coord_out}'",
+            hint=hint,
+            supported_frames=list(SUPPORTED_FRAMES),
+            **extra,
         )
+
+    guard = _provenance_frame_guard(input_file, coord_in_l, vector_cols)
+    if guard is not None:
+        return guard
 
     try:
         pyspedas = require_pyspedas()
@@ -257,6 +379,7 @@ def transform_timeseries_coordinates(
         "input_vector_cols": resolved,
         "output_vector_cols": out_cols,
         "summary": _component_summary(transformed),
+        "domain_note": EARTH_FRAME_DOMAIN_NOTE,
     }
 
 

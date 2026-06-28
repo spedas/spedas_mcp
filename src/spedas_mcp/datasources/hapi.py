@@ -10,7 +10,7 @@ full-``pyspedas`` install is not required just to reach a HAPI server.
 ``hapiclient.hapi`` shapes used here:
 
 - ``hapi(server)`` -> ``dict`` following the HAPI catalog response, with a
-  ``catalog`` list of ``{"id", "title"?}`` entries.
+  ``catalog`` list of ``{"id", "title"?}`` entries. Some servers (notably CDAWeb) omit titles for every dataset; missing titles are omitted from returned records rather than serialized as ``null``.
 - ``hapi(server, dataset, parameters, start, stop)`` -> ``(data, meta)`` where
   ``data`` is a NumPy structured array (first field is the ISO time column) and
   ``meta`` is the HAPI ``info`` dict with a ``parameters`` list carrying
@@ -29,7 +29,7 @@ from typing import Any, Literal
 from . import DataSourceDependencyError, _error, _missing_dependency_error, require_hapiclient
 
 
-def browse_hapi_catalog(server_url: str, query: str | None = None) -> dict[str, Any]:
+def browse_hapi_catalog(server_url: str, query: str | None = None, max_results: int | None = 500) -> dict[str, Any]:
     """List datasets advertised by a HAPI server.
 
     Parameters
@@ -38,13 +38,18 @@ def browse_hapi_catalog(server_url: str, query: str | None = None) -> dict[str, 
         Base HAPI URL (ends in ``/hapi``), e.g.
         ``https://cdaweb.gsfc.nasa.gov/hapi``.
     query:
-        Optional case-insensitive substring filter applied to dataset id/title.
+        Optional case-insensitive substring filter applied to dataset id and any title provided by the server.
+    max_results:
+        Maximum number of dataset records to return after filtering. Defaults to
+        500 so unfiltered large catalogs remain MCP-size safe. Pass ``None`` to
+        request all records from direct Python use.
 
     Returns
     -------
     dict
-        ``{status, server, datasets: [{id, title}...], dataset_count, query?}``
-        on success, or a structured error payload.
+        ``{status, server, datasets, dataset_count, title_count, query?, note?}``
+        on success, or a structured error payload. ``title`` is included per
+        dataset only when the HAPI server provides one.
     """
     if not server_url or not server_url.strip():
         return _error(
@@ -67,7 +72,11 @@ def browse_hapi_catalog(server_url: str, query: str | None = None) -> dict[str, 
         ds_id = item.get("id")
         if ds_id is None:
             continue
-        datasets.append({"id": ds_id, "title": item.get("title")})
+        entry: dict[str, Any] = {"id": ds_id}
+        title = item.get("title")
+        if title is not None:
+            entry["title"] = title
+        datasets.append(entry)
 
     if query:
         needle = query.casefold()
@@ -77,12 +86,38 @@ def browse_hapi_catalog(server_url: str, query: str | None = None) -> dict[str, 
             or needle in str(d.get("title", "")).casefold()
         ]
 
+    total_dataset_count = len(datasets)
+    if max_results is not None:
+        try:
+            limit = int(max_results)
+        except (TypeError, ValueError):
+            return _error("max_results must be an integer or null")
+        if limit <= 0:
+            return _error("max_results must be positive when provided")
+        datasets = datasets[:limit]
+
+    title_count = sum(1 for d in datasets if d.get("title") is not None)
     payload: dict[str, Any] = {
         "status": "success",
         "server": server,
         "dataset_count": len(datasets),
+        "total_dataset_count": total_dataset_count,
+        "datasets_truncated": len(datasets) < total_dataset_count,
+        "title_count": title_count,
         "datasets": datasets,
     }
+    if datasets and title_count == 0:
+        payload["note"] = (
+            "This HAPI server's /catalog response did not include dataset titles; "
+            "records expose ids only. Use fetch_hapi_data/browse server-specific "
+            "metadata tools to inspect parameter descriptions for a chosen dataset."
+        )
+    if len(datasets) < total_dataset_count:
+        payload["note"] = (
+            (payload.get("note") + " " if payload.get("note") else "")
+            + f"Showing {len(datasets)} of {total_dataset_count} matching datasets; "
+            "pass a query to narrow the catalog or increase max_results for direct Python use."
+        )
     if query:
         payload["query"] = query
     return payload

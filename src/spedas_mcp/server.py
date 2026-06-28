@@ -36,6 +36,56 @@ def _json(data: object) -> str:
 _FILL_LIKE_ABS_THRESHOLD = 1e29
 
 
+def _infer_coordinate_frame_from_dataset(dataset_id: str | None, parameters: list[str] | None = None) -> str | None:
+    """Conservative frame inference from explicit dataset/parameter tokens.
+
+    Used only as provenance for fetched artifacts; it does not claim every dataset
+    has a known frame. Tokens such as ``_RTN_``/``_GSE_``/``_GSM_`` are common in
+    heliophysics product IDs and are safe enough to surface as a guard signal for
+    downstream coordinate transforms.
+    """
+    import re
+
+    text = " ".join([dataset_id or "", *(parameters or [])]).lower()
+    for frame in ("rtn", "rtp", "gse", "gsm", "gei", "geo", "j2000", "sm", "sc", "srf"):
+        if re.search(rf"(?<![a-z0-9]){re.escape(frame)}(?![a-z0-9])", text):
+            return "spacecraft" if frame in {"sc", "srf"} else frame
+        if re.search(rf"[_./-]{re.escape(frame)}([_./-]|$)", text):
+            return "spacecraft" if frame in {"sc", "srf"} else frame
+    return None
+
+
+def _write_fetch_provenance_sidecar(
+    file_path: Path,
+    *,
+    source_type: str,
+    dataset_id: str,
+    parameters: list[str],
+    start: str,
+    stop: str,
+    fmt: str,
+    extra: dict[str, Any] | None = None,
+) -> str:
+    """Write a compact JSON sidecar next to a fetched tabular artifact."""
+    coordinate_frame = _infer_coordinate_frame_from_dataset(dataset_id, parameters)
+    sidecar = file_path.with_suffix(file_path.suffix + ".provenance.json")
+    payload: dict[str, Any] = {
+        "source_type": source_type,
+        "dataset_id": dataset_id,
+        "parameters": list(parameters),
+        "time_range": {"start": start, "stop": stop},
+        "format": fmt,
+        "coordinate_frame": coordinate_frame,
+        "coordinate_frame_inference": (
+            "explicit frame token parsed from dataset_id/parameters" if coordinate_frame else None
+        ),
+    }
+    if extra:
+        payload.update(extra)
+    sidecar.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
+    return str(sidecar)
+
+
 def _safe_float(value: Any) -> float | None:
     """Return a finite float for JSON stats, or ``None`` if unavailable."""
     try:
@@ -230,6 +280,115 @@ def _error_response(
     else:
         payload.update(extra)
     return _json(payload)
+
+
+
+
+def _validate_fetch_time_range(start: str, stop: str, *, source_type: str) -> str | None:
+    """Return a structured invalid_argument response for malformed fetch times.
+
+    CDAWeb/PDS REST backends otherwise turn caller mistakes (unparseable dates or
+    reversed intervals) into opaque HTTP 400/404 backend errors. Validate locally
+    so agents can repair their own arguments without a network round-trip.
+    """
+    try:
+        import pandas as pd
+    except Exception:  # pragma: no cover - pandas is a data-fetch dependency
+        return None
+
+    parsed: dict[str, Any] = {}
+    for name, value in (("start", start), ("stop", stop)):
+        try:
+            timestamp = pd.to_datetime(value, utc=True, errors="coerce")
+        except Exception:
+            timestamp = pd.NaT
+        if pd.isna(timestamp):
+            return _error_response(
+                "invalid_argument",
+                f"could not parse {name} time {value!r}; use ISO-8601 (for example 2025-06-19T08:00:00Z).",
+                hint="Pass parseable ISO-8601 start/stop values before fetching data.",
+                sanitize=False,
+                source_type=source_type,
+                invalid_argument=name,
+            )
+        parsed[name] = timestamp
+    if parsed["stop"] <= parsed["start"]:
+        return _error_response(
+            "invalid_argument",
+            "stop must be after start for data fetches.",
+            hint="Use a positive time interval (stop > start), or swap the supplied start/stop values.",
+            sanitize=False,
+            source_type=source_type,
+            invalid_argument="stop",
+        )
+    return None
+
+
+def _no_data_response(
+    *,
+    source_type: str,
+    dataset_id: str,
+    parameters: list[str],
+    start: str,
+    stop: str,
+    parameter_metadata: dict[str, dict],
+) -> str:
+    """Return a structured, classified no-data response for CDAWeb/PDS fetches.
+
+    Backends currently expose failed fetches primarily as per-parameter messages.
+    Keep those messages in ``parameters`` for evidence, but provide a stable
+    top-level ``code`` so callers never have to parse free text. Classification is
+    intentionally conservative: use specific codes only for common, high-signal
+    backend wording, otherwise fall back to ``no_data``.
+    """
+    messages = [str(meta.get("message", "")) for meta in parameter_metadata.values() if isinstance(meta, dict)]
+    combined = " ".join(messages).casefold()
+    code = "no_data"
+    message = (
+        f"No data fetched for dataset {dataset_id!r} in the requested time range "
+        f"with {len(parameters)} requested parameter(s)."
+    )
+    hint = "Check dataset_id, parameter names, and the requested start/stop interval; use discovery tools before retrying."
+
+    has_unknown_dataset = bool(
+        combined
+        and any(token in combined for token in ("master cdf", "404", "unknown dataset", "dataset not", "not in catalog"))
+    )
+    has_unknown_parameter = bool(
+        combined
+        and any(token in combined for token in ("parameter", "variable", "not in dataset", "unknown parameter", "unknown variable"))
+    )
+    has_no_data_in_range = bool(
+        combined
+        and any(token in combined for token in ("no cdf files", "no files", "no data", "outside", "coverage", "time range"))
+    )
+
+    if has_unknown_dataset:
+        # Dataset-level failures are more fundamental than per-parameter misses or
+        # generic no-data-in-range wording that may be appended by a backend.
+        code = "unknown_dataset"
+        message = f"Dataset {dataset_id!r} could not be fetched or was not found by the {source_type.upper()} backend."
+        hint = "Call browse_data_sources/load_data_source to discover a valid dataset_id before retrying."
+    elif has_unknown_parameter:
+        code = "unknown_parameter"
+        message = f"One or more requested parameters were not found for dataset {dataset_id!r}."
+        hint = "Call browse_data_parameters for this dataset_id and retry with valid parameter names."
+    elif has_no_data_in_range:
+        code = "no_data_in_range"
+        message = f"No data were available for dataset {dataset_id!r} in the requested time range."
+        hint = "Try a time range inside the dataset coverage window, or inspect source metadata before retrying."
+
+    return _error_response(
+        code,
+        message,
+        hint=hint,
+        sanitize=False,
+        source_type=source_type,
+        dataset_id=dataset_id,
+        time_range={"start": start, "stop": stop},
+        requested_parameters=parameters,
+        parameters=parameter_metadata,
+    )
 
 
 def _unknown_source_type_error(source_type: str, allowed: list[str]) -> str:
@@ -915,6 +1074,9 @@ def create_server() -> FastMCP:
         import pandas as pd
         from cdawebmcp.fetch import fetch_data as _fetch_data
 
+        time_error = _validate_fetch_time_range(start, stop, source_type="cdaweb")
+        if time_error is not None:
+            return time_error
         lib_result = _fetch_data(dataset_id=dataset_id, parameters=parameters, start=start, stop=stop)
         out_dir = Path(output_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -951,7 +1113,14 @@ def create_server() -> FastMCP:
                 "stats": augmented_stats,
             }
         if not frames:
-            return _json({"status": "error", "message": "No data fetched", "parameters": param_meta})
+            return _no_data_response(
+                source_type="cdaweb",
+                dataset_id=dataset_id,
+                parameters=parameters,
+                start=start,
+                stop=stop,
+                parameter_metadata=param_meta,
+            )
         merged = frames[0]
         for frame in frames[1:]:
             merged = merged.join(frame, how="outer")
@@ -985,9 +1154,21 @@ def create_server() -> FastMCP:
             file_path.write_text(json.dumps(data), encoding="utf-8")
         else:
             merged_to_write.to_csv(file_path)
+        provenance_sidecar = _write_fetch_provenance_sidecar(
+            file_path,
+            source_type="cdaweb",
+            dataset_id=dataset_id,
+            parameters=parameters,
+            start=start,
+            stop=stop,
+            fmt=format,
+            extra={"rows_written": rows_written, "rows_before_limit": rows_before_limit},
+        )
         return _json({
             "status": "success",
             "file_path": str(file_path),
+            "provenance_sidecar": provenance_sidecar,
+            "source_frame": _infer_coordinate_frame_from_dataset(dataset_id, parameters),
             "format": format,
             "dataset_id": dataset_id,
             "time_range": {"start": start, "stop": stop},
@@ -1038,6 +1219,9 @@ def create_server() -> FastMCP:
         import pandas as pd
         from pdsmcp.fetch import fetch_data as _fetch_data
 
+        time_error = _validate_fetch_time_range(start, stop, source_type="pds")
+        if time_error is not None:
+            return time_error
         lib_result = _fetch_data(dataset_id=dataset_id, parameters=parameters, start=start, stop=stop)
         out_dir = Path(output_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -1061,7 +1245,14 @@ def create_server() -> FastMCP:
                 "stats": entry.get("stats"),
             }
         if not frames:
-            return _json({"status": "error", "message": "No data fetched", "parameters": param_meta})
+            return _no_data_response(
+                source_type="pds",
+                dataset_id=dataset_id,
+                parameters=parameters,
+                start=start,
+                stop=stop,
+                parameter_metadata=param_meta,
+            )
         merged = frames[0]
         for frame in frames[1:]:
             merged = merged.join(frame, how="outer")
@@ -1079,9 +1270,21 @@ def create_server() -> FastMCP:
             file_path.write_text(json.dumps(data), encoding="utf-8")
         else:
             merged.to_csv(file_path)
+        provenance_sidecar = _write_fetch_provenance_sidecar(
+            file_path,
+            source_type="pds",
+            dataset_id=dataset_id,
+            parameters=parameters,
+            start=start,
+            stop=stop,
+            fmt=format,
+            extra={"rows_written": len(merged)},
+        )
         return _json({
             "status": "success",
             "file_path": str(file_path),
+            "provenance_sidecar": provenance_sidecar,
+            "source_frame": _infer_coordinate_frame_from_dataset(dataset_id, parameters),
             "format": format,
             "dataset_id": dataset_id,
             "time_range": {"start": start, "stop": stop},
@@ -1235,6 +1438,7 @@ def create_server() -> FastMCP:
         ``spacecraft`` that is not SPICE-supported returns
         ``unsupported_spice_target`` (issue #26).
         """
+        import numpy as np
         from xhelio_spice import transform_vector
 
         # Only ``spacecraft`` is a body name; from_frame/to_frame are frames and
@@ -1249,10 +1453,11 @@ def create_server() -> FastMCP:
             return preflight
 
         result = transform_vector(vector, time, from_frame=from_frame, to_frame=to_frame, spacecraft=spacecraft)
+        output_vector = np.asarray(result, dtype=float).tolist()
         return _json({
             "status": "success",
             "input_vector": vector,
-            "output_vector": result,
+            "output_vector": output_vector,
             "from_frame": from_frame,
             "to_frame": to_frame,
             "time": time,
@@ -1384,23 +1589,24 @@ def create_server() -> FastMCP:
             return any(_payload_has_error(value) for value in payload)
         return False
 
-    def _translate_cdaweb_facade_guidance(raw: str) -> str:
-        """Rewrite CDAWeb backend how-to prose into the unified facade vocabulary.
+    def _translate_facade_guidance(raw: str, source_type: str) -> str:
+        """Rewrite backend how-to prose into the unified facade vocabulary.
 
-        CDAWeb observatory prompts are useful, but their embedded workflow text
-        names low-level compatibility tools (browse_parameters/fetch_data/
-        manage_cache). load_data_source is the primary facade entry point, so the
-        payload should keep agents on browse_data_parameters/fetch_data_product/
-        manage_data_cache (issue #66).
+        Backend prompts are useful, but their embedded workflow text can name
+        low-level compatibility tools (browse_parameters/fetch_data/manage_cache).
+        load_data_source is the primary facade entry point, so payload guidance
+        should keep agents on browse_data_parameters/fetch_data_product/
+        manage_data_cache with an explicit source_type (issues #66/#73).
         """
+        source = _normalize_source_type(source_type)
         replacements = {
-            "browse_parameters(dataset_id)": "browse_data_parameters(source_type=\"cdaweb\", dataset_id=...)",
-            "browse_parameters(dataset_id=dataset_id)": "browse_data_parameters(source_type=\"cdaweb\", dataset_id=dataset_id)",
-            "browse_parameters(dataset_id=...)": "browse_data_parameters(source_type=\"cdaweb\", dataset_id=...)",
-            "fetch_data(dataset_id, parameters, start, stop, output_dir)": "fetch_data_product(source_type=\"cdaweb\", dataset_id=..., parameters=..., start=..., stop=..., output_dir=...)",
-            "fetch_data(dataset_id=dataset_id, parameters=parameters, start=start, stop=stop, output_dir=output_dir)": "fetch_data_product(source_type=\"cdaweb\", dataset_id=dataset_id, parameters=parameters, start=start, stop=stop, output_dir=output_dir)",
-            "manage_cache(action=\"rebuild_catalog\")": "manage_data_cache(source_type=\"cdaweb\", action=\"status\")",
-            "manage_cache(action='rebuild_catalog')": "manage_data_cache(source_type=\"cdaweb\", action=\"status\")",
+            "browse_parameters(dataset_id)": f"browse_data_parameters(source_type=\"{source}\", dataset_id=...)",
+            "browse_parameters(dataset_id=dataset_id)": f"browse_data_parameters(source_type=\"{source}\", dataset_id=dataset_id)",
+            "browse_parameters(dataset_id=...)": f"browse_data_parameters(source_type=\"{source}\", dataset_id=...)",
+            "fetch_data(dataset_id, parameters, start, stop, output_dir)": f"fetch_data_product(source_type=\"{source}\", dataset_id=..., parameters=..., start=..., stop=..., output_dir=...)",
+            "fetch_data(dataset_id=dataset_id, parameters=parameters, start=start, stop=stop, output_dir=output_dir)": f"fetch_data_product(source_type=\"{source}\", dataset_id=dataset_id, parameters=parameters, start=start, stop=stop, output_dir=output_dir)",
+            "manage_cache(action=\"rebuild_catalog\")": f"manage_data_cache(source_type=\"{source}\", action=\"status\")",
+            "manage_cache(action='rebuild_catalog')": f"manage_data_cache(source_type=\"{source}\", action=\"status\")",
             "manage_cache": "manage_data_cache",
         }
         translated = raw
@@ -1408,10 +1614,26 @@ def create_server() -> FastMCP:
             translated = translated.replace(old_text, new_text)
         # Catch remaining bare function names without altering already translated
         # facade calls.
-        translated = re.sub(r"(?<!data_)\bbrowse_parameters\b", "browse_data_parameters", translated)
-        translated = re.sub(r"(?<!_)\bfetch_data\b", "fetch_data_product", translated)
-        translated = re.sub(r"\bmanage_cache\b", "manage_data_cache", translated)
+        translated = re.sub(
+            r"(?<!data_)\bbrowse_parameters\b(?!\s*\(source_type=)",
+            f"browse_data_parameters(source_type=\"{source}\", dataset_id=...)",
+            translated,
+        )
+        translated = re.sub(
+            r"(?<!_)\bfetch_data\b(?!_product)(?!\s*\(source_type=)",
+            f"fetch_data_product(source_type=\"{source}\", dataset_id=..., parameters=..., start=..., stop=..., output_dir=...)",
+            translated,
+        )
+        translated = re.sub(
+            r"\bmanage_cache\b(?!\s*\(source_type=)",
+            f"manage_data_cache(source_type=\"{source}\", action=\"status\")",
+            translated,
+        )
         return translated
+
+    def _translate_cdaweb_facade_guidance(raw: str) -> str:
+        """Backward-compatible wrapper for CDAWeb prompt translation."""
+        return _translate_facade_guidance(raw, "cdaweb")
 
 
     def _wrap_data_payload(source_type: str, raw: str, **extra: Any) -> str:
@@ -1423,6 +1645,14 @@ def create_server() -> FastMCP:
             # instead of forwarding raw filesystem paths to the client
             # (issues #25/#27).
             payload = _sanitize_message(raw)
+        if (
+            isinstance(payload, dict)
+            and str(payload.get("status", "")).lower() == "error"
+        ):
+            # If a compatibility fetch already returned the uniform structured
+            # envelope, keep code/message at the top level for fetch_data_product
+            # callers instead of burying them under payload (issues #75/#76).
+            return _size_guarded(_json({**payload, "source_type": source_type, **extra}), source_type=source_type)
         status = "error" if _payload_has_error(payload) else "success"
         return _size_guarded(
             _json({"status": status, "source_type": source_type, "payload": payload, **extra}),
@@ -1763,7 +1993,7 @@ def create_server() -> FastMCP:
                 return invalid
             return _wrap_data_payload(
                 source,
-                load_pds_mission(normalized_source_id),
+                _translate_facade_guidance(load_pds_mission(normalized_source_id), "pds"),
                 source_id=source_id,
                 normalized_source_id=normalized_source_id,
             )
@@ -2353,20 +2583,23 @@ def create_server() -> FastMCP:
 
     @mcp.tool()
     @_safe_tool
-    def browse_hapi_catalog(server_url: str, query: str | None = None) -> str:
+    def browse_hapi_catalog(server_url: str, query: str | None = None, max_results: int | None = 500) -> str:
         """Data layer (HAPI): list datasets advertised by any HAPI-compliant server.
 
         Backend: hapiclient (optional spedas-mcp[hapi] extra). Works against
         CDAWeb, PDS-PPI, ISWA, LISIRD, and university HAPI servers. Pass the HAPI
         base URL (ends in /hapi), e.g. 'https://cdaweb.gsfc.nasa.gov/hapi';
-        optionally filter ids/titles with query. Returns
-        {status, server, dataset_count, datasets: [{id, title}...]}. Returns a
-        missing_dependency error (install spedas-mcp[hapi]) when hapiclient is
-        absent — base install and list_tools still work without it.
+        optionally filter ids/titles with query. ``max_results`` defaults to 500
+        so unfiltered large catalogs stay response-size safe. Returns
+        {status, server, dataset_count, total_dataset_count, datasets_truncated,
+        title_count, datasets}. ``title`` is present only when the server
+        provides it. Returns a missing_dependency error (install
+        spedas-mcp[hapi]) when hapiclient is absent — base install and list_tools
+        still work without it.
         """
         from spedas_mcp.datasources.hapi import browse_hapi_catalog as _impl
 
-        return _json(_impl(server_url=server_url, query=query))
+        return _json(_impl(server_url=server_url, query=query, max_results=max_results))
 
     @mcp.tool()
     @_safe_tool

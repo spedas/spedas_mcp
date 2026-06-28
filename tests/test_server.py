@@ -289,6 +289,33 @@ def test_load_data_source_cdaweb_translates_backend_guidance_to_facade(monkeypat
     assert "manage_cache(" not in payload
 
 
+def test_load_data_source_pds_translates_backend_guidance_to_facade(monkeypatch):
+    import pdsmcp.prompts as prompts
+
+    def _fake_prompt(mission_id: str) -> str:
+        return (
+            "Use `browse_parameters` to inspect dataset variables before fetching. "
+            "Use `fetch_data` to download PDS data. "
+            "Then call `browse_parameters(dataset_id)` to see available variables. "
+            "Run `manage_cache(action=\"rebuild_catalog\")` if metadata is stale."
+        )
+
+    monkeypatch.setattr(prompts, "build_mission_prompt", _fake_prompt)
+    server = create_server()
+    data = json.loads(_call_tool(server, "load_data_source", {
+        "source_type": "pds",
+        "source_id": "vex",
+    }))
+    payload = data["payload"]
+    assert data["status"] == "success"
+    assert "browse_data_parameters(source_type=\"pds\"" in payload
+    assert "fetch_data_product(source_type=\"pds\"" in payload
+    assert "manage_data_cache(source_type=\"pds\"" in payload
+    assert "browse_parameters" not in payload
+    assert "fetch_data`" not in payload
+    assert "manage_cache" not in payload
+
+
 def test_cdaweb_fetch_product_limit_and_quality_stats(monkeypatch, tmp_path: Path):
     import pandas as pd
     import cdawebmcp.fetch as fetch_mod
@@ -339,6 +366,124 @@ def test_cdaweb_fetch_product_limit_and_quality_stats(monkeypatch, tmp_path: Pat
     flag_checks = payload["parameters"]["QUALITY_FLAG"]["stats"]["quality_checks"]
     assert flag_checks["quality_flags"]["QUALITY_FLAG"]["counts"]["0"] == 3
     assert flag_checks["quality_flags"]["QUALITY_FLAG"]["counts"]["1"] == 2
+
+
+
+
+def test_fetch_data_product_rejects_bad_times_before_cdaweb_backend(monkeypatch, tmp_path: Path):
+    import cdawebmcp.fetch as fetch_mod
+
+    called = False
+
+    def _fake_fetch_data(dataset_id: str, parameters: list[str], start: str, stop: str):
+        nonlocal called
+        called = True
+        return {}
+
+    monkeypatch.setattr(fetch_mod, "fetch_data", _fake_fetch_data)
+    server = create_server()
+
+    malformed = json.loads(_call_tool(server, "fetch_data_product", {
+        "source_type": "cdaweb",
+        "dataset_id": "PSP_FLD_L2_MAG_RTN_1MIN",
+        "parameters": ["psp_fld_l2_mag_RTN_1min"],
+        "start": "not-a-date",
+        "stop": "2025-06-19T09:00:00Z",
+        "output_dir": str(tmp_path),
+    }))
+    _assert_uniform_error(malformed)
+    assert malformed["code"] == "invalid_argument"
+    assert malformed["invalid_argument"] == "start"
+    assert "parse" in malformed["message"]
+
+    reversed_range = json.loads(_call_tool(server, "fetch_data_product", {
+        "source_type": "cdaweb",
+        "dataset_id": "PSP_FLD_L2_MAG_RTN_1MIN",
+        "parameters": ["psp_fld_l2_mag_RTN_1min"],
+        "start": "2025-06-19T10:00:00Z",
+        "stop": "2025-06-19T08:00:00Z",
+        "output_dir": str(tmp_path),
+    }))
+    _assert_uniform_error(reversed_range)
+    assert reversed_range["code"] == "invalid_argument"
+    assert reversed_range["invalid_argument"] == "stop"
+    assert "after start" in reversed_range["message"]
+    assert called is False
+
+
+def test_fetch_data_product_shapes_cdaweb_no_data_codes(monkeypatch, tmp_path: Path):
+    import cdawebmcp.fetch as fetch_mod
+
+    def _fake_fetch_data(dataset_id: str, parameters: list[str], start: str, stop: str):
+        if dataset_id == "PSP_TOTALLY_FAKE_DATASET":
+            return {parameters[0]: {"error": "Master CDF download failed with 404 Not Found"}}
+        if dataset_id == "PSP_FAKE_MIXED_DATASET":
+            return {parameters[0]: {"error": "Unknown dataset not in catalog; no CDF files found for requested time range"}}
+        if parameters == ["this_param_does_not_exist"]:
+            return {parameters[0]: {"error": "Parameter this_param_does_not_exist not in dataset"}}
+        if parameters == ["mixed_missing_param"]:
+            return {parameters[0]: {"error": "Unknown parameter mixed_missing_param; no data files found for requested time range"}}
+        return {parameters[0]: {"error": "No CDF files found for requested time range"}}
+
+    monkeypatch.setattr(fetch_mod, "fetch_data", _fake_fetch_data)
+    server = create_server()
+    base = {
+        "source_type": "cdaweb",
+        "dataset_id": "PSP_FLD_L2_MAG_RTN_1MIN",
+        "parameters": ["psp_fld_l2_mag_RTN_1min"],
+        "start": "2025-06-19T08:00:00Z",
+        "stop": "2025-06-19T09:00:00Z",
+        "output_dir": str(tmp_path),
+    }
+
+    bad_dataset = json.loads(_call_tool(server, "fetch_data_product", {**base, "dataset_id": "PSP_TOTALLY_FAKE_DATASET"}))
+    _assert_uniform_error(bad_dataset)
+    assert bad_dataset["code"] == "unknown_dataset"
+    assert bad_dataset["parameters"]
+
+    bad_parameter = json.loads(_call_tool(server, "fetch_data_product", {**base, "parameters": ["this_param_does_not_exist"]}))
+    _assert_uniform_error(bad_parameter)
+    assert bad_parameter["code"] == "unknown_parameter"
+    assert bad_parameter["requested_parameters"] == ["this_param_does_not_exist"]
+
+    mixed_dataset = json.loads(_call_tool(server, "fetch_data_product", {**base, "dataset_id": "PSP_FAKE_MIXED_DATASET"}))
+    _assert_uniform_error(mixed_dataset)
+    assert mixed_dataset["code"] == "unknown_dataset"
+
+    mixed_parameter = json.loads(_call_tool(server, "fetch_data_product", {**base, "parameters": ["mixed_missing_param"]}))
+    _assert_uniform_error(mixed_parameter)
+    assert mixed_parameter["code"] == "unknown_parameter"
+
+    empty_range = json.loads(_call_tool(server, "fetch_data_product", {**base, "start": "2030-01-01T00:00:00Z", "stop": "2030-01-01T01:00:00Z"}))
+    _assert_uniform_error(empty_range)
+    assert empty_range["code"] == "no_data_in_range"
+    assert empty_range["time_range"]["start"].startswith("2030")
+
+
+def test_fetch_data_product_rejects_bad_times_before_pds_backend(monkeypatch, tmp_path: Path):
+    import pdsmcp.fetch as fetch_mod
+
+    called = False
+
+    def _fake_fetch_data(dataset_id: str, parameters: list[str], start: str, stop: str):
+        nonlocal called
+        called = True
+        return {}
+
+    monkeypatch.setattr(fetch_mod, "fetch_data", _fake_fetch_data)
+    server = create_server()
+    data = json.loads(_call_tool(server, "fetch_data_product", {
+        "source_type": "pds",
+        "dataset_id": "urn:nasa:pds:test",
+        "parameters": ["B_RTN"],
+        "start": "2025-06-19T10:00:00Z",
+        "stop": "2025-06-19T08:00:00Z",
+        "output_dir": str(tmp_path),
+    }))
+    _assert_uniform_error(data)
+    assert data["code"] == "invalid_argument"
+    assert data["source_type"] == "pds"
+    assert called is False
 
 
 def test_unified_cache_manager_does_not_forward_cache_dir_kwarg():
@@ -1460,6 +1605,28 @@ def test_get_ephemeris_allow_kernel_download_bypasses_gate(empty_kernel_cache, m
     assert payload["x_km"] == 9.0
 
 
+def test_transform_coordinates_output_vector_is_json_array(empty_kernel_cache, monkeypatch):
+    import numpy as np
+    import xhelio_spice
+
+    def _fake_transform_vector(vector, time, from_frame, to_frame, spacecraft=None):
+        return np.array([1.0, 2.5, 3.0])
+
+    monkeypatch.setattr(xhelio_spice, "transform_vector", _fake_transform_vector)
+    server = create_server()
+    raw = _call_tool(server, "transform_coordinates", {
+        "vector": [1.0, 0.0, 0.0],
+        "time": "2025-06-19T09:29:00",
+        "from_frame": "J2000",
+        "to_frame": "ECLIPJ2000",
+        "allow_kernel_download": True,
+    })
+    payload = json.loads(raw)
+    assert payload["status"] == "success"
+    assert payload["output_vector"] == [1.0, 2.5, 3.0]
+    assert not isinstance(payload["output_vector"], str)
+
+
 def test_geometry_tools_expose_allow_kernel_download_param():
     import asyncio
 
@@ -1634,16 +1801,21 @@ def test_unified_browse_data_parameters_unknown_lists_new_sources():
     assert {"hapi", "fdsn"} <= set(data["allowed"])
 
 
-def test_browse_hapi_catalog_missing_dep_is_clean(tmp_path: Path):
+def test_browse_hapi_catalog_missing_dep_or_size_safe_success(tmp_path: Path):
     server = create_server()
     data = json.loads(_call_tool(server, "browse_hapi_catalog", {
         "server_url": "https://cdaweb.gsfc.nasa.gov/hapi",
     }))
     # Without the optional [hapi] extra installed the tool returns a structured
-    # missing_dependency error rather than crashing.
-    assert data["status"] == "error"
-    assert data["code"] == "missing_dependency"
-    assert data["extra"] == "hapi"
+    # missing_dependency error. If the local test environment does have
+    # hapiclient installed, the unfiltered catalog must still be size-safe.
+    if data["status"] == "error":
+        assert data["code"] == "missing_dependency"
+        assert data["extra"] == "hapi"
+    else:
+        assert data["status"] == "success"
+        assert data["dataset_count"] <= 500
+        assert "response_too_large" not in json.dumps(data)
 
 
 def test_browse_fdsn_datasets_missing_dep_is_clean():

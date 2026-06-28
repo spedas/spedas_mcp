@@ -183,6 +183,59 @@ def test_transform_rejects_unknown_frames(vector_csv, tmp_path):
     assert "gse" in out["supported_frames"]
 
 
+def test_transform_rejects_unsupported_heliospheric_frame_with_reason(vector_csv, tmp_path):
+    out = coords.transform_timeseries_coordinates(
+        input_file=str(vector_csv),
+        coord_in="rtn",
+        coord_out="gsm",
+        output_file=str(tmp_path / "out.csv"),
+    )
+    assert out["status"] == "error"
+    assert out["code"] == "invalid_argument"
+    assert "unsupported_heliospheric_frames" in out
+    assert "Earth-frame" in out["hint"]
+
+
+def test_transform_rejects_rtn_artifact_mislabeled_as_gse(vector_csv, tmp_path, monkeypatch):
+    _install_fake_pyspedas(monkeypatch)
+    psp_file = tmp_path / "PSP_FLD_L2_MAG_RTN_1MIN.csv"
+    psp_file.write_text(vector_csv.read_text(), encoding="utf-8")
+
+    out = coords.transform_timeseries_coordinates(
+        input_file=str(psp_file),
+        coord_in="gse",
+        coord_out="gsm",
+        output_file=str(tmp_path / "out.csv"),
+        vector_cols=["bx", "by", "bz"],
+    )
+
+    assert out["status"] == "error"
+    assert out["code"] == "invalid_argument"
+    assert "rtn" in out["message"].lower()
+    assert out["input_frame_provenance"]["frame"] == "rtn"
+    assert not (tmp_path / "out.csv").exists()
+
+
+def test_transform_rejects_sidecar_frame_mismatch(vector_csv, tmp_path, monkeypatch):
+    _install_fake_pyspedas(monkeypatch)
+    data_file = tmp_path / "mag.csv"
+    data_file.write_text(vector_csv.read_text(), encoding="utf-8")
+    sidecar = data_file.with_suffix(data_file.suffix + ".provenance.json")
+    sidecar.write_text(json.dumps({"dataset_id": "TEST_MAG_GSM", "coordinate_frame": "gsm"}), encoding="utf-8")
+
+    out = coords.transform_timeseries_coordinates(
+        input_file=str(data_file),
+        coord_in="gse",
+        coord_out="gsm",
+        output_file=str(tmp_path / "out.csv"),
+        vector_cols=["bx", "by", "bz"],
+    )
+
+    assert out["status"] == "error"
+    assert "does not match" in out["message"]
+    assert out["input_frame_provenance"]["source"] == "sidecar"
+
+
 def test_fac_rejects_unknown_mode(vector_csv, tmp_path):
     out = coords.generate_fac_matrix(
         mag_file=str(vector_csv),

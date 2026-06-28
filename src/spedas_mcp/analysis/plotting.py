@@ -36,6 +36,7 @@ Supported input artifacts (auto-detected by content, then extension):
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -591,6 +592,7 @@ def _draw_figure(
 
     matplotlib.use("Agg", force=True)
     import matplotlib.pyplot as plt
+    import matplotlib.dates as mdates
     from matplotlib.colors import LogNorm
 
     n = len(panels)
@@ -609,17 +611,18 @@ def _draw_figure(
                 "time_range": _finite_range(panel["time"]),
             }
             if panel["kind"] == _PANEL_SPECTROGRAM:
-                _draw_spectrogram(fig, ax, panel, zlog_flags[idx], LogNorm)
+                _draw_spectrogram(fig, ax, panel, zlog_flags[idx], LogNorm, mdates)
                 entry["axis_range"] = _finite_range(panel["yaxis"])
                 entry["zlog"] = bool(zlog_flags[idx])
             else:
-                _draw_line(ax, panel, ylog_flags[idx])
+                _draw_line(ax, panel, ylog_flags[idx], mdates)
                 entry["ylog"] = bool(ylog_flags[idx])
                 entry["n_series"] = len(panel.get("series", []))
             ax.set_ylabel(Path(panel["file"]).stem, fontsize=8)
             meta.append(entry)
 
-        axes[-1].set_xlabel("time (Unix seconds)")
+        _format_time_axis(axes[-1], mdates)
+        axes[-1].set_xlabel("time (UT)")
         fig.tight_layout()
         fig.savefig(out_path, dpi=dpi, format="png")
     finally:
@@ -627,9 +630,36 @@ def _draw_figure(
     return meta
 
 
-def _draw_line(ax: Any, panel: dict[str, Any], ylog: bool) -> None:
+def _unix_seconds_to_mpl_dates(time: Any, mdates: Any) -> Any:
+    """Convert Unix-second samples to Matplotlib date coordinates in UTC.
+
+    ``render_tplot`` keeps all returned metadata and exported machine-readable
+    artifacts in Unix seconds, but the rendered x-axis should use Matplotlib's
+    date unit system so tick labels are human-readable UT timestamps instead of
+    raw epoch-second offsets. Non-finite samples are preserved as NaN gaps.
+    """
+    import numpy as np
+
+    seconds = np.asarray(time, dtype="float64")
+    converted = np.full(seconds.shape, np.nan, dtype="float64")
+    finite = np.isfinite(seconds)
+    if finite.any():
+        converted[finite] = mdates.date2num(
+            [datetime.fromtimestamp(float(value), tz=timezone.utc) for value in seconds[finite]]
+        )
+    return converted
+
+
+def _format_time_axis(ax: Any, mdates: Any) -> None:
+    """Apply a compact UTC date locator/formatter to the shared x-axis."""
+    locator = mdates.AutoDateLocator(minticks=3, maxticks=8, tz=timezone.utc)
+    ax.xaxis.set_major_locator(locator)
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M\n%m-%d", tz=timezone.utc))
+
+
+def _draw_line(ax: Any, panel: dict[str, Any], ylog: bool, mdates: Any) -> None:
     """Draw a (possibly multi-series) line panel."""
-    time = panel["time"]
+    time = _unix_seconds_to_mpl_dates(panel["time"], mdates)
     labels = panel.get("labels") or [f"series{i}" for i in range(len(panel["series"]))]
     for series, label in zip(panel["series"], labels):
         ax.plot(time, series, linewidth=0.8, label=str(label))
@@ -639,11 +669,13 @@ def _draw_line(ax: Any, panel: dict[str, Any], ylog: bool) -> None:
         ax.legend(fontsize=6, loc="upper right", ncol=2)
 
 
-def _draw_spectrogram(fig: Any, ax: Any, panel: dict[str, Any], zlog: bool, log_norm: Any) -> None:
+def _draw_spectrogram(
+    fig: Any, ax: Any, panel: dict[str, Any], zlog: bool, log_norm: Any, mdates: Any
+) -> None:
     """Draw a spectrogram panel (pcolormesh + colorbar)."""
     import numpy as np
 
-    time = np.asarray(panel["time"], dtype="float64")
+    time = _unix_seconds_to_mpl_dates(panel["time"], mdates)
     yaxis = np.asarray(panel["yaxis"], dtype="float64")
     z = np.asarray(panel["z"], dtype="float64")  # (n_time, n_y)
 

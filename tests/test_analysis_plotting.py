@@ -83,15 +83,33 @@ def positive_line_csv(tmp_path: Path) -> Path:
 # Fake matplotlib (records calls, writes a real tiny PNG on savefig)
 # --------------------------------------------------------------------------
 
+class _FakeXAxis:
+    def __init__(self):
+        self.locator = None
+        self.formatter = None
+
+    def set_major_locator(self, locator):
+        self.locator = locator
+
+    def set_major_formatter(self, formatter):
+        self.formatter = formatter
+
+
 class _FakeAxes:
     def __init__(self):
         self.calls: list[str] = []
+        self.plot_args: list[tuple[tuple, dict]] = []
+        self.pcolormesh_args: list[tuple[tuple, dict]] = []
+        self.xlabel = None
+        self.xaxis = _FakeXAxis()
 
     def plot(self, *a, **k):
         self.calls.append("plot")
+        self.plot_args.append((a, k))
 
     def pcolormesh(self, *a, **k):
         self.calls.append("pcolormesh")
+        self.pcolormesh_args.append((a, k))
         return object()
 
     def set_yscale(self, *a, **k):
@@ -101,7 +119,7 @@ class _FakeAxes:
         pass
 
     def set_xlabel(self, *a, **k):
-        pass
+        self.xlabel = a[0] if a else None
 
     def legend(self, *a, **k):
         self.calls.append("legend")
@@ -162,9 +180,34 @@ def _install_fake_matplotlib(monkeypatch):
 
     colors.LogNorm = _LogNorm
 
+    dates = types.ModuleType("matplotlib.dates")
+
+    class _AutoDateLocator:
+        def __init__(self, *args, **kwargs):
+            self.args = args
+            self.kwargs = kwargs
+
+    class _DateFormatter:
+        def __init__(self, fmt, *args, **kwargs):
+            self.fmt = fmt
+            self.args = args
+            self.kwargs = kwargs
+
+    def _date2num(values):
+        from datetime import datetime, timezone
+        import numpy as _np
+
+        epoch = datetime(1970, 1, 1, tzinfo=timezone.utc)
+        return _np.asarray([(value - epoch).total_seconds() / 86400.0 for value in values])
+
+    dates.AutoDateLocator = _AutoDateLocator
+    dates.DateFormatter = _DateFormatter
+    dates.date2num = _date2num
+
     monkeypatch.setitem(sys.modules, "matplotlib", mpl)
     monkeypatch.setitem(sys.modules, "matplotlib.pyplot", pyplot)
     monkeypatch.setitem(sys.modules, "matplotlib.colors", colors)
+    monkeypatch.setitem(sys.modules, "matplotlib.dates", dates)
     return state
 
 
@@ -477,6 +520,36 @@ def test_unsupported_extension_errors(tmp_path, monkeypatch):
 
 
 # --------------------------------------------------------------------------
+
+
+def test_render_uses_utc_date_axis_for_line_panels(tmp_path, line_csv, monkeypatch):
+    state = _install_fake_matplotlib(monkeypatch)
+    out = plotting.render_tplot(input_files=[str(line_csv)], output_file=str(tmp_path / "o.png"))
+
+    assert out["status"] == "success"
+    ax = state["figures"][0]._axes[0]
+    assert ax.xlabel == "time (UT)"
+    assert ax.xaxis.locator.__class__.__name__ == "_AutoDateLocator"
+    assert ax.xaxis.formatter.fmt == "%H:%M\n%m-%d"
+    plotted_x = ax.plot_args[0][0][0]
+    assert np.nanmax(plotted_x) < 100_000  # Matplotlib date-days, not Unix seconds.
+    assert np.nanmin(plotted_x) != out["panels"][0]["time_range"][0]
+
+
+def test_render_uses_utc_date_axis_for_spectrogram_panels(
+    tmp_path, spectrogram_npz, monkeypatch
+):
+    state = _install_fake_matplotlib(monkeypatch)
+    out = plotting.render_tplot(
+        input_files=[str(spectrogram_npz)], output_file=str(tmp_path / "o.png")
+    )
+
+    assert out["status"] == "success"
+    ax = state["figures"][0]._axes[0]
+    assert ax.xlabel == "time (UT)"
+    plotted_x = ax.pcolormesh_args[0][0][0]
+    assert np.nanmax(plotted_x) < 100_000  # Matplotlib date-days, not Unix seconds.
+
 # Opt-in real backend round-trip (skips without matplotlib)
 # --------------------------------------------------------------------------
 
