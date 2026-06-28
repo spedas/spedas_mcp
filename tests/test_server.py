@@ -172,6 +172,40 @@ def test_browse_data_sources_filters_spice_query():
     assert data["payload"]
     assert all("psp" in json.dumps(entry).lower() or "parker" in json.dumps(entry).lower() for entry in data["payload"])
 
+
+def test_browse_data_sources_discovers_curated_omni_and_geomagnetic_indices():
+    server = create_server()
+
+    omni = json.loads(_call_tool(server, "browse_data_sources", {"source_type": "cdaweb", "query": "omni"}))
+    omni_ids = {entry["id"] for entry in omni["payload"]}
+    assert "omni" in omni_ids
+    assert any(entry.get("source_label") == "CDAWeb curated dataset group" for entry in omni["payload"])
+
+    dst = json.loads(_call_tool(server, "browse_data_sources", {"source_type": "cdaweb", "query": "dst"}))
+    assert any(entry["id"] == "geomagnetic_indices" for entry in dst["payload"])
+
+
+def test_load_data_source_cdaweb_resolves_curated_omni_aliases():
+    server = create_server()
+    for source_id in ("OMNI", "OMNI_HRO", "OMNI_HRO2"):
+        data = json.loads(_call_tool(server, "load_data_source", {"source_type": "cdaweb", "source_id": source_id}))
+        assert data["status"] == "success"
+        assert data["normalized_source_id"] == "omni"
+        dataset_ids = {entry["dataset_id"] for entry in data["datasets"]}
+        assert {"OMNI_HRO_1MIN", "OMNI_HRO2_1MIN", "OMNI2_H0_MRG1HR"} <= dataset_ids
+        assert data["payload"]["source_label"] == "CDAWeb curated dataset group"
+
+
+def test_load_data_source_cdaweb_resolves_geomagnetic_index_alias():
+    server = create_server()
+    data = json.loads(_call_tool(server, "load_data_source", {"source_type": "cdaweb", "source_id": "dst"}))
+    assert data["status"] == "success"
+    assert data["normalized_source_id"] == "geomagnetic_indices"
+    text = json.dumps(data)
+    assert "OMNI2_H0_MRG1HR" in text
+    assert "SYM-H" in text
+    assert "Kp" in text
+
 def test_fetch_data_product_rejects_spice_measurement_fetch():
     server = create_server()
     data = json.loads(_call_tool(server, "fetch_data_product", {

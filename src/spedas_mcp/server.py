@@ -79,6 +79,80 @@ _ANALYSIS_REQUIRED_IMPORTS = (
 )
 
 
+_CURATED_CDAWEB_SOURCES: tuple[dict[str, Any], ...] = (
+    {
+        "id": "omni",
+        "name": "OMNI",
+        "aliases": ["OMNI", "OMNI_HRO", "OMNI_HRO2", "OMNI2"],
+        "description": (
+            "Curated CDAWeb discovery entry for OMNI near-Earth solar-wind and "
+            "geomagnetic index products. The upstream CDAWeb observatory catalog "
+            "does not currently emit an OMNI observatory record, but these dataset "
+            "IDs are resolvable by browse_data_parameters/fetch_data_product."
+        ),
+        "dataset_count": 5,
+        "instruments": ["solar_wind", "geomagnetic_indices"],
+        "source_label": "CDAWeb curated dataset group",
+        "datasets": [
+            {"dataset_id": "OMNI_HRO_1MIN", "instrument": "solar_wind_geomagnetic_indices", "cadence": "1 minute", "contains": ["IMF", "plasma", "AE", "AL", "AU", "SYM-H"]},
+            {"dataset_id": "OMNI_HRO2_1MIN", "instrument": "solar_wind_geomagnetic_indices", "cadence": "1 minute", "contains": ["IMF", "plasma", "AE", "AL", "AU", "SYM-H"]},
+            {"dataset_id": "OMNI_HRO_5MIN", "instrument": "solar_wind_geomagnetic_indices", "cadence": "5 minute", "contains": ["IMF", "plasma", "AE", "AL", "AU", "SYM-H", "GOES proton flux"]},
+            {"dataset_id": "OMNI_HRO2_5MIN", "instrument": "solar_wind_geomagnetic_indices", "cadence": "5 minute", "contains": ["IMF", "plasma", "AE", "AL", "AU", "SYM-H", "GOES proton flux"]},
+            {"dataset_id": "OMNI2_H0_MRG1HR", "instrument": "solar_wind_geomagnetic_indices", "cadence": "1 hour", "contains": ["IMF", "plasma", "Kp", "Dst", "AE", "AL", "AU"]},
+        ],
+        "next_tools": [
+            "browse_data_parameters(source_type='cdaweb', dataset_id='OMNI_HRO_1MIN')",
+            "browse_data_parameters(source_type='cdaweb', dataset_id='OMNI2_H0_MRG1HR')",
+            "fetch_data_product(source_type='cdaweb', dataset_id=..., parameters=..., start=..., stop=..., output_dir=...)",
+        ],
+    },
+    {
+        "id": "geomagnetic_indices",
+        "name": "Geomagnetic indices (Dst/AE/Kp/SYM-H)",
+        "aliases": ["dst", "ae", "kp", "sym-h", "sym_h", "symh", "indices", "geomagnetic"],
+        "description": (
+            "Curated CDAWeb discovery entry for common geomagnetic indices. "
+            "Dst and Kp are available in OMNI2_H0_MRG1HR; AE/AL/AU and SYM-H "
+            "are available in OMNI high-resolution products."
+        ),
+        "dataset_count": 6,
+        "instruments": ["geomagnetic_indices"],
+        "source_label": "CDAWeb curated dataset group",
+        "datasets": [
+            {"dataset_id": "OMNI2_H0_MRG1HR", "instrument": "geomagnetic_indices", "cadence": "1 hour", "contains": ["Kp", "Dst", "AE", "AL", "AU"]},
+            {"dataset_id": "OMNI_HRO_1MIN", "instrument": "geomagnetic_indices", "cadence": "1 minute", "contains": ["AE", "AL", "AU", "SYM-H", "SYM-D"]},
+            {"dataset_id": "OMNI_HRO2_1MIN", "instrument": "geomagnetic_indices", "cadence": "1 minute", "contains": ["AE", "AL", "AU", "SYM-H", "SYM-D"]},
+            {"dataset_id": "OMNI_HRO_5MIN", "instrument": "geomagnetic_indices", "cadence": "5 minute", "contains": ["AE", "AL", "AU", "SYM-H", "SYM-D"]},
+            {"dataset_id": "OMNI_HRO2_5MIN", "instrument": "geomagnetic_indices", "cadence": "5 minute", "contains": ["AE", "AL", "AU", "SYM-H", "SYM-D"]},
+            {"dataset_id": "CN_K0_MARI", "instrument": "ground_ae_local", "cadence": "variable", "contains": ["local auroral electrojet indices"]},
+        ],
+        "next_tools": [
+            "browse_data_parameters(source_type='cdaweb', dataset_id='OMNI2_H0_MRG1HR')",
+            "browse_data_parameters(source_type='cdaweb', dataset_id='OMNI_HRO_1MIN')",
+            "fetch_data_product(source_type='cdaweb', dataset_id=..., parameters=..., start=..., stop=..., output_dir=...)",
+        ],
+    },
+)
+
+
+def _norm_source_key(value: str) -> str:
+    return (value or "").strip().casefold().replace("-", "_")
+
+
+def _curated_cdaweb_records() -> list[dict[str, Any]]:
+    return [dict(record) for record in _CURATED_CDAWEB_SOURCES]
+
+
+def _curated_cdaweb_lookup(source_id: str) -> dict[str, Any] | None:
+    key = _norm_source_key(source_id)
+    for record in _CURATED_CDAWEB_SOURCES:
+        tokens = [record["id"], record["name"], *record.get("aliases", [])]
+        if key in {_norm_source_key(str(token)) for token in tokens}:
+            return dict(record)
+    return None
+
+
+
 def _analysis_dependencies_available() -> bool:
     """Return whether the optional ``spedas-mcp[analysis]`` backend is usable.
 
@@ -2122,7 +2196,19 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                 "note": "Use source_type to drill into one category. Backend package names are internal details. hapi/fdsn require their optional extras.",
             })
         if source == "cdaweb":
-            return _wrap_data_payload(source, _filter_json_records(browse_observatories(), query), query=query)
+            # Add a small source-labeled overlay for CDAWeb dataset groups that
+            # are resolvable by dataset_id but absent from the upstream
+            # observatory-stem catalog (issue #102: OMNI and geomagnetic indices).
+            try:
+                records = json.loads(browse_observatories())
+            except Exception:
+                records = []
+            if isinstance(records, list):
+                records = [*records, *_curated_cdaweb_records()]
+                raw_records = _json(records)
+            else:
+                raw_records = browse_observatories()
+            return _wrap_data_payload(source, _filter_json_records(raw_records, query), query=query)
         if source == "pds":
             return _wrap_data_payload(source, browse_pds_missions(query=query), query=query)
         if source == "spice":
@@ -2175,19 +2261,40 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         """
         source = _normalize_source_type(source_type)
         if source == "cdaweb":
-            # Validate against the canonical catalog before touching the backend
-            # so an invalid id (e.g. "MMS1") returns a structured suggestion
+            curated = _curated_cdaweb_lookup(source_id)
+            # Validate against the canonical catalog plus the curated overlay before
+            # touching the backend so invalid ids return structured suggestions
             # instead of a FileNotFoundError that leaks a local cache path
-            # (issues #25/#27).
+            # (issues #25/#27/#102).
+            valid_ids = [*_catalog_ids(browse_observatories())]
+            for record in _CURATED_CDAWEB_SOURCES:
+                valid_ids.extend([record["id"], *record.get("aliases", [])])
             invalid = _validate_source_id(
                 "cdaweb",
                 source_id,
-                _catalog_ids(browse_observatories()),
+                valid_ids,
                 match=(source_id or "").strip().lower().replace("-", "_"),
                 discover_tool="browse_data_sources(source_type='cdaweb')",
             )
             if invalid is not None:
                 return invalid
+            if curated is not None:
+                datasets = list(curated.get("datasets", []))
+                return _wrap_data_payload(
+                    source,
+                    _json(curated),
+                    source_id=source_id,
+                    normalized_source_id=curated["id"],
+                    dataset_count=len(datasets),
+                    datasets=datasets,
+                    datasets_truncated=False,
+                    instruments=list(curated.get("instruments", [])),
+                    note=(
+                        "Curated CDAWeb dataset-group overlay for products absent "
+                        "from the upstream observatory catalog; dataset_ids resolve "
+                        "through browse_data_parameters/fetch_data_product."
+                    ),
+                )
             enumeration = _enumerate_cdaweb_datasets(source_id)
             extra: dict[str, Any] = {"source_id": source_id}
             if enumeration is not None:
