@@ -7,6 +7,7 @@ It contributes:
 - `.claude-plugin/plugin.json` — Claude Code plugin metadata.
 - `.mcp.json` — MCP server entry named `spedas`, launched with `uvx` from the GitHub repo.
 - `skills/spedas-workflow/SKILL.md` — workflow guidance for CDAWeb, PDS PPI, and SPICE.
+- Focused science skills, including `multi-spacecraft-gradients` for curlometer, lingradest, and magnetic-null workflows.
 - `commands/` — namespaced slash-command prompts for overview, CDAWeb, PDS, and SPICE workflows.
 
 ## Local development note
