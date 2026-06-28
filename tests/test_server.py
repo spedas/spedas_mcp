@@ -249,18 +249,18 @@ def test_unified_pds_fetch_rejects_unsupported_limit_cleanly(tmp_path: Path):
 
 def test_user_facing_branding_hides_backend_package_names():
     import inspect
-    import tomllib
 
     import spedas_mcp
 
     server = create_server()
     data = json.loads(_call_tool(server, "browse_data_sources", {"source_type": "all"}))
-    project = tomllib.loads(Path("pyproject.toml").read_text())["project"]
+    pyproject = Path("pyproject.toml").read_text()
+    description_line = next(line for line in pyproject.splitlines() if line.startswith("description = "))
 
     assert "xhelio" not in data["note"].lower()
     assert "xhelio" not in (spedas_mcp.__doc__ or "").lower()
     assert "xhelio dependencies" not in inspect.getsource(spedas_mcp.main).lower()
-    assert "xhelio" not in project["description"].lower()
+    assert "xhelio" not in description_line.lower()
 
 
 def test_load_data_source_cdaweb_translates_backend_guidance_to_facade(monkeypatch):
