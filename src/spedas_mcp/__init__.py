@@ -1,4 +1,4 @@
-"""spedas-mcp — unified SPEDAS-oriented MCP facade over XHelio CDAWeb, PDS, and SPICE tools."""
+"""spedas-mcp — unified SPEDAS-oriented MCP facade over CDAWeb, PDS, and SPICE backends."""
 
 __version__ = "0.1.0"
 
@@ -9,7 +9,7 @@ def main() -> None:
         from spedas_mcp.server import serve
     except ImportError as exc:
         print(
-            "Error: SPEDAS MCP server requires the MCP extra and xhelio dependencies.\n"
+            "Error: SPEDAS MCP server requires the MCP extra.\n"
             "Install with: pip install 'spedas-mcp[mcp]'"
         )
         raise SystemExit(1) from exc

@@ -1,7 +1,7 @@
 """Optional external data-source adapters for SPEDAS MCP (issues #21, #22).
 
 This package hosts data-source adapters that reach archives outside the three
-bundled XHelio backends (CDAWeb / PDS / SPICE):
+bundled SPEDAS backend families (CDAWeb / PDS / SPICE):
 
 - :mod:`spedas_mcp.datasources.hapi` — generic HAPI servers (CDAWeb, PDS-PPI,
   ISWA, LISIRD, university networks) via ``hapiclient`` (issue #21).

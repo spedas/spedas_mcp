@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "spedas-mcp"
 version = "0.1.0"
-description = "Unified SPEDAS-oriented MCP server combining XHelio CDAWeb, PDS PPI, and SPICE tools"
+description = "Unified SPEDAS-oriented MCP server for CDAWeb, PDS PPI, and SPICE workflows"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"

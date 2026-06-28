@@ -247,6 +247,100 @@ def test_unified_pds_fetch_rejects_unsupported_limit_cleanly(tmp_path: Path):
     assert data["unsupported_argument"] == "limit"
 
 
+def test_user_facing_branding_hides_backend_package_names():
+    import inspect
+
+    import spedas_mcp
+
+    server = create_server()
+    data = json.loads(_call_tool(server, "browse_data_sources", {"source_type": "all"}))
+    pyproject = Path("pyproject.toml").read_text()
+    description_line = next(line for line in pyproject.splitlines() if line.startswith("description = "))
+
+    assert "xhelio" not in data["note"].lower()
+    assert "xhelio" not in (spedas_mcp.__doc__ or "").lower()
+    assert "xhelio dependencies" not in inspect.getsource(spedas_mcp.main).lower()
+    assert "xhelio" not in description_line.lower()
+
+
+def test_load_data_source_cdaweb_translates_backend_guidance_to_facade(monkeypatch):
+    import cdawebmcp.prompts as prompts
+
+    def _fake_prompt(observatory_id: str) -> str:
+        return (
+            "Call `browse_parameters(dataset_id)` before fetching. "
+            "Then call `fetch_data(dataset_id, parameters, start, stop, output_dir)`. "
+            "If the catalog is stale, run `manage_cache(action=\"rebuild_catalog\")`."
+        )
+
+    monkeypatch.setattr(prompts, "build_observatory_prompt", _fake_prompt)
+    server = create_server()
+    data = json.loads(_call_tool(server, "load_data_source", {
+        "source_type": "cdaweb",
+        "source_id": "ace",
+    }))
+    payload = data["payload"]
+    assert data["status"] == "success"
+    assert "browse_data_parameters(source_type=\"cdaweb\"" in payload
+    assert "fetch_data_product(source_type=\"cdaweb\"" in payload
+    assert "manage_data_cache(source_type=\"cdaweb\"" in payload
+    assert "browse_parameters(" not in payload
+    assert "fetch_data(" not in payload
+    assert "manage_cache(" not in payload
+
+
+def test_cdaweb_fetch_product_limit_and_quality_stats(monkeypatch, tmp_path: Path):
+    import pandas as pd
+    import cdawebmcp.fetch as fetch_mod
+
+    def _fake_fetch_data(dataset_id: str, parameters: list[str], start: str, stop: str):
+        index = pd.date_range("2025-01-01T00:00:00", periods=5, freq="s")
+        return {
+            "DENS": {
+                "data": pd.DataFrame({"DENS": [1.0, 2.0, 1e30, 4.0, 5.0]}, index=index),
+                "units": "cm^-3",
+                "description": "density",
+                "stats": {"min": 1.0, "max": 1e30, "nan_ratio": 0.0},
+            },
+            "QUALITY_FLAG": {
+                "data": pd.DataFrame({"QUALITY_FLAG": [0, 0, 1, 0, 1]}, index=index),
+                "units": "",
+                "description": "quality flag",
+                "stats": {"min": 0, "max": 1, "nan_ratio": 0.0},
+            },
+        }
+
+    monkeypatch.setattr(fetch_mod, "fetch_data", _fake_fetch_data)
+    server = create_server()
+    data = json.loads(_call_tool(server, "fetch_data_product", {
+        "source_type": "cdaweb",
+        "dataset_id": "PSP_SWP_SPI_SF00_L3_MOM",
+        "parameters": ["DENS", "QUALITY_FLAG"],
+        "start": "2025-01-01T00:00:00Z",
+        "stop": "2025-01-01T00:00:05Z",
+        "output_dir": str(tmp_path),
+        "limit": 2,
+    }))
+    assert data["status"] == "success"
+    payload = data["payload"]
+    assert payload["rows_before_limit"] == 5
+    assert payload["rows_written"] == 2
+    assert payload["rows_truncated"] == 3
+    assert payload["limit"] == 2
+    assert payload["limit_applied"] is True
+    assert len(pd.read_csv(payload["file_path"])) == 2
+
+    density_stats = payload["parameters"]["DENS"]["stats"]
+    quality_checks = density_stats["quality_checks"]
+    assert quality_checks["fill_like_count"] == 1
+    assert quality_checks["fill_ratio"] == 0.2
+    assert "p99" in quality_checks["robust_stats"]["columns"]["DENS"]
+
+    flag_checks = payload["parameters"]["QUALITY_FLAG"]["stats"]["quality_checks"]
+    assert flag_checks["quality_flags"]["QUALITY_FLAG"]["counts"]["0"] == 3
+    assert flag_checks["quality_flags"]["QUALITY_FLAG"]["counts"]["1"] == 2
+
+
 def test_unified_cache_manager_does_not_forward_cache_dir_kwarg():
     server = create_server()
     data = json.loads(_call_tool(server, "manage_data_cache", {"source_type": "spice", "action": "status", "cache_dir": "/tmp/ignored"}))
