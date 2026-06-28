@@ -160,6 +160,41 @@ def _finite_range(array: Any) -> list[float] | None:
     return [float(finite.min()), float(finite.max())]
 
 
+def _sampling_interval(unix_time: Any, *, rtol: float = 0.01) -> tuple[float, str | None]:
+    """Estimate the sampling interval ``dt`` (seconds) and flag irregular cadence.
+
+    The spectral transforms assume a regular cadence: the wavelet scale grid and
+    the resulting period/frequency axes are calibrated by a single ``dt``.  When
+    the time axis is irregular, any single estimate (e.g. the first gap) mislabels
+    the axes for the rest of the series with no outward sign.
+
+    Returns ``(dt, warning)`` where ``dt`` is the **median** positive sample
+    spacing (robust to a stray gap) and ``warning`` is ``None`` for a regular
+    cadence or a human-readable string when the spacing varies by more than
+    ``rtol`` of the median.
+    """
+    import numpy as np
+
+    t = np.asarray(unix_time, dtype="float64")
+    diffs = np.diff(t)
+    finite = diffs[np.isfinite(diffs) & (diffs > 0)]
+    if finite.size == 0:
+        return float("nan"), None
+    dt = float(np.median(finite))
+    if dt <= 0:
+        return dt, None
+    spread = float(np.max(np.abs(finite - dt)))
+    if spread > rtol * dt:
+        return dt, (
+            "time axis has an irregular cadence: sample spacing ranges "
+            f"[{float(finite.min()):g}, {float(finite.max()):g}] s (median {dt:g} s). "
+            "The wavelet period/frequency axes are calibrated to the median dt and "
+            "will be inaccurate where the true cadence differs; resample to a "
+            "uniform grid for reliable results."
+        )
+    return dt, None
+
+
 def dynamic_power_spectrum(
     input_file: str,
     output_dir: str,
@@ -361,7 +396,7 @@ def wavelet_transform(
 
     from pyspedas.analysis.wavelet import idl_wavelet_scales
 
-    dt = float(unix_time[1] - unix_time[0])
+    dt, cadence_warning = _sampling_interval(unix_time)
     if not np.isfinite(dt) or dt <= 0:
         return _error(
             "could not determine a positive sampling interval from the time axis; "
@@ -458,6 +493,8 @@ def wavelet_transform(
         "period_range": _finite_range(periods),
         "significance_computed": significance_applied,
         "siglvl": float(siglvl) if significance_applied else None,
+        "sampling_interval_s": float(dt),
+        "cadence_warning": cadence_warning,
         "note": (
             "Power matrix saved as (n_time, n_freq) in the .npz under key 'power' "
             "with axes 'time' (Unix seconds), 'freq' (Hz), and 'period' (s)"

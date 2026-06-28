@@ -363,6 +363,43 @@ def test_wavelet_preserves_pywavelets_frequency_axis_for_other_wavelets(
     assert np.allclose(npz["freq"], 1.0 / expected_periods)
 
 
+def test_wavelet_regular_cadence_has_no_warning(channel_csv, tmp_path, monkeypatch):
+    _install_fake_pyspedas(monkeypatch)
+    out = spectral.wavelet_transform(
+        input_file=str(channel_csv),
+        output_dir=str(tmp_path / "wav"),
+        data_col="bx",
+    )
+    assert out["status"] == "success"
+    # channel_csv is a clean 1 s cadence -> dt detected, no irregular-cadence flag
+    assert out["sampling_interval_s"] == 1.0
+    assert out["cadence_warning"] is None
+
+
+def test_wavelet_irregular_cadence_warns_and_uses_median_dt(tmp_path, monkeypatch):
+    _install_fake_pyspedas(monkeypatch)
+    # One 1 s gap up front, then all 10 s gaps: a naive first-gap dt (=1 s) would
+    # mislabel the axes by 10x for 99% of the series. The tool should instead use
+    # the median spacing (10 s) and surface a cadence warning.
+    n = 256
+    t = [1_600_000_000.0, 1_600_000_001.0]
+    for _ in range(n - 2):
+        t.append(t[-1] + 10.0)
+    df = pd.DataFrame({"time": np.asarray(t), "bx": np.sin(np.arange(n) / 5.0)})
+    path = tmp_path / "irregular.csv"
+    df.to_csv(path, index=False)
+
+    out = spectral.wavelet_transform(
+        input_file=str(path),
+        output_dir=str(tmp_path / "wav"),
+        data_col="bx",
+    )
+    assert out["status"] == "success"
+    assert out["sampling_interval_s"] == 10.0  # median, not the stray 1 s first gap
+    assert out["cadence_warning"] is not None
+    assert "irregular cadence" in out["cadence_warning"]
+
+
 def test_wavelet_with_significance(channel_csv, tmp_path, monkeypatch):
     _install_fake_pyspedas(monkeypatch)
     out = spectral.wavelet_transform(
