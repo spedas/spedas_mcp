@@ -59,6 +59,7 @@ def test_server_has_expected_tools(monkeypatch):
         "wavelet_transform",
         "evaluate_magnetic_field",
         "calculate_lshell",
+        "build_particle_distribution_artifact",
         "compute_particle_moments",
         "compute_particle_spectra",
         "render_tplot",

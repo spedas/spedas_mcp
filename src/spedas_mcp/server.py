@@ -39,6 +39,7 @@ ANALYSIS_TOOL_NAMES = (
     "wavelet_transform",
     "evaluate_magnetic_field",
     "calculate_lshell",
+    "build_particle_distribution_artifact",
     "compute_particle_moments",
     "compute_particle_spectra",
     "render_tplot",
@@ -2659,6 +2660,55 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         # spd_pgs_make_pad_spec), so a missing backend yields a structured
         # unsupported/needs_input entry rather than a raw ImportError.
         # ------------------------------------------------------------------
+
+        @mcp.tool()
+        @_safe_tool
+        def build_particle_distribution_artifact(
+            tplot_name: str,
+            output_file: str,
+            converter: str = "mms_fpi",
+            index: int | list[int] | None = None,
+            probe: str | None = None,
+            data_rate: str | None = None,
+            species: str | None = None,
+            level: str | None = None,
+            units: str | None = None,
+            trange: list[str] | None = None,
+            single_time: str | None = None,
+            magf: list[float] | list[list[float]] | None = None,
+            max_slices: int | None = 32,
+        ) -> str:
+            """Analysis: bridge real pyspedas mission particle distributions into the MCP .npz schema.
+
+            Real mission CDFs should first be loaded by the appropriate pyspedas mission
+            loader into tplot variables. This tool then calls a pyspedas particle
+            converter (converter keys include mms_fpi, mms_hpca, and ERG particle
+            products such as erg_mepi) for the named distribution tplot variable,
+            flattens each energy/angle slice into the documented distribution schema,
+            writes output_file (.npz), and validates it for downstream
+            compute_particle_moments / compute_particle_spectra. Supply magf as either
+            [Bx,By,Bz] or one vector per output slice; the moments schema requires it.
+            Returns only compact shape/range/provenance metadata plus the artifact path.
+            Requires spedas-mcp[analysis] and pre-loaded tplot data; it does not itself
+            download CDFs.
+            """
+            from spedas_mcp.analysis.particles import build_particle_distribution_artifact as _impl
+
+            return _json(_impl(
+                tplot_name=tplot_name,
+                output_file=output_file,
+                converter=converter,
+                index=index,
+                probe=probe,
+                data_rate=data_rate,
+                species=species,
+                level=level,
+                units=units,
+                trange=trange,
+                single_time=single_time,
+                magf=magf,
+                max_slices=max_slices,
+            ))
 
         @mcp.tool()
         @_safe_tool

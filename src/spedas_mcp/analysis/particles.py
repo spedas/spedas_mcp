@@ -6,6 +6,10 @@ thermodynamic and spectral observables:
 - :func:`compute_particle_moments` (#18) - plasma moments (density, velocity,
   temperature, pressure tensor, heat-flux summaries) from a time series of 3D
   distributions, via ``pyspedas.particles.moments.moments_3d``.
+- :func:`build_particle_distribution_artifact` (#95) - bridge pyspedas
+  mission distribution converters (MMS FPI/HPCA and ERG particle products) from
+  already-loaded real mission tplot/CDF variables into the explicit .npz schema
+  these particle tools consume.
 - :func:`compute_particle_spectra` (#19) - energy / azimuth (phi) / elevation
   (theta) / pitch-angle spectrograms. Energy/phi/theta use ``pyspedas``
   ``spd_pgs_make_e_spec`` / ``spd_pgs_make_phi_spec`` /
@@ -33,7 +37,8 @@ Design contract (mirrors :mod:`spedas_mcp.analysis.spectral` /
   schema (see :data:`DIST_SCHEMA_DOC`) that maps 1:1 onto the ``data_in`` dict
   ``moments_3d`` / the ``spd_pgs_make_*`` functions consume. Mission CDFs can be
   bridged into this schema by a future loader (#20-#22); the pyspedas algorithms
-  themselves run on the real arrays.
+  themselves run on the real arrays. Issue #95 adds the first pyspedas-backed
+  bridge from mission converter output into this schema.
 - **Lazy, gated backends.** ``pyspedas`` is imported only inside these
   functions; a missing ``[analysis]`` extra yields a clean
   ``status="error", code="dependency_missing"`` payload. Each pyspedas function
@@ -340,6 +345,216 @@ def _require_attr(module_path: str, attr: str) -> Any:
             "(spedas-mcp[analysis]) to a build that provides it"
         )
     return fn
+
+
+_DIST_CONVERTERS = {
+    # Real mission CDF -> tplot -> pyspedas particle distribution converters.
+    # The MCP tool intentionally exposes these through one neutral "converter"
+    # argument rather than as per-mission tools.
+    "mms_fpi": ("pyspedas.projects.mms.fpi_tools.mms_get_fpi_dist", "mms_get_fpi_dist"),
+    "mms_hpca": ("pyspedas.projects.mms.hpca_tools.mms_get_hpca_dist", "mms_get_hpca_dist"),
+    "erg_lepi": ("pyspedas.projects.erg.satellite.erg.particle.erg_lepi_get_dist", "erg_lepi_get_dist"),
+    "erg_lepe": ("pyspedas.projects.erg.satellite.erg.particle.erg_lepe_get_dist", "erg_lepe_get_dist"),
+    "erg_mepi": ("pyspedas.projects.erg.satellite.erg.particle.erg_mepi_get_dist", "erg_mepi_get_dist"),
+    "erg_mepe": ("pyspedas.projects.erg.satellite.erg.particle.erg_mepe_get_dist", "erg_mepe_get_dist"),
+    "erg_hep": ("pyspedas.projects.erg.satellite.erg.particle.erg_hep_get_dist", "erg_hep_get_dist"),
+    "erg_xep": ("pyspedas.projects.erg.satellite.erg.particle.erg_xep_get_dist", "erg_xep_get_dist"),
+}
+
+
+def _as_float_array(value: Any, field: str) -> Any:
+    import numpy as np
+
+    arr = np.asarray(value, dtype="float64")
+    if arr.size == 0:
+        raise ValueError(f"converter field '{field}' is empty")
+    return arr
+
+
+def _flatten_particle_grid(value: Any, field: str) -> Any:
+    """Return one per-slice field as an ``(E,A)`` array.
+
+    PySPEDAS mission converters commonly return per-slice arrays as
+    ``(energy, phi, theta)``. The MCP distribution schema stores all angular bins
+    in one flattened ``A`` dimension, which is exactly what the downstream
+    particle routines already accept.
+    """
+    arr = _as_float_array(value, field)
+    if arr.ndim == 2:
+        return arr
+    if arr.ndim == 3:
+        return arr.reshape(arr.shape[0], -1)
+    raise ValueError(
+        f"converter field '{field}' must be 2D (E,A) or 3D (E,*,*); got shape {arr.shape}"
+    )
+
+
+def _coerce_distribution_records(result: Any) -> list[dict[str, Any]]:
+    if result is None or (isinstance(result, (int, float)) and result == 0):
+        raise ValueError("pyspedas distribution converter returned no data")
+    if isinstance(result, dict):
+        records = [result]
+    elif isinstance(result, (list, tuple)):
+        records = list(result)
+    else:
+        raise ValueError(
+            f"pyspedas distribution converter returned {type(result).__name__}; expected dict or list[dict]"
+        )
+    if not records or not all(isinstance(r, dict) for r in records):
+        raise ValueError("pyspedas distribution converter output must be a non-empty dict/list of dicts")
+    return records
+
+
+def _converter_kwargs(fn: Any, kwargs: dict[str, Any]) -> dict[str, Any]:
+    """Filter optional kwargs to those accepted by the selected converter."""
+    import inspect
+
+    sig = inspect.signature(fn)
+    if any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()):
+        return {k: v for k, v in kwargs.items() if v is not None}
+    return {k: v for k, v in kwargs.items() if v is not None and k in sig.parameters}
+
+
+def build_particle_distribution_artifact(
+    tplot_name: str,
+    output_file: str,
+    converter: str = "mms_fpi",
+    *,
+    index: int | list[int] | None = None,
+    probe: str | None = None,
+    data_rate: str | None = None,
+    species: str | None = None,
+    level: str | None = None,
+    units: str | None = None,
+    trange: list[str] | None = None,
+    single_time: str | None = None,
+    magf: list[float] | list[list[float]] | None = None,
+    max_slices: int | None = 32,
+) -> dict[str, Any]:
+    """Bridge pyspedas mission distribution converters into ``DIST_SCHEMA_DOC``.
+
+    This is the small issue-#95 gate: real mission CDFs are still loaded by the
+    normal pyspedas mission loaders into tplot variables, then this helper calls
+    the mission's particle ``*_get_dist`` converter and writes the MCP-standard
+    ``.npz`` distribution artifact consumed by :func:`compute_particle_moments`
+    and :func:`compute_particle_spectra`. Bulk arrays are written to disk; the
+    return value contains paths, shapes, ranges, and provenance only.
+
+    ``magf`` is required because the downstream distribution schema requires a
+    magnetic-field vector for moments. Supply either one ``[Bx,By,Bz]`` vector or
+    one vector per output slice, in the same coordinate frame as the distribution
+    look directions.
+    """
+    import numpy as np
+
+    if converter not in _DIST_CONVERTERS:
+        return _error(
+            f"unsupported particle distribution converter '{converter}'",
+            valid_converters=sorted(_DIST_CONVERTERS),
+            hint="Use one of the pyspedas-backed converter keys, e.g. mms_fpi, mms_hpca, erg_mepi.",
+        )
+    if not tplot_name:
+        return _error("tplot_name is required")
+    if max_slices is not None and max_slices <= 0:
+        return _error("max_slices must be positive or null")
+    if magf is None:
+        return _error(
+            "magf is required to write a valid particle distribution artifact",
+            hint="Pass magf=[Bx,By,Bz] to broadcast one magnetic-field vector, or magf=[[...], ...] with one vector per slice.",
+        )
+
+    try:
+        require_pyspedas()
+        module_path, attr = _DIST_CONVERTERS[converter]
+        fn = _require_attr(module_path, attr)
+        kwargs = _converter_kwargs(fn, {
+            "index": index,
+            "probe": probe,
+            "data_rate": data_rate,
+            "species": species,
+            "level": level,
+            "units": units,
+            "trange": trange,
+            "single_time": single_time,
+        })
+        result = fn(tplot_name, **kwargs)
+        records = _coerce_distribution_records(result)
+        original_n_records = len(records)
+        if max_slices is not None and len(records) > max_slices:
+            records = records[:max_slices]
+
+        fields = ("data", "energy", "denergy", "theta", "dtheta", "phi", "dphi", "bins")
+        missing = sorted({f for f in fields if f not in records[0]})
+        missing += [f for f in ("charge", "mass") if f not in records[0]]
+        if missing:
+            raise ValueError(f"converter output is missing required field(s): {sorted(set(missing))}")
+
+        stacked = {field: np.stack([_flatten_particle_grid(r[field], field) for r in records], axis=0) for field in fields}
+        shape = stacked["data"].shape
+        for field, arr in stacked.items():
+            if arr.shape != shape:
+                raise ValueError(f"converter field '{field}' shape {arr.shape} does not match data shape {shape}")
+
+        times = np.asarray([r.get("start_time", r.get("time", i)) for i, r in enumerate(records)], dtype="float64")
+        mag = np.asarray(magf, dtype="float64")
+        if mag.ndim == 1:
+            if mag.shape != (3,):
+                raise ValueError(f"magf must be a (3,) vector or (T,3) array; got {mag.shape}")
+            mag = np.broadcast_to(mag, (len(records), 3)).copy()
+        elif mag.ndim == 2:
+            if mag.shape != (len(records), 3):
+                raise ValueError(f"magf must have one (Bx,By,Bz) vector per slice; got {mag.shape}, expected {(len(records), 3)}")
+        else:
+            raise ValueError(f"magf must be a (3,) vector or (T,3) array; got ndim {mag.ndim}")
+        if not np.all(np.isfinite(mag)):
+            raise ValueError("magf contains non-finite values")
+
+        out_path = Path(output_file)
+        if out_path.suffix.lower() != ".npz":
+            raise ValueError("output_file must end with .npz")
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        np.savez(
+            out_path,
+            times=times,
+            magf=mag,
+            charge=float(np.asarray(records[0]["charge"]).reshape(-1)[0]),
+            mass=float(np.asarray(records[0]["mass"]).reshape(-1)[0]),
+            **stacked,
+        )
+        # Validate the written artifact against the same schema used by the
+        # downstream tools, catching bridge drift before returning success.
+        raw = _load_distribution(str(out_path))
+        _normalize_distribution(raw, _MOMENTS_REQUIRED)
+
+        meta = {
+            "tool": "build_particle_distribution_artifact",
+            "converter": converter,
+            "converter_backend": f"{module_path}.{attr}",
+            "tplot_name": tplot_name,
+            "n_time": len(records),
+            "shape": list(shape),
+            "time_range": _finite_range(times),
+            "energy_range_ev": _finite_range(stacked["energy"]),
+            "data_range": _finite_range(stacked["data"]),
+            "output_file": str(out_path),
+            "schema": "DIST_SCHEMA_DOC",
+            "schema_keys": ["times", *fields, "magf", "charge", "mass"],
+            "truncated_to_max_slices": bool(max_slices is not None and original_n_records > len(records)),
+            "converter_kwargs": kwargs,
+        }
+        meta_path = out_path.with_suffix(".json")
+        meta_path.write_text(json.dumps(meta, indent=2, default=str), encoding="utf-8")
+        return {"status": "success", **meta, "metadata_file": str(meta_path)}
+    except AnalysisDependencyError as exc:
+        return _error(
+            str(exc),
+            code="dependency_missing",
+            hint="Install optional analysis dependencies with: pip install 'spedas-mcp[analysis]'",
+        )
+    except ParticleBackendError as exc:
+        return _error(str(exc), code="unsupported", valid_converters=sorted(_DIST_CONVERTERS))
+    except Exception as exc:
+        return _error(str(exc), code="invalid_argument", schema=DIST_SCHEMA_DOC)
 
 
 def _load_mag(mag_file: str, n_time: int) -> Any:
@@ -893,6 +1108,7 @@ __all__ = [
     "DIST_SCHEMA_DOC",
     "MAG_SCHEMA_DOC",
     "ParticleBackendError",
+    "build_particle_distribution_artifact",
     "compute_particle_moments",
     "compute_particle_spectra",
 ]

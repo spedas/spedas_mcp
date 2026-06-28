@@ -817,3 +817,96 @@ def test_real_pitch_angle_beam_peaks_along_b(tmp_path):
     # Restrict to finite bins; the peak bin should sit in the low-PA half.
     peak_pa = axis[finite][np.nanargmax(row[finite])]
     assert peak_pa < 90.0
+
+# --------------------------------------------------------------------------
+# Issue #95: pyspedas converter -> distribution artifact bridge
+# --------------------------------------------------------------------------
+
+def _fake_converter_records(n_time: int = 2):
+    records = []
+    for i in range(n_time):
+        data = np.arange(3 * 2 * 2, dtype="float64").reshape(3, 2, 2) + i
+        energy = np.repeat(np.array([10.0, 20.0, 40.0])[:, None, None], 2, axis=1)
+        energy = np.repeat(energy, 2, axis=2)
+        records.append({
+            "start_time": 1_700_000_000.0 + i,
+            "data": data,
+            "energy": energy,
+            "denergy": np.ones((3, 2, 2)),
+            "theta": np.zeros((3, 2, 2)) + 10.0,
+            "dtheta": np.ones((3, 2, 2)) * 5.0,
+            "phi": np.zeros((3, 2, 2)) + 20.0,
+            "dphi": np.ones((3, 2, 2)) * 5.0,
+            "bins": np.ones((3, 2, 2)),
+            "charge": 1.0,
+            "mass": 1.04535e-2,
+        })
+    return records
+
+
+def test_build_particle_distribution_artifact_from_converter(tmp_path, monkeypatch):
+    _install_fake_pyspedas(monkeypatch)
+    mod = types.ModuleType("fake_dist_converter")
+    calls = []
+
+    def fake_get_dist(tname, index=None, species=None):
+        calls.append({"tname": tname, "index": index, "species": species})
+        return _fake_converter_records(2)
+
+    mod.fake_get_dist = fake_get_dist
+    monkeypatch.setitem(sys.modules, "fake_dist_converter", mod)
+    monkeypatch.setitem(
+        particles._DIST_CONVERTERS,
+        "fake",
+        ("fake_dist_converter", "fake_get_dist"),
+    )
+
+    out_file = tmp_path / "dist_from_cdf.npz"
+    out = particles.build_particle_distribution_artifact(
+        "mms1_dis_dist_fast",
+        str(out_file),
+        converter="fake",
+        index=[0, 1],
+        species="i",
+        magf=[0.0, 0.0, 5.0],
+    )
+
+    assert out["status"] == "success"
+    assert out["output_file"] == str(out_file)
+    assert out["shape"] == [2, 3, 4]
+    assert out["schema"] == "DIST_SCHEMA_DOC"
+    assert calls == [{"tname": "mms1_dis_dist_fast", "index": [0, 1], "species": "i"}]
+    with np.load(out_file) as npz:
+        assert npz["data"].shape == (2, 3, 4)
+        assert npz["magf"].shape == (2, 3)
+        assert npz["charge"] == pytest.approx(1.0)
+    # The artifact validates through the same normalizer used by moments.
+    raw = particles._load_distribution(str(out_file))
+    _, cubes, scalars, n_time = particles._normalize_distribution(raw, particles._MOMENTS_REQUIRED)
+    assert n_time == 2
+    assert cubes["data"].shape == (2, 3, 4)
+    assert scalars["mass"] == pytest.approx(1.04535e-2)
+
+
+def test_build_particle_distribution_requires_magf(tmp_path, monkeypatch):
+    _install_fake_pyspedas(monkeypatch)
+    out = particles.build_particle_distribution_artifact(
+        "some_dist",
+        str(tmp_path / "dist.npz"),
+        converter="mms_fpi",
+    )
+    assert out["status"] == "error"
+    assert out["code"] == "invalid_argument"
+    assert "magf" in out["message"]
+
+
+def test_build_particle_distribution_rejects_unknown_converter(tmp_path):
+    out = particles.build_particle_distribution_artifact(
+        "some_dist",
+        str(tmp_path / "dist.npz"),
+        converter="not_a_converter",
+        magf=[0, 0, 1],
+    )
+    assert out["status"] == "error"
+    assert out["code"] == "invalid_argument"
+    assert "valid_converters" in out

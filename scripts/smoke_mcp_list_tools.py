@@ -61,6 +61,7 @@ ANALYSIS_EXPECTED_TOOLS = [
     "wavelet_transform",
     "evaluate_magnetic_field",
     "calculate_lshell",
+    "build_particle_distribution_artifact",
     "compute_particle_moments",
     "compute_particle_spectra",
     "render_tplot",
