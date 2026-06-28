@@ -25,6 +25,7 @@ Low-level / source-specific compat tools exist for maintenance only — skills d
 | The turbulence/wave power spectrum of a field interval | `solar-wind-turbulence-spectrum` | `create_spedas_analysis_bundle` |
 | Wave polarization (whistler/EMIC/chorus: degpol, wave-normal angle, ellipticity) | `wave-polarization` | `create_spedas_analysis_bundle` |
 | A boundary normal / LMN frame for a crossing | `boundary-minimum-variance` | `create_spedas_analysis_bundle` |
+| Apply a FAC/LMN/rotation matrix to a vector series | `apply-rotation-matrix` | (matrix from generate_fac_matrix / MVA) |
 | A full magnetopause/bow-shock crossing study (B + plasma + position) | `magnetopause-lmn-analysis` | `search_spedas_data_sources` |
 | Times two spacecraft/bodies are close | `spice-conjunction-finder` | `list_spice_missions` |
 | Just fetch & plot a time series | `spedas-workflow` | `plan_spedas_observation` |
