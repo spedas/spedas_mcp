@@ -7,7 +7,7 @@ The current design follows Jason's A+B direction:
 - **A. SPEDAS data layer** — one unified entry point for source categories such as `cdaweb`, `pds`, and `spice`/geometry.
 - **B. SPEDAS science workflow layer** — high-level planning tools that let Claude Code, Codex, OpenCode, LingTai, or another agent start from a science question before choosing source-specific operations.
 
-The `xhelio-*` packages are implementation backends. They should stay visible to maintainers, but they should not be the user's first mental model.
+Implementation backend packages should stay visible to maintainers, but they should not be the user's first mental model.
 
 ## Repository
 
@@ -249,8 +249,8 @@ and `render_tplot` turns those artifacts into a picture. It uses `matplotlib` (h
 
 ### 5. External data-source tools (optional `hapi` / `fdsn` backends)
 
-Two additional data sources reach archives outside the three bundled XHelio
-backends. Like the analysis tools, their backends are **optional** and imported
+Two additional data sources reach archives outside the three bundled SPEDAS
+backend families. Like the analysis tools, their backends are **optional** and imported
 lazily: without the extra installed each tool returns a structured
 `status="error"`, `code="missing_dependency"` payload naming the extra to
 install, so the base install and MCP `list_tools` keep working. Bulk data is

@@ -6,7 +6,7 @@ A. Present one SPEDAS data layer organized by data source categories.
 B. Add a SPEDAS science-workflow layer so agents can plan a study before using
    source-specific data and geometry operations.
 
-The focused XHelio packages remain internal backends, not the user-facing mental
+The focused backend packages remain internal implementation details, not the user-facing mental
 model. Outward-facing tools should speak in terms of SPEDAS data sources such as
 CDAWeb, PDS, and SPICE/geometry.
 """
@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import math
 import re
 from pathlib import Path
 from typing import Any, Literal
@@ -30,6 +31,116 @@ logger = logging.getLogger(__name__)
 
 def _json(data: object) -> str:
     return json.dumps(data, indent=2, default=str)
+
+
+_FILL_LIKE_ABS_THRESHOLD = 1e29
+
+
+def _safe_float(value: Any) -> float | None:
+    """Return a finite float for JSON stats, or ``None`` if unavailable."""
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    return number if math.isfinite(number) else None
+
+
+def _augment_cdaweb_stats(dataframe: Any, backend_stats: Any) -> Any:
+    """Add cheap robust/fill/quality signals to CDAWeb per-parameter stats.
+
+    The CDAWeb backend already returns min/max/mean/std/nan_ratio. Those are
+    useful but can hide present-but-physically-impossible fill/outlier spikes
+    (issue #65). This helper keeps the backend shape intact and adds a
+    ``quality_checks`` block with p1/p50/p99 robust stats, common fill-like value
+    counts, and generic QUALITY/FLAG column summaries when available. It is
+    intentionally dataset-agnostic: it does not mask or claim a sample is bad; it
+    surfaces enough compact evidence for an agent to notice suspect products.
+    """
+    stats: dict[str, Any]
+    if isinstance(backend_stats, dict):
+        stats = dict(backend_stats)
+    elif backend_stats is None:
+        stats = {}
+    else:
+        stats = {"backend_stats": backend_stats}
+
+    try:
+        import pandas as pd
+    except Exception:  # pragma: no cover - pandas is present for CDAWeb fetches
+        return backend_stats
+
+    try:
+        numeric = dataframe.apply(pd.to_numeric, errors="coerce").dropna(axis=1, how="all")
+    except Exception:
+        return backend_stats
+    if numeric.empty:
+        return backend_stats
+
+    total_values = int(numeric.size)
+    finite_or_nan = numeric.replace([float("inf"), -float("inf")], pd.NA)
+    nonfinite_count = int(finite_or_nan.isna().sum().sum())
+    fill_mask = finite_or_nan.abs().ge(_FILL_LIKE_ABS_THRESHOLD).fillna(False)
+    fill_count = int(fill_mask.sum().sum())
+    cleaned = finite_or_nan.mask(fill_mask)
+    valid_count = int(total_values - cleaned.isna().sum().sum())
+
+    column_stats: dict[str, dict[str, float | int]] = {}
+    for column in cleaned.columns:
+        series = cleaned[column].dropna()
+        if series.empty:
+            continue
+        quantiles = series.quantile([0.01, 0.5, 0.99])
+        summary: dict[str, float | int] = {
+            "count": int(series.shape[0]),
+        }
+        for key, value in {
+            "min": series.min(),
+            "max": series.max(),
+            "p1": quantiles.loc[0.01],
+            "p50": quantiles.loc[0.5],
+            "p99": quantiles.loc[0.99],
+        }.items():
+            number = _safe_float(value)
+            if number is not None:
+                summary[key] = number
+        column_stats[str(column)] = summary
+
+    flag_summaries: dict[str, Any] = {}
+    for column in numeric.columns:
+        name = str(column).lower()
+        if "quality" not in name and "flag" not in name:
+            continue
+        series = finite_or_nan[column].dropna()
+        if series.empty:
+            continue
+        counts = series.value_counts().head(10)
+        zero_fraction = _safe_float((series == 0).mean())
+        nonzero_fraction = _safe_float((series != 0).mean())
+        flag_summary: dict[str, Any] = {
+            "counts": {str(key): int(value) for key, value in counts.items()},
+        }
+        if zero_fraction is not None:
+            flag_summary["zero_fraction"] = zero_fraction
+        if nonzero_fraction is not None:
+            flag_summary["nonzero_fraction"] = nonzero_fraction
+        flag_summaries[str(column)] = flag_summary
+
+    quality_checks: dict[str, Any] = {
+        "fill_ratio": fill_count / total_values if total_values else 0.0,
+        "fill_like_count": fill_count,
+        "fill_like_abs_threshold": _FILL_LIKE_ABS_THRESHOLD,
+        "nonfinite_ratio": nonfinite_count / total_values if total_values else 0.0,
+        "nonfinite_count": nonfinite_count,
+        "valid_count_after_fill_mask": valid_count,
+        "robust_stats": {
+            "columns": column_stats,
+            "note": "p1/p50/p99 ignore NaN/non-finite values and common fill-like sentinels with abs(value) >= 1e29.",
+        },
+    }
+    if flag_summaries:
+        quality_checks["quality_flags"] = flag_summaries
+    stats["quality_checks"] = quality_checks
+    return stats
 
 
 # Maximum serialized size (bytes) for a single MCP tool response. MCP stdio is
@@ -798,6 +909,7 @@ def create_server() -> FastMCP:
         stop: str,
         output_dir: str,
         format: Literal["csv", "json"] = "csv",
+        limit: int | None = None,
     ) -> str:
         """Compatibility: fetch CDAWeb time-series data. Prefer fetch_data_product(source_type="cdaweb", ...)."""
         import pandas as pd
@@ -808,28 +920,58 @@ def create_server() -> FastMCP:
         out_dir.mkdir(parents=True, exist_ok=True)
         start_short = start[:10].replace("-", "")
         stop_short = stop[:10].replace("-", "")
+        if limit is not None and limit <= 0:
+            return _error_response(
+                "invalid_argument",
+                "CDAWeb fetch_data limit must be a positive integer when provided.",
+                hint="Pass limit >= 1, or omit limit and narrow start/stop/parameters instead.",
+                sanitize=False,
+                source_type="cdaweb",
+                unsupported_argument="limit",
+            )
         frames = []
         param_meta: dict[str, dict] = {}
+        param_columns: dict[str, list[str]] = {}
         for param_id, entry in lib_result.items():
             if "error" in entry:
                 param_meta[param_id] = {"status": "error", "message": entry["error"]}
                 continue
             df = entry["data"]
+            augmented_stats = _augment_cdaweb_stats(df, entry.get("stats"))
+            df = df.copy()
             df.columns = [f"{param_id}.{c}" for c in df.columns]
             frames.append(df)
+            param_columns[param_id] = list(df.columns)
             param_meta[param_id] = {
                 "status": "success",
                 "units": entry.get("units"),
                 "description": entry.get("description"),
                 "rows": len(df),
                 "columns": list(df.columns),
-                "stats": entry.get("stats"),
+                "stats": augmented_stats,
             }
         if not frames:
             return _json({"status": "error", "message": "No data fetched", "parameters": param_meta})
         merged = frames[0]
         for frame in frames[1:]:
             merged = merged.join(frame, how="outer")
+        rows_before_limit = len(merged)
+        if limit is not None:
+            merged_to_write = merged.head(limit)
+        else:
+            merged_to_write = merged
+        rows_written = len(merged_to_write)
+        rows_truncated = max(rows_before_limit - rows_written, 0)
+        for param_id, columns in param_columns.items():
+            present = [column for column in columns if column in merged_to_write.columns]
+            if present:
+                param_meta[param_id]["rows_written"] = int(merged_to_write[present].dropna(how="all").shape[0])
+            else:
+                param_meta[param_id]["rows_written"] = 0
+            if limit is not None:
+                param_meta[param_id]["limit_applied"] = rows_truncated > 0
+                param_meta[param_id]["rows_before_limit"] = int(param_meta[param_id]["rows"])
+                param_meta[param_id]["rows_truncated"] = max(int(param_meta[param_id]["rows"]) - int(param_meta[param_id]["rows_written"]), 0)
         base_name = f"{dataset_id}_{start_short}_{stop_short}"
         file_path = out_dir / f"{base_name}.{format}"
         counter = 1
@@ -837,19 +979,24 @@ def create_server() -> FastMCP:
             file_path = out_dir / f"{base_name}_{counter}.{format}"
             counter += 1
         if format == "json":
-            data = {"time": merged.index.strftime("%Y-%m-%dT%H:%M:%S.%f").tolist()}
-            for col in merged.columns:
-                data[col] = [None if pd.isna(v) else v for v in merged[col].tolist()]
+            data = {"time": merged_to_write.index.strftime("%Y-%m-%dT%H:%M:%S.%f").tolist()}
+            for col in merged_to_write.columns:
+                data[col] = [None if pd.isna(v) else v for v in merged_to_write[col].tolist()]
             file_path.write_text(json.dumps(data), encoding="utf-8")
         else:
-            merged.to_csv(file_path)
+            merged_to_write.to_csv(file_path)
         return _json({
             "status": "success",
             "file_path": str(file_path),
             "format": format,
             "dataset_id": dataset_id,
             "time_range": {"start": start, "stop": stop},
-            "total_rows": len(merged),
+            "total_rows": rows_written,
+            "rows_before_limit": rows_before_limit,
+            "rows_written": rows_written,
+            "rows_truncated": rows_truncated,
+            "limit": limit,
+            "limit_applied": limit is not None and rows_truncated > 0,
             "parameters": param_meta,
         })
 
@@ -1237,6 +1384,36 @@ def create_server() -> FastMCP:
             return any(_payload_has_error(value) for value in payload)
         return False
 
+    def _translate_cdaweb_facade_guidance(raw: str) -> str:
+        """Rewrite CDAWeb backend how-to prose into the unified facade vocabulary.
+
+        CDAWeb observatory prompts are useful, but their embedded workflow text
+        names low-level compatibility tools (browse_parameters/fetch_data/
+        manage_cache). load_data_source is the primary facade entry point, so the
+        payload should keep agents on browse_data_parameters/fetch_data_product/
+        manage_data_cache (issue #66).
+        """
+        replacements = {
+            "browse_parameters(dataset_id)": "browse_data_parameters(source_type=\"cdaweb\", dataset_id=...)",
+            "browse_parameters(dataset_id=dataset_id)": "browse_data_parameters(source_type=\"cdaweb\", dataset_id=dataset_id)",
+            "browse_parameters(dataset_id=...)": "browse_data_parameters(source_type=\"cdaweb\", dataset_id=...)",
+            "fetch_data(dataset_id, parameters, start, stop, output_dir)": "fetch_data_product(source_type=\"cdaweb\", dataset_id=..., parameters=..., start=..., stop=..., output_dir=...)",
+            "fetch_data(dataset_id=dataset_id, parameters=parameters, start=start, stop=stop, output_dir=output_dir)": "fetch_data_product(source_type=\"cdaweb\", dataset_id=dataset_id, parameters=parameters, start=start, stop=stop, output_dir=output_dir)",
+            "manage_cache(action=\"rebuild_catalog\")": "manage_data_cache(source_type=\"cdaweb\", action=\"status\")",
+            "manage_cache(action='rebuild_catalog')": "manage_data_cache(source_type=\"cdaweb\", action=\"status\")",
+            "manage_cache": "manage_data_cache",
+        }
+        translated = raw
+        for old_text, new_text in replacements.items():
+            translated = translated.replace(old_text, new_text)
+        # Catch remaining bare function names without altering already translated
+        # facade calls.
+        translated = re.sub(r"(?<!data_)\bbrowse_parameters\b", "browse_data_parameters", translated)
+        translated = re.sub(r"(?<!_)\bfetch_data\b", "fetch_data_product", translated)
+        translated = re.sub(r"\bmanage_cache\b", "manage_data_cache", translated)
+        return translated
+
+
     def _wrap_data_payload(source_type: str, raw: str, **extra: Any) -> str:
         try:
             payload = json.loads(raw)
@@ -1496,7 +1673,7 @@ def create_server() -> FastMCP:
                     },
                 ],
                 "query": query,
-                "note": "Use source_type to drill into one category. XHelio package names are internal backend details. hapi/fdsn require their optional extras.",
+                "note": "Use source_type to drill into one category. Backend package names are internal details. hapi/fdsn require their optional extras.",
             })
         if source == "cdaweb":
             return _wrap_data_payload(source, _filter_json_records(browse_observatories(), query), query=query)
@@ -1571,7 +1748,7 @@ def create_server() -> FastMCP:
                 # Additive discovery fields (issue #31): agents can read dataset_ids
                 # here and pass them straight to browse_data_parameters.
                 extra.update(enumeration)
-            return _wrap_data_payload(source, load_observatory(source_id), **extra)
+            return _wrap_data_payload(source, _translate_cdaweb_facade_guidance(load_observatory(source_id)), **extra)
         if source == "pds":
             normalized_source_id = _normalize_pds_source_id(source_id)
             invalid = _validate_source_id(
@@ -1682,7 +1859,16 @@ def create_server() -> FastMCP:
                     sanitize=False,
                     source_type="cdaweb",
                 )
-            return _wrap_data_payload(source, fetch_data(dataset_id=dataset_id, parameters=parameters, start=start, stop=stop, output_dir=output_dir, format=format), dataset_id=dataset_id)
+            if limit is not None and limit <= 0:
+                return _error_response(
+                    "invalid_argument",
+                    "CDAWeb fetch_data_product limit must be a positive integer when provided.",
+                    hint="Pass limit >= 1, or omit limit and narrow start/stop/parameters instead.",
+                    sanitize=False,
+                    source_type="cdaweb",
+                    unsupported_argument="limit",
+                )
+            return _wrap_data_payload(source, fetch_data(dataset_id=dataset_id, parameters=parameters, start=start, stop=stop, output_dir=output_dir, format=format, limit=limit), dataset_id=dataset_id)
         if source == "pds":
             if start is None or stop is None or output_dir is None:
                 return _error_response(
