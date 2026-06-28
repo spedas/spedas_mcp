@@ -34,6 +34,7 @@ logger = logging.getLogger(__name__)
 ANALYSIS_TOOL_NAMES = (
     "transform_timeseries_coordinates",
     "generate_fac_matrix",
+    "tvector_rotate",
     "analyze_minvar_coordinates",
     "dynamic_power_spectrum",
     "wavelet_transform",
@@ -2451,6 +2452,33 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                 time_col=time_col,
                 vector_cols=vector_cols,
                 mag_coord=mag_coord,
+            ))
+
+        @mcp.tool()
+        @_safe_tool
+        def tvector_rotate(
+            vector_file: str,
+            matrix_file: str,
+            output_file: str,
+            time_col: str = "time",
+            vector_cols: list[str] | None = None,
+            output_cols: list[str] | None = None,
+        ) -> str:
+            """Analysis: apply an (N,3,3) rotation-matrix stack to an Nx3 vector series.
+
+            Reads a vector CSV/JSON artifact plus a saved matrix .npy/.npz artifact
+            from generate_fac_matrix or sliding-window MVA, writes the rotated
+            series to output_file, and returns paths plus compact summaries only.
+            """
+            from spedas_mcp.analysis.coords import tvector_rotate as _impl
+
+            return _json(_impl(
+                vector_file=vector_file,
+                matrix_file=matrix_file,
+                output_file=output_file,
+                time_col=time_col,
+                vector_cols=vector_cols,
+                output_cols=output_cols,
             ))
 
         @mcp.tool()

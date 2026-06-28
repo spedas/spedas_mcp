@@ -54,6 +54,7 @@ def test_server_has_expected_tools(monkeypatch):
         "list_coordinate_frames",
         "transform_timeseries_coordinates",
         "generate_fac_matrix",
+        "tvector_rotate",
         "analyze_minvar_coordinates",
         "dynamic_power_spectrum",
         "wavelet_transform",

@@ -8,6 +8,9 @@ These functions implement the SPEDAS MCP Phase-1 coordinate tools:
   3x3 rotation matrices from a magnetic-field series (``fac_matrix_make``).
 - :func:`analyze_minvar_coordinates` (#14) - minimum-variance analysis / LMN
   boundary-normal frame from a vector series (``minvar`` / ``minvar_matrix_make``).
+- :func:`tvector_rotate` (#97) - apply a saved per-sample ``(N, 3, 3)``
+  rotation-matrix stack to an ``Nx3`` vector series (IDL/PySPEDAS tvector_rotate
+  equivalent last step).
 
 Design contract (see roadmap epic #5/#6):
 
@@ -267,6 +270,56 @@ def _load_time_and_vectors(
     unix_time = np.array(unix_time, dtype="float64", copy=True)
     vectors = np.array(vectors, dtype="float64", copy=True)
     return unix_time, vectors, resolved
+
+
+def _load_matrix_stack(matrix_file: str) -> tuple[Any, dict[str, Any]]:
+    """Read a saved ``(N, 3, 3)`` rotation-matrix stack from ``.npy``/``.npz``.
+
+    ``generate_fac_matrix`` writes ``fac_matrix`` for its ``.npz`` output, while
+    sliding-window MVA writes ``matrices``.  Accept those keys first; otherwise
+    use the single 3-D array in the archive when it is unambiguous.  The optional
+    ``time`` array is returned as metadata only; row matching remains strict and
+    is checked by the caller.
+    """
+    import numpy as np
+
+    path = Path(matrix_file)
+    if not path.exists():
+        raise ValueError(f"matrix file does not exist: {matrix_file}")
+    suffix = path.suffix.lower()
+    metadata: dict[str, Any] = {"matrix_file": str(path)}
+    if suffix == ".npz":
+        with np.load(path) as data:
+            keys = list(data.files)
+            metadata["matrix_file_keys"] = keys
+            selected = None
+            for key in ("fac_matrix", "matrices", "matrix"):
+                if key in data:
+                    selected = key
+                    break
+            if selected is None:
+                candidates = [k for k in keys if np.asarray(data[k]).ndim == 3]
+                if len(candidates) != 1:
+                    raise ValueError(
+                        "could not identify a unique 3-D matrix stack in npz; "
+                        "expected key 'fac_matrix' or 'matrices'"
+                    )
+                selected = candidates[0]
+            matrices = np.array(data[selected], dtype="float64", copy=True)
+            metadata["matrix_key"] = selected
+            if "time" in data:
+                metadata["matrix_time_rows"] = int(np.asarray(data["time"]).shape[0])
+    elif suffix == ".npy":
+        matrices = np.array(np.load(path), dtype="float64", copy=True)
+        metadata["matrix_key"] = None
+    else:
+        raise ValueError("matrix_file must be a .npy or .npz artifact")
+
+    if matrices.ndim != 3 or matrices.shape[1:] != (3, 3):
+        raise ValueError(f"matrix stack must have shape (N, 3, 3), got {matrices.shape}")
+    if matrices.shape[0] == 0:
+        raise ValueError("matrix stack contains no rows")
+    return matrices, metadata
 
 
 def _component_summary(array: Any) -> dict[str, list[float]]:
@@ -539,6 +592,75 @@ def generate_fac_matrix(
     return response
 
 
+def tvector_rotate(
+    vector_file: str,
+    matrix_file: str,
+    output_file: str,
+    time_col: str = "time",
+    vector_cols: list[str] | None = None,
+    output_cols: list[str] | None = None,
+) -> dict[str, Any]:
+    """Apply an ``(N,3,3)`` rotation-matrix stack to an ``Nx3`` vector series (#97).
+
+    This is the file-in/file-out counterpart of IDL/PySPEDAS ``tvector_rotate``:
+    each output row is ``matrix[i] @ vector[i]``.  It closes the workflow loop for
+    matrix artifacts emitted by :func:`generate_fac_matrix` (``fac_matrix`` key)
+    and sliding-window :func:`analyze_minvar_coordinates` (``matrices`` key).
+    The matrix stack and vector series must already be on the same cadence/time
+    grid; this utility deliberately rejects row-count mismatches instead of
+    silently interpolating.
+    """
+    try:
+        import numpy as np
+        import pandas as pd
+
+        unix_time, vectors, resolved = _load_time_and_vectors(
+            vector_file, time_col=time_col, vector_cols=vector_cols
+        )
+        matrices, matrix_metadata = _load_matrix_stack(matrix_file)
+    except ValueError as exc:
+        return _error(str(exc))
+
+    if vectors.shape != (vectors.shape[0], 3):
+        return _error(f"vector series must have shape (N, 3), got {vectors.shape}")
+    if matrices.shape[0] != vectors.shape[0]:
+        return _error(
+            "matrix stack row count must match vector row count; "
+            f"got {matrices.shape[0]} matrices for {vectors.shape[0]} vectors",
+            matrix_rows=int(matrices.shape[0]),
+            vector_rows=int(vectors.shape[0]),
+        )
+
+    cols = output_cols or ["rot_x", "rot_y", "rot_z"]
+    if len(cols) != 3:
+        return _error(f"output_cols must list exactly 3 columns, got {len(cols)}")
+
+    rotated = np.einsum("nij,nj->ni", matrices, vectors)
+
+    out_path = Path(output_file)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_df = pd.DataFrame({"time": unix_time})
+    for i, col in enumerate(cols):
+        out_df[col] = rotated[:, i]
+    if out_path.suffix.lower() == ".json":
+        out_path.write_text(out_df.to_json(orient="columns"), encoding="utf-8")
+    else:
+        out_df.to_csv(out_path, index=False)
+
+    return {
+        "status": "success",
+        "tool": "tvector_rotate",
+        "output_file": str(out_path),
+        "rows": int(rotated.shape[0]),
+        "matrix_shape": list(matrices.shape),
+        "input_vector_cols": resolved,
+        "output_vector_cols": cols,
+        "summary": _component_summary(rotated),
+        "note": "Applied each rotation as matrix[i] @ vector[i]; inputs must be pre-aligned on the same time grid.",
+        **matrix_metadata,
+    }
+
+
 def analyze_minvar_coordinates(
     input_file: str,
     output_dir: str,
@@ -667,5 +789,6 @@ __all__ = [
     "FAC_MODES_REQUIRING_POS",
     "transform_timeseries_coordinates",
     "generate_fac_matrix",
+    "tvector_rotate",
     "analyze_minvar_coordinates",
 ]

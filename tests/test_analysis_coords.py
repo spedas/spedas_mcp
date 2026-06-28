@@ -583,3 +583,82 @@ def test_real_minvar_eigenvalue_ordering(tmp_path):
     assert lam[0] >= lam[1] >= lam[2]
     # The minimum-variance direction should be close to +/- z.
     assert abs(out["normal_vector"][2]) > 0.9
+
+
+def test_tvector_rotate_applies_per_sample_matrix_stack(tmp_path):
+    """Issue #97: close the loop from saved (N,3,3) matrices to rotated vectors."""
+    t = np.arange(3, dtype="float64") + 1_600_000_000.0
+    vectors = pd.DataFrame(
+        {
+            "time": t,
+            "vx": [1.0, 2.0, 3.0],
+            "vy": [0.0, 1.0, 0.0],
+            "vz": [0.0, 0.0, 1.0],
+        }
+    )
+    vector_path = tmp_path / "vectors.csv"
+    vectors.to_csv(vector_path, index=False)
+    matrices = np.array(
+        [
+            np.eye(3),
+            [[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]],
+            [[1.0, 0.0, 0.0], [0.0, 0.0, -1.0], [0.0, 1.0, 0.0]],
+        ],
+        dtype="float64",
+    )
+    matrix_path = tmp_path / "fac.npz"
+    np.savez(matrix_path, time=t, fac_matrix=matrices)
+
+    out_path = tmp_path / "rotated.csv"
+    out = coords.tvector_rotate(
+        vector_file=str(vector_path),
+        matrix_file=str(matrix_path),
+        output_file=str(out_path),
+        vector_cols=["vx", "vy", "vz"],
+        output_cols=["L", "M", "N"],
+    )
+
+    assert out["status"] == "success", out
+    assert out["tool"] == "tvector_rotate"
+    assert out["rows"] == 3
+    assert out["matrix_shape"] == [3, 3, 3]
+    assert out["matrix_key"] == "fac_matrix"
+    assert out["matrix_time_rows"] == 3
+    rot = pd.read_csv(out_path)
+    assert list(rot.columns) == ["time", "L", "M", "N"]
+    expected = np.einsum("nij,nj->ni", matrices, vectors[["vx", "vy", "vz"]].to_numpy())
+    np.testing.assert_allclose(rot[["L", "M", "N"]].to_numpy(), expected)
+
+
+def test_tvector_rotate_rejects_row_count_mismatch(vector_csv, tmp_path):
+    matrix_path = tmp_path / "matrices.npy"
+    np.save(matrix_path, np.broadcast_to(np.eye(3), (2, 3, 3)))
+
+    out = coords.tvector_rotate(
+        vector_file=str(vector_csv),
+        matrix_file=str(matrix_path),
+        output_file=str(tmp_path / "rotated.csv"),
+        vector_cols=["bx", "by", "bz"],
+    )
+
+    assert out["status"] == "error"
+    assert out["code"] == "invalid_argument"
+    assert "row count" in out["message"]
+    assert out["matrix_rows"] == 2
+    assert out["vector_rows"] == 64
+    assert not (tmp_path / "rotated.csv").exists()
+
+
+def test_tvector_rotate_rejects_bad_matrix_shape(vector_csv, tmp_path):
+    matrix_path = tmp_path / "bad.npy"
+    np.save(matrix_path, np.eye(3))
+
+    out = coords.tvector_rotate(
+        vector_file=str(vector_csv),
+        matrix_file=str(matrix_path),
+        output_file=str(tmp_path / "rotated.csv"),
+        vector_cols=["bx", "by", "bz"],
+    )
+
+    assert out["status"] == "error"
+    assert "shape (N, 3, 3)" in out["message"]
