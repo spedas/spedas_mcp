@@ -173,17 +173,58 @@ def test_overview_advertises_geomagnetic_index_recipe(monkeypatch):
     assert "THA_L2_FGM" in recipes["mission_overview_starting_points"]["THEMIS"]
 
 
-def test_tool_descriptions_mark_primary_and_compatibility_surfaces(monkeypatch):
+def test_base_tools_expose_primary_surface_metadata(monkeypatch):
+    monkeypatch.delenv("SPEDAS_MCP_COMPAT_TOOLS", raising=False)
+    server = create_server(include_analysis_tools=False)
+    tools = {tool.name: tool for tool in asyncio.run(server.list_tools())}
+
+    assert tools
+    assert {tool.meta["surface"] for tool in tools.values()} == {"primary"}
+    assert all(tool.annotations is not None for tool in tools.values())
+    assert tools["browse_data_sources"].annotations.readOnlyHint is True
+    assert tools["fetch_data_product"].annotations.readOnlyHint is False
+    assert tools["fetch_data_product"].annotations.openWorldHint is True
+    assert tools["get_ephemeris"].annotations.readOnlyHint is False
+    assert tools["get_ephemeris"].annotations.openWorldHint is True
+    assert tools["compute_distance"].annotations.readOnlyHint is False
+    assert tools["transform_coordinates"].annotations.readOnlyHint is False
+    assert tools["manage_data_cache"].annotations.destructiveHint is True
+    assert tools["manage_data_cache"].annotations.openWorldHint is False
+
+
+def test_tool_descriptions_and_meta_mark_primary_and_compatibility_surfaces(monkeypatch):
     monkeypatch.setenv("SPEDAS_MCP_COMPAT_TOOLS", "1")
     server = create_server()
-    tools = asyncio.run(server.list_tools())
-    descriptions = {tool.name: tool.description for tool in tools}
+    tools = {tool.name: tool for tool in asyncio.run(server.list_tools())}
+    descriptions = {name: tool.description for name, tool in tools.items()}
     assert descriptions["browse_data_sources"].startswith("Primary data layer")
     assert descriptions["fetch_data_product"].startswith("Primary data layer")
+    assert tools["browse_data_sources"].meta["surface"] == "primary"
+    assert tools["fetch_data_product"].meta["surface"] == "primary"
     assert descriptions["browse_observatories"].startswith("Compatibility:")
     assert "Prefer browse_data_sources" in descriptions["browse_observatories"]
+    assert tools["browse_observatories"].meta["surface"] == "compat"
+    assert tools["browse_observatories"].annotations.readOnlyHint is True
     assert descriptions["fetch_data"].startswith("Compatibility:")
     assert "Prefer fetch_data_product" in descriptions["fetch_data"]
+    assert tools["fetch_data"].meta["surface"] == "compat"
+    assert tools["fetch_data"].annotations.readOnlyHint is False
+    assert tools["fetch_data"].annotations.openWorldHint is True
+
+
+def test_analysis_tools_expose_advanced_surface_metadata(monkeypatch):
+    monkeypatch.delenv("SPEDAS_MCP_COMPAT_TOOLS", raising=False)
+    server = create_server(include_analysis_tools=True)
+    tools = {tool.name: tool for tool in asyncio.run(server.list_tools())}
+
+    for name in [
+        "transform_timeseries_coordinates",
+        "build_particle_distribution_artifact",
+        "render_tplot",
+    ]:
+        assert tools[name].meta["surface"] == "advanced"
+        assert tools[name].annotations.readOnlyHint is False
+        assert tools[name].annotations.openWorldHint is True
 
 def test_browse_data_sources_lists_spedas_source_categories():
     server = create_server()

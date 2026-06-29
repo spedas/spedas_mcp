@@ -9,7 +9,7 @@ An MCP server that gives an AI agent one unified door to heliophysics data (CDAW
 ## Components
 
 - **`src/spedas_mcp/`** — the package (see `src/spedas_mcp/ANATOMY.md`). Entry: `__init__.py:6` `main()` → `server.create_server().run()`; `__main__.py` enables `python -m spedas_mcp`.
-- **`src/spedas_mcp/server.py`** — the FastMCP facade. `create_server()` at `server.py:1072` registers every `@mcp.tool`; gating helpers `_analysis_dependencies_available()` `server.py:157` and `_compat_tools_enabled()` `server.py:176` decide the advertised surface. Avoid hard-coding this large file's total line count; it shifts whenever tools are added.
+- **`src/spedas_mcp/server.py`** — the FastMCP facade. `create_server()` at `server.py:1200` registers tools through `_register_tool()` `server.py:1228`, so every advertised tool carries MCP `ToolAnnotations` and `meta.surface`; gating helpers `_analysis_dependencies_available()` `server.py:161` and `_compat_tools_enabled()` `server.py:259` decide the advertised surface. Avoid hard-coding this large file's total line count; it shifts whenever tools are added.
 - **`src/spedas_mcp/workflows.py`** (1087 lines) — pure-Python science-planning logic behind the workflow tools (`search_data_sources` `workflows.py:816`, `plan_observation` `workflows.py:870`, …).
 - **`src/spedas_mcp/datasources/`** — optional HAPI + FDSN backends (see `datasources/ANATOMY.md`).
 - **`src/spedas_mcp/analysis/`** — pyspedas-backed analysis tools (see `analysis/ANATOMY.md`).
@@ -32,7 +32,7 @@ An MCP server that gives an AI agent one unified door to heliophysics data (CDAW
 ## State
 
 - No server-side persistent state. Caches live in the user's home (`~/.cdawebmcp/`, `~/.pdsmcp/`, `~/.xhelio_spice/kernels/`), managed via `manage_data_cache`.
-- Surface gating is runtime, not stored: `[analysis]` importability + `SPEDAS_MCP_COMPAT_TOOLS` env flag. In the current lean environment the smoke script advertises 17 base tools and 25 tools with compat enabled; installing `[analysis]` adds the optional analysis group, currently 13 tool names in `ANALYSIS_TOOL_NAMES` (`server.py:34`).
+- Surface gating is runtime, not stored: `[analysis]` importability + `SPEDAS_MCP_COMPAT_TOOLS` env flag. In the current lean environment the smoke script advertises 17 base tools and 25 tools with compat enabled; installing `[analysis]` adds the optional analysis group, currently 13 tool names in `ANALYSIS_TOOL_NAMES` (`server.py:34`). Advertised tools also expose `meta.surface` (`primary`, `advanced`, `compat`) plus side-effect hints through MCP `ToolAnnotations`.
 - Analysis/skills are artifact-first: bulk results written under a `create_spedas_analysis_bundle` directory (`requests/ data/ plots/ provenance/ notes/`).
 
 ## Notes

@@ -25,6 +25,7 @@ from typing import Any, Literal
 
 try:
     from mcp.server.fastmcp import FastMCP
+    from mcp.types import ToolAnnotations
 except ImportError as exc:  # pragma: no cover - exercised by entrypoint guard
     raise ImportError("Install MCP support with: pip install 'spedas-mcp[mcp]'") from exc
 
@@ -1224,15 +1225,82 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         include_analysis_tools=include_analysis_tools
     )
 
-    def _compat_tool(func):
+    def _register_tool(
+        *,
+        surface: str,
+        read_only: bool,
+        destructive: bool = False,
+        idempotent: bool = True,
+        open_world: bool = True,
+    ):
+        """Register a tool with MCP surface metadata for launchers/agents."""
+        return mcp.tool(
+            annotations=ToolAnnotations(
+                readOnlyHint=read_only,
+                destructiveHint=destructive,
+                idempotentHint=idempotent,
+                openWorldHint=open_world,
+            ),
+            meta={"surface": surface},
+        )
+
+    def _primary_tool(
+        *,
+        read_only: bool = True,
+        destructive: bool = False,
+        idempotent: bool = True,
+        open_world: bool = True,
+    ):
+        return _register_tool(
+            surface="primary",
+            read_only=read_only,
+            destructive=destructive,
+            idempotent=idempotent,
+            open_world=open_world,
+        )
+
+    def _advanced_tool(
+        *,
+        read_only: bool = False,
+        destructive: bool = False,
+        idempotent: bool = False,
+        open_world: bool = True,
+    ):
+        return _register_tool(
+            surface="advanced",
+            read_only=read_only,
+            destructive=destructive,
+            idempotent=idempotent,
+            open_world=open_world,
+        )
+
+    def _compat_tool(
+        func=None,
+        *,
+        read_only: bool = True,
+        destructive: bool = False,
+        idempotent: bool = True,
+        open_world: bool = True,
+    ):
         # Keep the function defined for internal unified-layer calls, but only
         # register/advertise the legacy CDAWeb/PDS entry point when explicitly
         # requested by existing clients.
-        if compat_tools_enabled:
-            return mcp.tool()(func)
-        return func
+        def decorate(inner):
+            if compat_tools_enabled:
+                return _register_tool(
+                    surface="compat",
+                    read_only=read_only,
+                    destructive=destructive,
+                    idempotent=idempotent,
+                    open_world=open_world,
+                )(inner)
+            return inner
 
-    @mcp.tool()
+        if func is None:
+            return decorate
+        return decorate(func)
+
+    @_primary_tool()
     def spedas_overview() -> str:
         """Describe available SPEDAS MCP capabilities and the recommended workflow."""
         return _json({
@@ -1367,7 +1435,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             },
         })
 
-    @mcp.tool()
+    @_primary_tool()
     def search_spedas_data_sources(
         question: str = "",
         target: str | None = None,
@@ -1392,7 +1460,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             )
         )
 
-    @mcp.tool()
+    @_primary_tool()
     @_safe_tool
     def plan_spedas_observation(
         science_goal: str,
@@ -1419,14 +1487,14 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             data_sources=data_sources,
         ))
 
-    @mcp.tool()
+    @_primary_tool()
     def compare_cdaweb_pds_spice(science_goal: str = "") -> str:
         """Compare CDAWeb, PDS, and SPICE roles for a SPEDAS MCP science request."""
         from spedas_mcp.workflows import compare_sources
 
         return _json(compare_sources(science_goal=science_goal))
 
-    @mcp.tool()
+    @_primary_tool(read_only=False, idempotent=False, open_world=False)
     def create_spedas_analysis_bundle(
         study_name: str,
         output_dir: str,
@@ -1471,7 +1539,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
 
         return _json(_browse_parameters(dataset_id=dataset_id, dataset_ids=dataset_ids))
 
-    @_compat_tool
+    @_compat_tool(read_only=False, idempotent=False, open_world=True)
     @_safe_tool
     def fetch_data(
         dataset_id: str,
@@ -1615,7 +1683,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
 
         return _json(_browse_parameters(dataset_id=dataset_id, dataset_ids=dataset_ids))
 
-    @_compat_tool
+    @_compat_tool(read_only=False, idempotent=False, open_world=True)
     @_safe_tool
     def fetch_pds_data(
         dataset_id: str,
@@ -1711,7 +1779,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
 
         return _json(list_supported_missions())
 
-    @mcp.tool()
+    @_primary_tool(read_only=False, idempotent=False, open_world=True)
     @_safe_tool
     def get_ephemeris(
         target: str,
@@ -1791,7 +1859,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         state["cache_size_mb"] = round(get_kernel_manager().get_cache_size_bytes() / (1024 * 1024), 2)
         return _json(state)
 
-    @mcp.tool()
+    @_primary_tool(read_only=False, idempotent=False, open_world=True)
     @_safe_tool
     def compute_distance(
         target1: str,
@@ -1836,7 +1904,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             "samples": len(distances),
         })
 
-    @mcp.tool()
+    @_primary_tool(read_only=False, idempotent=False, open_world=True)
     @_safe_tool
     def transform_coordinates(
         vector: list[float],
@@ -2496,7 +2564,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             )
         return payload
 
-    @mcp.tool()
+    @_primary_tool()
     def browse_data_sources(source_type: str = "all", query: str | None = None) -> str:
         """Primary data layer: browse SPEDAS source categories (CDAWeb, PDS, SPICE)."""
         source = _normalize_source_type(source_type)
@@ -2646,7 +2714,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             })
         return _unknown_source_type_error(source_type, ["all", "cdaweb", "pds", "spice", "hapi", "fdsn"])
 
-    @mcp.tool()
+    @_primary_tool()
     def load_data_source(
         source_type: str,
         source_id: str,
@@ -2797,7 +2865,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             )
         return _unknown_source_type_error(source_type, ["cdaweb", "pds", "spice", "hapi", "fdsn"])
 
-    @mcp.tool()
+    @_primary_tool()
     def browse_data_parameters(
         source_type: str,
         dataset_id: str,
@@ -2846,7 +2914,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             )
         return _unknown_source_type_error(source_type, ["cdaweb", "pds", "spice", "hapi", "fdsn"])
 
-    @mcp.tool()
+    @_primary_tool(read_only=False, idempotent=False, open_world=True)
     def fetch_data_product(
         source_type: str,
         dataset_id: str,
@@ -2928,7 +2996,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             )
         return _unknown_source_type_error(source_type, ["cdaweb", "pds", "spice", "hapi", "fdsn"])
 
-    @mcp.tool()
+    @_primary_tool(read_only=False, destructive=True, idempotent=False, open_world=False)
     def manage_data_cache(
         source_type: str = "all",
         action: str = "status",
@@ -3003,7 +3071,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         # return a clear install error when the extra is missing.
         # ------------------------------------------------------------------
 
-        @mcp.tool()
+        @_advanced_tool()
         @_safe_tool
         def transform_timeseries_coordinates(
             input_file: str,
@@ -3030,7 +3098,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                 vector_cols=vector_cols,
             ))
 
-        @mcp.tool()
+        @_advanced_tool()
         @_safe_tool
         def generate_fac_matrix(
             mag_file: str,
@@ -3060,7 +3128,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                 mag_coord=mag_coord,
             ))
 
-        @mcp.tool()
+        @_advanced_tool()
         @_safe_tool
         def tvector_rotate(
             vector_file: str,
@@ -3087,7 +3155,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                 output_cols=output_cols,
             ))
 
-        @mcp.tool()
+        @_advanced_tool()
         @_safe_tool
         def analyze_minvar_coordinates(
             input_file: str,
@@ -3128,7 +3196,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         # compact ranges/shape are returned (artifact-first).
         # ------------------------------------------------------------------
 
-        @mcp.tool()
+        @_advanced_tool()
         @_safe_tool
         def dynamic_power_spectrum(
             input_file: str,
@@ -3161,7 +3229,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                 time_col=time_col,
             ))
 
-        @mcp.tool()
+        @_advanced_tool()
         @_safe_tool
         def wavelet_transform(
             input_file: str,
@@ -3211,7 +3279,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         # models require explicit parameters rather than hidden network I/O.
         # ------------------------------------------------------------------
 
-        @mcp.tool()
+        @_advanced_tool()
         @_safe_tool
         def evaluate_magnetic_field(
             positions_file: str,
@@ -3247,7 +3315,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                 position_cols=position_cols,
             ))
 
-        @mcp.tool()
+        @_advanced_tool()
         @_safe_tool
         def calculate_lshell(
             positions_file: str,
@@ -3300,7 +3368,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         # unsupported/needs_input entry rather than a raw ImportError.
         # ------------------------------------------------------------------
 
-        @mcp.tool()
+        @_advanced_tool()
         @_safe_tool
         def build_particle_distribution_artifact(
             tplot_name: str,
@@ -3353,7 +3421,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             ))
 
 
-        @mcp.tool()
+        @_advanced_tool()
         @_safe_tool
         def load_particle_distribution_artifact(
             output_file: str,
@@ -3414,7 +3482,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                 max_slices=max_slices,
             ))
 
-        @mcp.tool()
+        @_advanced_tool()
         @_safe_tool
         def compute_particle_moments(
             dist_file: str,
@@ -3448,7 +3516,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                 no_unit_conversion=no_unit_conversion,
             ))
 
-        @mcp.tool()
+        @_advanced_tool()
         @_safe_tool
         def compute_particle_spectra(
             dist_file: str,
@@ -3495,7 +3563,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         # and never fetches remote data.
         # ------------------------------------------------------------------
 
-        @mcp.tool()
+        @_advanced_tool()
         @_safe_tool
         def render_tplot(
             input_files: list[str],
@@ -3558,7 +3626,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         # the unified data layer, which routes here.
         # ------------------------------------------------------------------
 
-    @mcp.tool()
+    @_primary_tool()
     @_safe_tool
     def browse_hapi_catalog(server_url: str, query: str | None = None, max_results: int | None = 500) -> str:
         """Data layer (HAPI): list datasets advertised by any HAPI-compliant server.
@@ -3578,7 +3646,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
 
         return _json(_impl(server_url=server_url, query=query, max_results=max_results))
 
-    @mcp.tool()
+    @_primary_tool(read_only=False, idempotent=False, open_world=True)
     @_safe_tool
     def fetch_hapi_data(
         server_url: str,
@@ -3614,7 +3682,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             format=format,
         ))
 
-    @mcp.tool()
+    @_primary_tool()
     @_safe_tool
     def browse_fdsn_datasets(
         trange: list[str],
@@ -3641,7 +3709,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             usa_only=usa_only,
         ))
 
-    @mcp.tool()
+    @_primary_tool(read_only=False, idempotent=False, open_world=True)
     @_safe_tool
     def fetch_fdsn_data(
         trange: list[str],

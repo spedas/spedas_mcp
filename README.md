@@ -14,7 +14,7 @@ Implementation backend packages should stay visible to maintainers, but they sho
 - Official repo: <https://github.com/spedas/spedas_mcp>
 - Python package name: `spedas-mcp`
 - Python module / CLI module: `spedas_mcp`
-- Default MCP tool count: 17 (compatibility and analysis tools are conditionally registered)
+- Default MCP tool count: 17 (compatibility and analysis tools are conditionally registered); advertised tools carry MCP `ToolAnnotations` plus `meta.surface` (`primary`, `advanced`, or `compat`) so launchers can filter by surface and side-effect hints.
 
 ## Practical guide: run a SPEDAS MCP study
 
