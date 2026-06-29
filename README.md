@@ -14,7 +14,7 @@ Implementation backend packages should stay visible to maintainers, but they sho
 - Official repo: <https://github.com/spedas/spedas_mcp>
 - Python package name: `spedas-mcp`
 - Python module / CLI module: `spedas_mcp`
-- Current MCP tool count: 40
+- Default MCP tool count: 17 (compatibility and analysis tools are conditionally registered)
 
 ## Practical guide: run a SPEDAS MCP study
 
@@ -52,7 +52,7 @@ safe path from a science question to reproducible artifacts.
 |---|---|---|---|
 | Near-Earth magnetosphere, solar wind, MMS, THEMIS, Cluster, Geotail, Van Allen / RBSP, STEREO, PSP, Solar Orbiter, Ulysses, Voyager heliosphere | `source_type="cdaweb"` | CDAWeb browse/load/fetch tools; SPICE only if geometry is part of the question | Mission names may also appear in planetary archives; keep the science context in the plan. |
 | Planetary mission fields/particles at a planet, e.g. Juno/Jupiter, Cassini/Saturn, MAVEN/Mars, New Horizons/Pluto | `source_type="pds"` | PDS discovery/fetch, plus SPICE geometry when trajectory or observation geometry matters | Generic words like "bow shock", "magnetosphere", "plasma", or "energetic particle" are not enough to choose CDAWeb if the target is planetary. |
-| Ephemeris, distance, trajectory, frame transforms, observer-target geometry | `source_type="spice"` | `list_spice_missions`, `get_ephemeris`, `compute_distance`, `transform_coordinates`, `list_coordinate_frames` | SPICE is geometry, not measurement data. Pair it with CDAWeb/PDS when you also need fields or particles. |
+| Ephemeris, distance, trajectory, frame transforms, observer-target geometry | `source_type="spice"` | Browse missions/frames with `browse_data_sources` / `load_data_source`; compute with `get_ephemeris`, `compute_distance`, `transform_coordinates` | SPICE is geometry, not measurement data. Pair it with CDAWeb/PDS when you also need fields or particles. |
 | Any HAPI-compliant server outside the bundled categories | `source_type="hapi"` | `browse_hapi_catalog`, `fetch_hapi_data` | Requires the optional `hapi` extra and an explicit HAPI server URL. |
 | Ground magnetotelluric / FDSN station magnetic data | `source_type="fdsn"` | `browse_fdsn_datasets`, `fetch_fdsn_data` | Requires the optional `fdsn` extra and a time range. |
 | Local file analysis after data already exists | Analysis tools | Coordinate transforms, FAC/minvar, spectra, field/L-shell, particle moments/spectra, `render_tplot` | Inputs are files; install `spedas-mcp[analysis]` for the optional backend. |
@@ -185,11 +185,11 @@ Start here for open-ended science requests.
 
 SPICE is exposed as a data source category, but geometry operations are clearer as explicit tools:
 
-- `list_spice_missions()`
+- Browse SPICE missions with `browse_data_sources(source_type="spice")`.
+- Browse SPICE frame context with `load_data_source(source_type="spice", source_id=...)`.
 - `get_ephemeris(mission, target, start, stop, step="1h", frame="J2000", observer=None)`
 - `compute_distance(mission, target, observer, start, stop, step="1h")`
 - `transform_coordinates(mission, coordinates, from_frame, to_frame, epoch=None)`
-- `list_coordinate_frames(mission=None)`
 
 SPICE kernel cache status/load/clean/check/purge actions are exposed through `manage_data_cache(source_type="spice", action=..., mission=..., filenames=...)`.
 

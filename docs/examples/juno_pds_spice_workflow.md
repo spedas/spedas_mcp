@@ -134,8 +134,8 @@ Expected result: the SPICE mission registry includes `{"mission_key": "JUNO",
 
 ```json
 {
-  "tool": "list_coordinate_frames",
-  "args": {"mission": "juno"}
+  "tool": "load_data_source",
+  "args": {"source_type": "spice", "source_id": "juno"}
 }
 ```
 

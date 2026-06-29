@@ -24,10 +24,10 @@ spedas_overview
 
 ## Compatibility tools
 
-The server still advertises source-specific CDAWeb/PDS/SPICE tools because hiding
-or renaming them would break existing MCP clients and saved prompts. They are
-**supported compatibility tools**, not the preferred starting point for new
-workflows.
+The server keeps source-specific CDAWeb/PDS functions available internally for
+the unified data layer and can advertise the legacy CDAWeb/PDS names for existing
+clients via `SPEDAS_MCP_COMPAT_TOOLS=1`. These are **supported compatibility
+paths**, not the preferred starting point for new workflows.
 
 | Compatibility surface | Preferred new entry point |
 |---|---|
@@ -43,11 +43,14 @@ workflows.
 | `manage_pds_cache` | `manage_data_cache(source_type="pds", action=..., category=..., mission=..., dataset_ids=..., older_than_days=..., dry_run=..., detail=..., force=...)` |
 | `manage_spice_kernels` | `manage_data_cache(source_type="spice", action=..., mission=..., filenames=...)` |
 
-SPICE geometry operations (`get_ephemeris`, `compute_distance`,
-`transform_coordinates`, `list_coordinate_frames`, `list_spice_missions`) remain
-explicit public tools because they are scientific operations rather than archive
-fetch aliases. The unified data layer routes SPICE data-product fetch attempts to
-these geometry tools.
+SPICE geometry operations (`get_ephemeris`, `compute_distance`, and
+`transform_coordinates`) remain explicit public tools because they are scientific
+operations rather than archive fetch aliases. SPICE mission and frame catalogs are
+reachable through the unified data layer (`browse_data_sources(source_type="spice")`,
+`load_data_source(source_type="spice", source_id=...)`, or
+`browse_data_parameters(source_type="spice", dataset_id=...)`) instead of separate
+standalone catalog tools. The unified data layer routes SPICE data-product fetch
+attempts to the geometry tools.
 
 ## Deprecation guidance
 
