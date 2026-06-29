@@ -2006,6 +2006,165 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         ]
         return _json(filtered)
 
+    _CDAWEB_PRODUCT_ALIASES: dict[str, tuple[str, ...]] = {
+        "fgm": ("fgm", "flux gate", "fluxgate", "magnetic field", "magnetometer", "mag"),
+        "mag": ("mag", "magnetic field", "magnetometer", "b-field", "imf"),
+        "imf": ("imf", "interplanetary magnetic field", "magnetic field"),
+        "fpi": ("fpi", "fast plasma investigation", "plasma", "ion", "electron"),
+        "esa": ("esa", "electrostatic analyzer", "plasma", "particle"),
+        "mec": ("mec", "ephemeris", "orbit", "position", "spacecraft position"),
+        "rtn": ("rtn",),
+        "srvy": ("srvy", "survey"),
+        "brst": ("brst", "burst"),
+    }
+
+    def _query_terms(query: str | None) -> list[str]:
+        if not query:
+            return []
+        raw_terms = re.findall(r"[A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*", query.casefold())
+        terms: list[str] = []
+        for term in raw_terms:
+            variants = {term, term.replace("-", "_"), term.replace("_", "-")}
+            variants.update(_CDAWEB_PRODUCT_ALIASES.get(term, ()))
+            for variant in variants:
+                variant = variant.casefold()
+                if variant and variant not in terms:
+                    terms.append(variant)
+        return terms
+
+    def _text_matches(text: str, term: str) -> bool:
+        text = text.casefold()
+        term = term.casefold()
+        if " " in term or "-" in term or "_" in term:
+            return term in text or term.replace(" ", "_") in text or term.replace(" ", "-") in text
+        return bool(re.search(rf"(?<![a-z0-9]){re.escape(term)}(?![a-z0-9])", text)) or term in text.replace("_", " ").replace("-", " ")
+
+    def _cdaweb_dataset_query_candidates(raw_records: str, query: str | None, *, limit: int = 12) -> list[dict[str, Any]]:
+        """Search CDAWeb observatory dataset catalogs for mission+instrument queries.
+
+        ``browse_observatories`` only lists observatory-level rows, so a natural
+        query such as ``MMS FGM`` previously filtered the observatory list to an
+        empty success. This helper searches the per-observatory dataset catalogs
+        when the query has product/instrument terms and returns ranked dataset
+        candidates with exact facade follow-up calls.
+        """
+        terms = _query_terms(query)
+        if not terms:
+            return []
+        try:
+            records = json.loads(raw_records)
+        except Exception:
+            return []
+        if not isinstance(records, list):
+            return []
+        try:
+            from spedas_mcp.backends.cdaweb.catalog import load_observatory_json
+        except Exception:  # pre-#111 backend layout / backend not installed
+            try:
+                from cdawebmcp.catalog import load_observatory_json
+            except Exception:  # pragma: no cover - backend not installed
+                return []
+
+        mission_terms = [term for term in terms if term not in {alias for aliases in _CDAWEB_PRODUCT_ALIASES.values() for alias in aliases}]
+        observatories: list[tuple[str, dict[str, Any]]] = []
+        for record in records:
+            if not isinstance(record, dict):
+                continue
+            source_id = str(record.get("id") or "").strip()
+            if not source_id:
+                continue
+            source_text = json.dumps({k: record.get(k) for k in ("id", "name", "aliases", "description")}, default=str)
+            source_hits = [term for term in mission_terms if _text_matches(source_text, term)]
+            # If no observatory/mission token was identified, allow a bounded
+            # cross-catalog product search; otherwise keep the search focused.
+            if source_hits or not mission_terms:
+                observatories.append((source_id, record))
+        if not observatories:
+            return []
+
+        candidates: list[dict[str, Any]] = []
+        for source_id, record in observatories[:30]:
+            try:
+                observatory = load_observatory_json(source_id.strip().lower().replace("-", "_"))
+            except Exception:
+                continue
+            instruments = observatory.get("instruments", {})
+            if not isinstance(instruments, dict):
+                continue
+            source_name = str(observatory.get("name") or record.get("name") or source_id)
+            source_text = json.dumps({"id": source_id, "name": source_name, "record": record}, default=str)
+            source_hits = [term for term in terms if _text_matches(source_text, term)]
+            for inst_key, inst_data in sorted(instruments.items()):
+                if not isinstance(inst_data, dict):
+                    continue
+                inst_name = str(inst_data.get("name") or inst_key)
+                inst_text = json.dumps({
+                    "instrument": inst_key,
+                    "name": inst_name,
+                    "keywords": inst_data.get("keywords", []),
+                }, default=str)
+                inst_hits = [term for term in terms if _text_matches(inst_text, term)]
+                datasets = inst_data.get("datasets", {})
+                if not isinstance(datasets, dict):
+                    continue
+                for dataset_id, ds_info in sorted(datasets.items()):
+                    info = ds_info if isinstance(ds_info, dict) else {}
+                    dataset_text = json.dumps({"dataset_id": dataset_id, **info}, default=str)
+                    dataset_hits = [term for term in terms if _text_matches(dataset_text, term)]
+                    hits = []
+                    for hit in [*source_hits, *inst_hits, *dataset_hits]:
+                        if hit not in hits:
+                            hits.append(hit)
+                    raw_query_terms = re.findall(r"[A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*", (query or "").casefold())
+                    matched_raw = [
+                        term for term in raw_query_terms
+                        if any(_text_matches(text, term) for text in (source_text, inst_text, dataset_text))
+                        or any(_text_matches(text, alias) for alias in _CDAWEB_PRODUCT_ALIASES.get(term, ()) for text in (source_text, inst_text, dataset_text))
+                    ]
+                    if len(set(matched_raw)) < min(2, len(set(raw_query_terms))):
+                        continue
+                    score = 10 * len(set(source_hits)) + 5 * len(set(dataset_hits)) + 3 * len(set(inst_hits))
+                    if any(term in str(dataset_id).casefold() for term in raw_query_terms):
+                        score += 4
+                    if "srvy" in str(dataset_id).casefold() or "survey" in dataset_text.casefold():
+                        score += 1
+                    why = []
+                    if source_hits:
+                        why.append(f"matched CDAWeb observatory/source {source_id!r}")
+                    if inst_hits:
+                        why.append(f"matched instrument {inst_name!r}")
+                    if dataset_hits:
+                        why.append(f"matched dataset metadata/id {dataset_id!r}")
+                    candidates.append({
+                        "source_type": "cdaweb",
+                        "source_id": source_id,
+                        "source_name": source_name,
+                        "dataset_id": dataset_id,
+                        "instrument": inst_key,
+                        "instrument_name": inst_name,
+                        "start_date": info.get("start_date"),
+                        "stop_date": info.get("stop_date"),
+                        "score": score,
+                        "why": "; ".join(why) if why else "matched query terms in CDAWeb dataset catalog",
+                        "next_tools": [
+                            f"browse_data_parameters(source_type='cdaweb', dataset_id='{dataset_id}')",
+                            f"fetch_data_product(source_type='cdaweb', dataset_id='{dataset_id}', parameters=..., start=..., stop=..., output_dir=...)",
+                        ],
+                    })
+
+        candidates.sort(key=lambda item: (-int(item.get("score", 0)), str(item.get("dataset_id", ""))))
+        seen: set[str] = set()
+        deduped = []
+        for item in candidates:
+            dataset_id = str(item.get("dataset_id"))
+            if dataset_id in seen:
+                continue
+            seen.add(dataset_id)
+            deduped.append(item)
+            if len(deduped) >= limit:
+                break
+        return deduped
+
     def _normalize_pds_source_id(source_id: str) -> str:
         value = (source_id or "").strip().lower().replace("-", "_")
         if value.endswith("_ppi"):
@@ -2248,7 +2407,25 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                 raw_records = _json(records)
             else:
                 raw_records = browse_observatories()
-            return _wrap_data_payload(source, _filter_json_records(raw_records, query), query=query)
+            filtered_records = _filter_json_records(raw_records, query)
+            try:
+                filtered_payload = json.loads(filtered_records)
+            except Exception:
+                filtered_payload = None
+            if query and filtered_payload == []:
+                dataset_candidates = _cdaweb_dataset_query_candidates(raw_records, query)
+                if dataset_candidates:
+                    return _wrap_data_payload(
+                        source,
+                        _json(dataset_candidates),
+                        query=query,
+                        discovery_mode="dataset_query",
+                        note=(
+                            "No observatory row matched the full query; returned ranked "
+                            "CDAWeb dataset candidates from per-observatory catalogs."
+                        ),
+                    )
+            return _wrap_data_payload(source, filtered_records, query=query)
         if source == "pds":
             return _wrap_data_payload(source, browse_pds_missions(query=query), query=query)
         if source == "spice":
