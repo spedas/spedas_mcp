@@ -49,7 +49,7 @@ tplot variable, and it does not write a file. You call it in-process and capture
 
 6. **Write one `.npz`.** Save `{freq, power}` (two 1-D arrays) into a single `.npz` in `<bundle>/data`. `render_tplot` renders **one 2-D matrix per `.npz`**, so for a single line panel store `freq` as the x-axis and `power` as the y values (one curve per file).
 
-7. **Render log–log.** `render_tplot(input_files=[<psd.npz>], output_file=<bundle>/plots/psd.png, panel_types=["line"], xlog=[true], ylog=[true])`. Log–log is what turns a power law into a straight line. Read the PNG back to inspect.
+7. **Render / inspect.** `render_tplot(input_files=[<psd.npz>], output_file=<bundle>/plots/psd.png, panel_types=["line"], ylog=[true])` for the MCP quick-look. The current renderer supports log-scaled power but not a log-scaled frequency axis; if you need a true log–log science figure, make a tiny local Matplotlib plot from the saved `.npz` with both axes set to log and keep it under `<bundle>/plots/`. Do **not** pass an `xlog` option to `render_tplot`.
 
 8. **Fit / report the slope (the science).** On the log–log PSD pick an inertial-range band, do a log-log linear fit of `power` vs `freq` over that band, and report the slope **with the band used**. Solar-wind magnetic turbulence typically shows **~ -5/3 (Kolmogorov)** in the inertial range, steepening past the ion-kinetic break. For a spectral peak, report the peak frequency instead. **Always state the band** — a slope without its fit band is uninterpretable.
 
@@ -64,4 +64,4 @@ tplot variable, and it does not write a file. You call it in-process and capture
 - Enough samples: a meaningful low-frequency end needs a long enough window (many cycles of the lowest frequency of interest); too few rows gives a noise-dominated spectrum.
 
 ## Example
-PSP `PSP_FLD_L2_MAG_RTN` over a stationary solar-wind interval → derive |B| → convert `time` to Unix seconds → `freq, power = pwrspc(time_unix, Bmag, bin=3)` → write `{freq, power}` to one `.npz` → `render_tplot` as a single log–log line panel. A log-log fit over the inertial band (e.g. 1e-2–1e-1 Hz) returns a slope ≈ -1.67, consistent with Kolmogorov f^-5/3; the slope is reported together with that band so the result is self-documenting.
+PSP `PSP_FLD_L2_MAG_RTN` over a stationary solar-wind interval → derive |B| → convert `time` to Unix seconds → `freq, power = pwrspc(time_unix, Bmag, bin=3)` → write `{freq, power}` to one `.npz` → use `render_tplot` for the MCP quick-look and a tiny local Matplotlib log–log plot when fitting/inspecting a power-law slope. A log-log fit over the inertial band (e.g. 1e-2–1e-1 Hz) returns a slope ≈ -1.67, consistent with Kolmogorov f^-5/3; the slope is reported together with that band so the result is self-documenting.
