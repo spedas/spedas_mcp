@@ -56,7 +56,7 @@ Always re-check the live signature in-skill (`inspect.signature(pyspedas.neutral
 1. **Plan & bundle.** `create_spedas_analysis_bundle(study_name, output_dir, science_goal, target, start, stop)` → `requests/ data/ plots/ provenance/`. Use its `data/` and `plots/` dirs for every artifact below.
 
 2. **Get the GSM position time-series.** Two paths:
-   - **Ephemeris route:** `get_ephemeris(target=<spacecraft>, start, stop, frame="GSM", output_dir=<bundle>/data)` to compute the trajectory directly.
+   - **Ephemeris route:** `get_ephemeris(target=<spacecraft>, time=<start>, time_end=<stop>, step="1h", frame="GSM", observer="EARTH", output_file=<bundle>/data/<spacecraft>_gsm_ephemeris.csv, allow_kernel_download=<bool>)` to compute a trajectory CSV directly. `time_end` requires `output_file`; there is no `start`/`stop`/`output_dir` signature for this MCP tool.
    - **Data route:** `load_data_source` → `browse_data_parameters` → `fetch_data_product(source_type="cdaweb", dataset_id=..., parameters=[<position vector>], start, stop, output_dir=<bundle>/data)` for a mission position product (e.g. THEMIS/MMS state).
    - Either way, end with an `(N,3)` GSM position and a matching time array on disk. Inspect the returned `stats`/`quality_checks` for fill/NaNs first.
 
@@ -80,4 +80,4 @@ Always re-check the live signature in-skill (`inspect.signature(pyspedas.neutral
 - Don't apply this on the dayside or far outside the fitted tail region — flag out-of-region samples rather than reporting extrapolated distances as fact.
 
 ## Example
-THEMIS-A (THA) in the magnetotail, a nightside interval: `get_ephemeris(target="THEMIS-A", frame="GSM")` → GSM position (Re) → `pyspedas.neutral_sheet(time, pos, model='themis', in_coord='gsm', sc2NS=True)` → 1-D signed sc-to-NS distance array → save to `data/sc_to_ns_distance.npz` → `render_tplot([...], panel_types=["line"])`. A sign change near the center of the interval marks a neutral-sheet crossing; report the crossing time, the ~0-Re closest approach, the THEMIS model and its near-tail validity caveat, and the PNG path — not the raw array.
+THEMIS-A (THA) in the magnetotail, a nightside interval: `get_ephemeris(target="THEMIS-A", time=<start>, time_end=<stop>, frame="GSM", observer="EARTH", output_file="data/tha_gsm_ephemeris.csv")` → GSM position (convert units to Re if the CSV is km) → `pyspedas.neutral_sheet(time, pos, model='themis', in_coord='gsm', sc2NS=True)` → 1-D signed sc-to-NS distance array → save to `data/sc_to_ns_distance.npz` → `render_tplot([...], panel_types=["line"])`. A sign change near the center of the interval marks a neutral-sheet crossing; report the crossing time, the ~0-Re closest approach, the THEMIS model and its near-tail validity caveat, and the PNG path — not the raw array.
