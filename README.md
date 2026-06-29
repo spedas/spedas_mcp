@@ -199,7 +199,7 @@ Phase-1 coordinate transforms and Phase-2 time-frequency analysis over fetched
 artifacts. These tools require the optional `analysis` extra
 (`pip install 'spedas-mcp[analysis]'`, which installs `pyspedas>=2.0` and
 `matplotlib`, and `PyWavelets`). `pyspedas`/`matplotlib`/`PyWavelets` are **not** part of the base install, and
-the ten analysis tools are registered with MCP only when those optional
+the analysis tools are registered with MCP only when their optional
 dependencies are importable. In a base install they are absent from `list_tools`;
 install `spedas-mcp[analysis]` before asking an MCP client to call them. They are
 file-in / file-out: inputs are paths to fetched CSV/JSON
@@ -234,19 +234,24 @@ Tsyganenko models require explicit geomagnetic parameters and return a
 - `calculate_lshell(positions_file, output_file, model="igrf", geomag_parameters=None, footprint=False, time_col="time", position_cols=None, parameters=None)` — McIlwain L-shell (equatorial field-line apex radius, Re) by tracing each geocentric GSM position to the magnetic equator (`pyspedas` geopack `ttrace2endpoint`). Position radii are guarded to `1..30 Re` for near-Earth science use; out-of-domain inputs return `code="position_domain_error"` rather than meaningless large L values. `footprint=True` also writes the northern ionospheric footprint. Distorted models reuse the same geomagnetic-index contract as `evaluate_magnetic_field`; `parameters=` is accepted as an alias for `geomag_parameters=` (so the index argument has the same name across both tools — `geomag_parameters` stays supported for backward compatibility, and passing both with different values is an `invalid_argument` error). Returns `{lshell_file, model, summary: {min_L, max_L, mean_L}, footprint_file?, ...}`.
 
 Phase 2 — particle distributions, moments & spectra (issues #18, #19, #95). The bridge
-tool `build_particle_distribution_artifact` calls a pyspedas mission particle converter
-for an already-loaded real mission tplot/CDF distribution variable (converter keys include
-`mms_fpi`, `mms_hpca`, and ERG particle products such as `erg_mepi`) and writes the
-standard `.npz` distribution artifact. It requires `magf` as either `[Bx,By,Bz]` or one
-vector per output slice so the artifact satisfies the same schema used by moments. It
-does not download data itself; load the mission data with pyspedas first, then bridge
-the distribution tplot variable. Both downstream tools read this **explicit
+tool `load_particle_distribution_artifact` runs a pyspedas mission loader/fetch (default
+mappings include MMS FPI/HPCA and ERG particle products, with loader overrides available),
+selects the requested or best-effort distribution tplot variable, calls the same pyspedas
+mission converter, and writes the standard `.npz` distribution artifact. For already-loaded
+tplot variables, `build_particle_distribution_artifact` starts at the converter step and
+does not download on its own. Both bridges require `magf` as either `[Bx,By,Bz]`
+or one vector per output slice so the artifact satisfies the same schema used by
+moments. Only `load_particle_distribution_artifact` performs the loader/fetch step,
+so any archive download/cache behavior comes from the requested pyspedas loader and
+is reported in the returned provenance. Both downstream tools read this **explicit
 distribution artifact** — an `.npz` (preferred) or JSON object holding per-time-slice
 energy/solid-angle cubes: `data` (T,E,A flux), `energy`/`denergy`/`theta`/`dtheta`/`phi`/`dphi`/`bins`
 (same shape as `data`, or a single `(E,A)` slice broadcast across time), the scalars
 `charge` and `mass`, and optional `times` (Unix seconds). This is the same `data_in`
 dict that `pyspedas`'s particle algorithms consume; mission CDF distributions can be
-bridged into it by a future loader (#20–#22). Bulk moment time series and spectrogram
+bridged into it either by `load_particle_distribution_artifact` (loader/fetch + converter)
+or by `build_particle_distribution_artifact` from an already loaded tplot variable. Bulk
+moment time series and spectrogram
 matrices are written to `output_dir`; only scalar summaries, paths, ranges, and shapes
 are returned (full pressure/temperature tensors, heat-flux cubes, and spectrogram
 matrices are never returned inline).
@@ -257,6 +262,7 @@ field-aligned temperature/pressure products. Existing artifacts without `magf` w
 return `invalid_argument`; add `magf` as either `(T,3)` vectors (one per time slice)
 or a single `(3,)` vector to broadcast across all slices.
 
+- `load_particle_distribution_artifact(output_file, converter="mms_fpi", trange=None, tplot_name=None, loader_module=None, loader_function=None, loader_kwargs=None, ..., magf=None, max_slices=32)` — end-to-end bridge that calls a pyspedas mission loader/fetch to populate real CDF-backed tplot variables, selects `tplot_name` (or a best-effort distribution variable from the loader result), then writes the documented `.npz` distribution artifact. Default loader mappings cover MMS FPI/HPCA and ERG particle products; `loader_module`/`loader_function`/`loader_kwargs` allow mission-product overrides without adding per-mission MCP tools. The return includes loader backend/kwargs, loaded tplot names, selected tplot name, converter provenance, shapes/ranges, and artifact paths only.
 - `build_particle_distribution_artifact(tplot_name, output_file, converter="mms_fpi", index=None, probe=None, data_rate=None, species=None, level=None, units=None, trange=None, single_time=None, magf=None, max_slices=32)` — bridge a pyspedas mission particle converter from a pre-loaded real mission tplot/CDF distribution variable into the documented `.npz` schema. Supported converter keys are reported on invalid input; current keys include MMS FPI/HPCA and ERG LEP/MEP/HEP/XEP products. The output is validated against `DIST_SCHEMA_DOC` and a sidecar JSON records converter provenance, shapes, time/energy/data ranges, and truncation if `max_slices` limits the artifact.
 - `compute_particle_moments(dist_file, output_dir, sc_potential_v=0.0, energy_range_ev=None, output_format="json", no_unit_conversion=False)` — plasma moments (density, velocity, temperature, pressure tensor, heat-flux-related quantities) per time slice (`pyspedas` `moments_3d`). Requires the distribution artifact fields listed above, including `magf` as `(T,3)` or broadcast `(3,)`. Optionally restricts to `energy_range_ev=[min,max]` eV (by masking inactive bins) and applies the spacecraft potential. Writes the full moment time series to `output_dir/particle_moments.{json,csv}`. Returns `{moments_file, n_time, time_range, density_summary, velocity_summary, temperature_summary, pressure_tensor_summary, columns, ...}` with `{min,max,mean}` scalar summaries only. Units follow `moments_3d` (density cm⁻³, velocity km/s, temperature eV, pressure eV/cm³).
 - `compute_particle_spectra(dist_file, output_dir, spectrum_types=["energy","pitch_angle"], mag_file=None, resolution=None)` — energy / azimuth (`phi`) / elevation (`theta`) / **pitch-angle** spectrograms. Energy/phi/theta use `pyspedas` `spd_pgs_make_e_spec` / `spd_pgs_make_phi_spec` / `spd_pgs_make_theta_spec`, averaging the distribution over the complementary dimensions per slice. `azimuth`→`phi` and `elevation`→`theta` aliases are accepted. Field-aligned `pitch_angle` spectra require a `mag_file` (B-field reference): each slice is rotated into field-aligned coordinates with `spd_pgs_do_fac` (B as +z) and the polar (pitch) angle is binned over 0–180° via `spd_pgs_make_theta_spec` in colatitude mode — **no optional `spd_pgs_make_pad_spec` backend is needed**, so pitch-angle is delivered on every pyspedas build that has the spectra functions. `mag_file` is an `.npz`/`.json` with key `b` as `(T,3)` (one B vector per slice, matched by index) or `(3,)` (broadcast across slices), in the distribution's coordinate frame; only B's direction is used. `resolution` sets the number of pitch-angle bins (default 18). When `mag_file` is absent the `pitch_angle` entry reports `needs_input` while the other requested spectra still compute. Each spectrogram is written to `output_dir/particle_spectra_<type>.npz`. Returns `{spectra: {energy: {spectrogram_file, axis_label, axis_units, shape, axis_range, value_range, ...}, pitch_angle: {..., n_pitch_angle_bins}, ...}, requested, succeeded, n_time, time_range, ...}`.

@@ -910,3 +910,95 @@ def test_build_particle_distribution_rejects_unknown_converter(tmp_path):
     assert out["status"] == "error"
     assert out["code"] == "invalid_argument"
     assert "valid_converters" in out
+
+
+def test_load_particle_distribution_artifact_runs_loader_then_converter(tmp_path, monkeypatch):
+    _install_fake_pyspedas(monkeypatch)
+    loader_mod = types.ModuleType("fake_particle_loader")
+    converter_mod = types.ModuleType("fake_loaded_converter")
+    calls = {"loader": [], "converter": []}
+
+    def fake_load(trange=None, probe=None, datatype=None, no_update=None):
+        calls["loader"].append({
+            "trange": trange,
+            "probe": probe,
+            "datatype": datatype,
+            "no_update": no_update,
+        })
+        return ["mms1_fgm_b_gse_srvy_l2", "mms1_dis_dist_fast"]
+
+    def fake_get_dist(tname, probe=None, data_rate=None, species=None):
+        calls["converter"].append({
+            "tname": tname,
+            "probe": probe,
+            "data_rate": data_rate,
+            "species": species,
+        })
+        return _fake_converter_records(2)
+
+    loader_mod.fake_load = fake_load
+    converter_mod.fake_get_dist = fake_get_dist
+    monkeypatch.setitem(sys.modules, "fake_particle_loader", loader_mod)
+    monkeypatch.setitem(sys.modules, "fake_loaded_converter", converter_mod)
+    monkeypatch.setitem(particles._DIST_CONVERTERS, "fake_e2e", ("fake_loaded_converter", "fake_get_dist"))
+    monkeypatch.setitem(particles._DIST_LOADERS, "fake_e2e", ("fake_particle_loader", "fake_load", {"datatype": "dist"}))
+
+    out_file = tmp_path / "loaded_dist.npz"
+    out = particles.load_particle_distribution_artifact(
+        str(out_file),
+        converter="fake_e2e",
+        trange=["2020-01-01", "2020-01-01/00:01"],
+        loader_kwargs={"no_update": True},
+        probe="1",
+        species="i",
+        magf=[0.0, 0.0, 5.0],
+    )
+
+    assert out["status"] == "success"
+    assert out["tool"] == "load_particle_distribution_artifact"
+    assert out["loader_backend"] == "fake_particle_loader.fake_load"
+    assert out["loaded_tplot_names"] == ["mms1_fgm_b_gse_srvy_l2", "mms1_dis_dist_fast"]
+    assert out["selected_tplot_name"] == "mms1_dis_dist_fast"
+    assert calls["loader"] == [{
+        "trange": ["2020-01-01", "2020-01-01/00:01"],
+        "probe": "1",
+        "datatype": "dist",
+        "no_update": True,
+    }]
+    assert calls["converter"] == [{"tname": "mms1_dis_dist_fast", "probe": "1", "data_rate": None, "species": "i"}]
+    with np.load(out_file) as npz:
+        assert npz["data"].shape == (2, 3, 4)
+        assert npz["magf"].shape == (2, 3)
+
+
+def test_load_particle_distribution_artifact_uses_explicit_tplot_name(tmp_path, monkeypatch):
+    _install_fake_pyspedas(monkeypatch)
+    loader_mod = types.ModuleType("fake_particle_loader_explicit")
+    converter_mod = types.ModuleType("fake_loaded_converter_explicit")
+    calls = []
+
+    def fake_load(**kwargs):
+        return ["not_a_dist_var"]
+
+    def fake_get_dist(tname):
+        calls.append(tname)
+        return _fake_converter_records(1)
+
+    loader_mod.fake_load = fake_load
+    converter_mod.fake_get_dist = fake_get_dist
+    monkeypatch.setitem(sys.modules, "fake_particle_loader_explicit", loader_mod)
+    monkeypatch.setitem(sys.modules, "fake_loaded_converter_explicit", converter_mod)
+    monkeypatch.setitem(particles._DIST_CONVERTERS, "fake_explicit", ("fake_loaded_converter_explicit", "fake_get_dist"))
+
+    out = particles.load_particle_distribution_artifact(
+        str(tmp_path / "explicit_dist.npz"),
+        converter="fake_explicit",
+        loader_module="fake_particle_loader_explicit",
+        loader_function="fake_load",
+        tplot_name="explicit_dist_tplot",
+        magf=[0.0, 0.0, 1.0],
+    )
+
+    assert out["status"] == "success"
+    assert out["selected_tplot_name"] == "explicit_dist_tplot"
+    assert calls == ["explicit_dist_tplot"]

@@ -36,9 +36,10 @@ Design contract (mirrors :mod:`spedas_mcp.analysis.spectral` /
   every mission's CDF distribution struct, this module defines one explicit
   schema (see :data:`DIST_SCHEMA_DOC`) that maps 1:1 onto the ``data_in`` dict
   ``moments_3d`` / the ``spd_pgs_make_*`` functions consume. Mission CDFs can be
-  bridged into this schema by a future loader (#20-#22); the pyspedas algorithms
-  themselves run on the real arrays. Issue #95 adds the first pyspedas-backed
-  bridge from mission converter output into this schema.
+  bridged into this schema either by ``load_particle_distribution_artifact``
+  (loader/fetch plus converter) or by ``build_particle_distribution_artifact``
+  from already-loaded tplot variables; the pyspedas algorithms themselves run on
+  the real arrays.
 - **Lazy, gated backends.** ``pyspedas`` is imported only inside these
   functions; a missing ``[analysis]`` extra yields a clean
   ``status="error", code="dependency_missing"`` payload. Each pyspedas function
@@ -46,7 +47,11 @@ Design contract (mirrors :mod:`spedas_mcp.analysis.spectral` /
   ``pyspedas`` builds vary (e.g. ``spd_pgs_make_pad_spec`` is absent in some
   releases). A missing-but-required backend yields ``code="unsupported"`` rather
   than a raw ``ImportError``.
-- **No network.** All computation is local; the tools never download data.
+- **Artifact-first I/O with explicit loader side effects.** Most functions are
+  file/tplot-in and file-out, returning only compact summaries and artifact
+  paths. ``load_particle_distribution_artifact`` is the explicit exception that
+  may invoke a pyspedas mission loader/fetch; any archive download/cache behavior
+  is owned by that loader and reported in returned provenance.
 """
 
 from __future__ import annotations
@@ -361,6 +366,73 @@ _DIST_CONVERTERS = {
     "erg_xep": ("pyspedas.projects.erg.satellite.erg.particle.erg_xep_get_dist", "erg_xep_get_dist"),
 }
 
+_DIST_LOADERS = {
+    # Optional end-to-end CDF/tplot loaders for the same neutral converter keys.
+    # These are deliberately small, documented defaults; callers can override
+    # loader_module/loader_function/loader_kwargs for mission products whose
+    # pyspedas signatures differ across releases.
+    "mms_fpi": (
+        "pyspedas.projects.mms",
+        "mms_load_fpi",
+        {"datatype": "dis-dist", "data_rate": "fast", "level": "l2", "get_support_data": True},
+    ),
+    "mms_hpca": (
+        "pyspedas.projects.mms",
+        "mms_load_hpca",
+        {"datatype": "ion", "data_rate": "srvy", "level": "l2", "get_support_data": True},
+    ),
+    "erg_lepi": ("pyspedas.projects.erg", "lepi", {"datatype": "3dflux", "level": "l2", "get_support_data": True}),
+    "erg_lepe": ("pyspedas.projects.erg", "lepe", {"datatype": "3dflux", "level": "l2", "get_support_data": True}),
+    "erg_mepi": ("pyspedas.projects.erg", "mepi_nml", {"datatype": "3dflux", "level": "l2", "get_support_data": True}),
+    "erg_mepe": ("pyspedas.projects.erg", "mepe", {"datatype": "3dflux", "level": "l2", "get_support_data": True}),
+    "erg_hep": ("pyspedas.projects.erg", "hep", {"datatype": "3dflux", "level": "l2", "get_support_data": True}),
+    "erg_xep": ("pyspedas.projects.erg", "xep", {"datatype": "omniflux", "level": "l2", "get_support_data": True}),
+}
+
+
+def _merge_loader_kwargs(defaults: dict[str, Any], overrides: dict[str, Any] | None) -> dict[str, Any]:
+    merged = dict(defaults)
+    if overrides:
+        merged.update({k: v for k, v in overrides.items() if v is not None})
+    return merged
+
+
+def _coerce_loaded_tplot_names(result: Any) -> list[str]:
+    if result is None or result == 0:
+        return []
+    if isinstance(result, str):
+        return [result]
+    if isinstance(result, dict):
+        return [str(k) for k in result.keys()]
+    if isinstance(result, (list, tuple, set)):
+        return [str(x) for x in result if isinstance(x, (str, bytes)) or x is not None]
+    return []
+
+
+def _guess_distribution_tplot_name(loaded: list[str], converter: str) -> str | None:
+    if not loaded:
+        return None
+    lowered = [(name, name.lower()) for name in loaded]
+    converter_hints = {
+        "mms_fpi": ("dist", "des", "dis"),
+        "mms_hpca": ("dist", "hpca", "ion"),
+        "erg_lepi": ("lepi", "3d", "flux"),
+        "erg_lepe": ("lepe", "3d", "flux"),
+        "erg_mepi": ("mepi", "3d", "flux"),
+        "erg_mepe": ("mepe", "3d", "flux"),
+        "erg_hep": ("hep", "3d", "flux"),
+        "erg_xep": ("xep", "flux"),
+    }.get(converter, ("dist",))
+    for name, low in lowered:
+        if "dist" in low:
+            return name
+    for hint in converter_hints:
+        for name, low in lowered:
+            if hint in low:
+                return name
+    return loaded[0]
+
+
 
 def _as_float_array(value: Any, field: str) -> Any:
     import numpy as np
@@ -636,6 +708,110 @@ def _fac_matrix(b_vec: Any) -> Any:
 
 
 # --------------------------------------------------------------------------
+
+
+def load_particle_distribution_artifact(
+    output_file: str,
+    converter: str = "mms_fpi",
+    *,
+    trange: list[str] | None = None,
+    tplot_name: str | None = None,
+    loader_module: str | None = None,
+    loader_function: str | None = None,
+    loader_kwargs: dict[str, Any] | None = None,
+    index: int | list[int] | None = None,
+    probe: str | None = None,
+    data_rate: str | None = None,
+    species: str | None = None,
+    level: str | None = None,
+    units: str | None = None,
+    single_time: str | None = None,
+    magf: list[float] | list[list[float]] | None = None,
+    max_slices: int | None = 32,
+) -> dict[str, Any]:
+    """Load/fetch mission CDFs, convert tplot distribution, and write schema artifact."""
+    if converter not in _DIST_CONVERTERS:
+        return _error(
+            f"unsupported particle distribution converter '{converter}'",
+            valid_converters=sorted(_DIST_CONVERTERS),
+        )
+    if max_slices is not None and max_slices <= 0:
+        return _error("max_slices must be positive or null")
+    if magf is None:
+        return _error(
+            "magf is required to write a valid particle distribution artifact",
+            hint="Pass magf=[Bx,By,Bz] to broadcast one magnetic-field vector, or magf=[[...], ...] with one vector per slice.",
+        )
+
+    try:
+        require_pyspedas()
+        if loader_module is None or loader_function is None:
+            if converter not in _DIST_LOADERS:
+                return _error(
+                    f"no default pyspedas loader is registered for converter '{converter}'",
+                    code="unsupported",
+                    hint="Pass loader_module and loader_function to use a mission/product-specific pyspedas loader.",
+                )
+            default_module, default_function, defaults = _DIST_LOADERS[converter]
+            loader_module = loader_module or default_module
+            loader_function = loader_function or default_function
+            defaults = dict(defaults)
+        else:
+            defaults = {}
+
+        load_fn = _require_attr(loader_module, loader_function)
+        effective_loader_kwargs = _merge_loader_kwargs(defaults, loader_kwargs)
+        if trange is not None:
+            effective_loader_kwargs["trange"] = trange
+        effective_loader_kwargs = _merge_loader_kwargs(
+            effective_loader_kwargs,
+            {"probe": probe, "data_rate": data_rate, "level": level},
+        )
+        effective_loader_kwargs = _converter_kwargs(load_fn, effective_loader_kwargs)
+        loaded_result = load_fn(**effective_loader_kwargs)
+        loaded_tplot_names = _coerce_loaded_tplot_names(loaded_result)
+        selected_tplot = tplot_name or _guess_distribution_tplot_name(loaded_tplot_names, converter)
+        if not selected_tplot:
+            raise ValueError(
+                "pyspedas loader did not report any tplot variables; pass tplot_name "
+                "explicitly or adjust loader_kwargs/varformat/varnames"
+            )
+
+        bridge = build_particle_distribution_artifact(
+            selected_tplot,
+            output_file,
+            converter=converter,
+            index=index,
+            probe=probe,
+            data_rate=data_rate,
+            species=species,
+            level=level,
+            units=units,
+            trange=trange,
+            single_time=single_time,
+            magf=magf,
+            max_slices=max_slices,
+        )
+        provenance = {
+            "loader_backend": f"{loader_module}.{loader_function}",
+            "loader_kwargs": effective_loader_kwargs,
+            "loaded_tplot_names": loaded_tplot_names,
+            "selected_tplot_name": selected_tplot,
+        }
+        if bridge.get("status") != "success":
+            return {**bridge, **provenance}
+        return {**bridge, "tool": "load_particle_distribution_artifact", **provenance}
+    except AnalysisDependencyError as exc:
+        return _error(
+            str(exc),
+            code="dependency_missing",
+            hint="Install optional analysis dependencies with: pip install 'spedas-mcp[analysis]'",
+        )
+    except ParticleBackendError as exc:
+        return _error(str(exc), code="unsupported", valid_converters=sorted(_DIST_CONVERTERS))
+    except Exception as exc:
+        return _error(str(exc), code="invalid_argument", schema=DIST_SCHEMA_DOC)
+
 # Issue #18 - particle moments
 # --------------------------------------------------------------------------
 
@@ -1109,6 +1285,7 @@ __all__ = [
     "MAG_SCHEMA_DOC",
     "ParticleBackendError",
     "build_particle_distribution_artifact",
+    "load_particle_distribution_artifact",
     "compute_particle_moments",
     "compute_particle_spectra",
 ]

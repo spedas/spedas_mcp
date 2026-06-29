@@ -41,6 +41,7 @@ ANALYSIS_TOOL_NAMES = (
     "evaluate_magnetic_field",
     "calculate_lshell",
     "build_particle_distribution_artifact",
+    "load_particle_distribution_artifact",
     "compute_particle_moments",
     "compute_particle_spectra",
     "render_tplot",
@@ -2884,6 +2885,59 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                 level=level,
                 units=units,
                 trange=trange,
+                single_time=single_time,
+                magf=magf,
+                max_slices=max_slices,
+            ))
+
+
+        @mcp.tool()
+        @_safe_tool
+        def load_particle_distribution_artifact(
+            output_file: str,
+            converter: str = "mms_fpi",
+            trange: list[str] | None = None,
+            tplot_name: str | None = None,
+            loader_module: str | None = None,
+            loader_function: str | None = None,
+            loader_kwargs: dict[str, Any] | None = None,
+            index: int | list[int] | None = None,
+            probe: str | None = None,
+            data_rate: str | None = None,
+            species: str | None = None,
+            level: str | None = None,
+            units: str | None = None,
+            single_time: str | None = None,
+            magf: list[float] | list[list[float]] | None = None,
+            max_slices: int | None = 32,
+        ) -> str:
+            """Analysis: end-to-end pyspedas loader/CDF -> distribution artifact bridge.
+
+            Calls a pyspedas mission loader (default mappings include MMS FPI/HPCA and
+            ERG particle products, or pass loader_module/loader_function/loader_kwargs),
+            selects tplot_name or a best-effort loaded distribution tplot variable, then
+            writes the same validated .npz schema consumed by compute_particle_moments
+            and compute_particle_spectra. Returns only compact paths/shapes/ranges and
+            loader/converter provenance; CDF/tplot arrays stay on disk/in memory. Supply
+            magf as [Bx,By,Bz] or one vector per slice because the downstream schema
+            requires magnetic-field context. Requires spedas-mcp[analysis].
+            """
+            from spedas_mcp.analysis.particles import load_particle_distribution_artifact as _impl
+
+            return _json(_impl(
+                output_file=output_file,
+                converter=converter,
+                trange=trange,
+                tplot_name=tplot_name,
+                loader_module=loader_module,
+                loader_function=loader_function,
+                loader_kwargs=loader_kwargs,
+                index=index,
+                probe=probe,
+                data_rate=data_rate,
+                species=species,
+                level=level,
+                units=units,
                 single_time=single_time,
                 magf=magf,
                 max_slices=max_slices,
