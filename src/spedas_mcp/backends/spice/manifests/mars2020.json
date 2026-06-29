@@ -1,0 +1,314 @@
+[
+  {
+    "file": "m2020_atls_TestSurfOnlyJez190404_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_atls_TestSurfOnlyJez190404_v1.bsp",
+    "start": "2019-04-04",
+    "stop": "2099-12-31"
+  },
+  {
+    "file": "m2020_FMAresponse_JEZ_20200717_P000.cruise.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_FMAresponse_JEZ_20200717_P000.cruise.bsp",
+    "start": "2020-07-17",
+    "stop": "2021-02-18"
+  },
+  {
+    "file": "m2020_cruise_nom_clh_v2.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_cruise_nom_clh_v2.bsp",
+    "start": "2020-07-17",
+    "stop": "2021-02-18"
+  },
+  {
+    "file": "m2020_cruise_nom_jez_v2.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_cruise_nom_jez_v2.bsp",
+    "start": "2020-07-17",
+    "stop": "2021-02-18"
+  },
+  {
+    "file": "m2020_cruise_nom_nes_v2.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_cruise_nom_nes_v2.bsp",
+    "start": "2020-07-17",
+    "stop": "2021-02-18"
+  },
+  {
+    "file": "m2020_cruise_od138_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_cruise_od138_v1.bsp",
+    "start": "2020-07-30",
+    "stop": "2021-02-18"
+  },
+  {
+    "file": "m2020_trajCEDLS-6DOF_ops_od020v1_AL23.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_trajCEDLS-6DOF_ops_od020v1_AL23.bsp",
+    "start": "2020-07-30",
+    "stop": "2021-02-18"
+  },
+  {
+    "file": "m2020_trajCEDLS-6DOF_ops_od069v1_AL4.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_trajCEDLS-6DOF_ops_od069v1_AL4.bsp",
+    "start": "2020-07-30",
+    "stop": "2021-02-19"
+  },
+  {
+    "file": "m2020_FMAresponse_JEZ_20200717_P000.edl.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_FMAresponse_JEZ_20200717_P000.edl.bsp",
+    "start": "2021-02-18",
+    "stop": "2021-02-18"
+  },
+  {
+    "file": "m2020_atls_clh_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_atls_clh_v1.bsp",
+    "start": "2021-02-18",
+    "stop": "2099-12-31"
+  },
+  {
+    "file": "m2020_atls_clh_v2.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_atls_clh_v2.bsp",
+    "start": "2021-02-18",
+    "stop": "2099-12-31"
+  },
+  {
+    "file": "m2020_atls_jez_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_atls_jez_v1.bsp",
+    "start": "2021-02-18",
+    "stop": "2099-12-31"
+  },
+  {
+    "file": "m2020_atls_jez_v2.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_atls_jez_v2.bsp",
+    "start": "2021-02-18",
+    "stop": "2099-12-31"
+  },
+  {
+    "file": "m2020_atls_jez_v3.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_atls_jez_v3.bsp",
+    "start": "2021-02-18",
+    "stop": "2099-12-31"
+  },
+  {
+    "file": "m2020_atls_jez_v4.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_atls_jez_v4.bsp",
+    "start": "2021-02-18",
+    "stop": "2099-12-31"
+  },
+  {
+    "file": "m2020_atls_nes_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_atls_nes_v1.bsp",
+    "start": "2021-02-18",
+    "stop": "2099-12-31"
+  },
+  {
+    "file": "m2020_atls_nes_v2.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_atls_nes_v2.bsp",
+    "start": "2021-02-18",
+    "stop": "2099-12-31"
+  },
+  {
+    "file": "m2020_atls_ops210303_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_atls_ops210303_v1.bsp",
+    "start": "2021-02-18",
+    "stop": "2099-12-31"
+  },
+  {
+    "file": "m2020_edl_nom_clh_v2.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_edl_nom_clh_v2.bsp",
+    "start": "2021-02-18",
+    "stop": "2021-02-18"
+  },
+  {
+    "file": "m2020_edl_nom_jez_v2.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_edl_nom_jez_v2.bsp",
+    "start": "2021-02-18",
+    "stop": "2021-02-18"
+  },
+  {
+    "file": "m2020_edl_nom_nes_v2.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_edl_nom_nes_v2.bsp",
+    "start": "2021-02-18",
+    "stop": "2021-02-18"
+  },
+  {
+    "file": "m2020_edl_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_edl_v01.bsp",
+    "start": "2021-02-18",
+    "stop": "2021-02-18"
+  },
+  {
+    "file": "m2020_surf_rover_loc.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_loc.bsp",
+    "start": "2021-02-18",
+    "stop": "2026-02-08"
+  },
+  {
+    "file": "m2020_surf_rover_loc_0000_0089_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_loc_0000_0089_v1.bsp",
+    "start": "2021-02-18",
+    "stop": "2021-05-21"
+  },
+  {
+    "file": "m2020_surf_rover_tlm_0000_0089_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_tlm_0000_0089_v1.bsp",
+    "start": "2021-02-18",
+    "stop": "2021-05-21"
+  },
+  {
+    "file": "m2020_surf_rover_loc_0089_0179_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_loc_0089_0179_v1.bsp",
+    "start": "2021-05-20",
+    "stop": "2021-08-22"
+  },
+  {
+    "file": "m2020_surf_rover_tlm_0089_0179_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_tlm_0089_0179_v1.bsp",
+    "start": "2021-05-20",
+    "stop": "2021-08-22"
+  },
+  {
+    "file": "m2020_surf_rover_loc_0179_0299_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_loc_0179_0299_v1.bsp",
+    "start": "2021-08-21",
+    "stop": "2021-12-23"
+  },
+  {
+    "file": "m2020_surf_rover_tlm_0179_0299_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_tlm_0179_0299_v1.bsp",
+    "start": "2021-08-21",
+    "stop": "2021-12-23"
+  },
+  {
+    "file": "m2020_surf_rover_loc_0299_0419_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_loc_0299_0419_v1.bsp",
+    "start": "2021-12-22",
+    "stop": "2022-04-25"
+  },
+  {
+    "file": "m2020_surf_rover_tlm_0299_0419_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_tlm_0299_0419_v1.bsp",
+    "start": "2021-12-22",
+    "stop": "2022-04-25"
+  },
+  {
+    "file": "m2020_surf_rover_loc_0419_0539_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_loc_0419_0539_v1.bsp",
+    "start": "2022-04-24",
+    "stop": "2022-08-27"
+  },
+  {
+    "file": "m2020_surf_rover_tlm_0419_0539_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_tlm_0419_0539_v1.bsp",
+    "start": "2022-04-24",
+    "stop": "2022-08-27"
+  },
+  {
+    "file": "m2020_surf_rover_loc_0539_0659_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_loc_0539_0659_v1.bsp",
+    "start": "2022-08-26",
+    "stop": "2022-12-28"
+  },
+  {
+    "file": "m2020_surf_rover_tlm_0539_0659_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_tlm_0539_0659_v1.bsp",
+    "start": "2022-08-26",
+    "stop": "2022-12-28"
+  },
+  {
+    "file": "m2020_surf_rover_loc_0659_0779_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_loc_0659_0779_v1.bsp",
+    "start": "2022-12-27",
+    "stop": "2023-04-30"
+  },
+  {
+    "file": "m2020_surf_rover_tlm_0659_0779_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_tlm_0659_0779_v1.bsp",
+    "start": "2022-12-27",
+    "stop": "2023-04-30"
+  },
+  {
+    "file": "m2020_surf_rover_loc_0779_0899_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_loc_0779_0899_v1.bsp",
+    "start": "2023-04-29",
+    "stop": "2023-08-31"
+  },
+  {
+    "file": "m2020_surf_rover_tlm_0779_0899_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_tlm_0779_0899_v1.bsp",
+    "start": "2023-04-29",
+    "stop": "2023-08-31"
+  },
+  {
+    "file": "m2020_surf_rover_loc_0899_1019_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_loc_0899_1019_v1.bsp",
+    "start": "2023-08-30",
+    "stop": "2024-01-02"
+  },
+  {
+    "file": "m2020_surf_rover_tlm_0899_1019_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_tlm_0899_1019_v1.bsp",
+    "start": "2023-08-30",
+    "stop": "2024-01-02"
+  },
+  {
+    "file": "m2020_surf_rover_loc_1019_1139_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_loc_1019_1139_v1.bsp",
+    "start": "2024-01-01",
+    "stop": "2024-05-04"
+  },
+  {
+    "file": "m2020_surf_rover_tlm_1019_1139_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_tlm_1019_1139_v1.bsp",
+    "start": "2024-01-01",
+    "stop": "2024-05-04"
+  },
+  {
+    "file": "m2020_surf_rover_loc_1139_1259_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_loc_1139_1259_v1.bsp",
+    "start": "2024-05-03",
+    "stop": "2024-09-04"
+  },
+  {
+    "file": "m2020_surf_rover_tlm_1139_1259_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_tlm_1139_1259_v1.bsp",
+    "start": "2024-05-03",
+    "stop": "2024-09-04"
+  },
+  {
+    "file": "m2020_surf_rover_loc_1259_1379_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_loc_1259_1379_v1.bsp",
+    "start": "2024-09-03",
+    "stop": "2025-01-06"
+  },
+  {
+    "file": "m2020_surf_rover_tlm_1259_1379_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_tlm_1259_1379_v1.bsp",
+    "start": "2024-09-03",
+    "stop": "2025-01-06"
+  },
+  {
+    "file": "m2020_surf_rover_loc_1379_1499_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_loc_1379_1499_v1.bsp",
+    "start": "2025-01-05",
+    "stop": "2025-05-09"
+  },
+  {
+    "file": "m2020_surf_rover_tlm_1379_1499_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_tlm_1379_1499_v1.bsp",
+    "start": "2025-01-05",
+    "stop": "2025-05-09"
+  },
+  {
+    "file": "m2020_surf_rover_loc_1499_1619_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_loc_1499_1619_v1.bsp",
+    "start": "2025-05-08",
+    "stop": "2025-09-09"
+  },
+  {
+    "file": "m2020_surf_rover_tlm_1499_1619_v1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_tlm_1499_1619_v1.bsp",
+    "start": "2025-05-08",
+    "stop": "2025-09-09"
+  },
+  {
+    "file": "m2020_surf_rover_loc_runout.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MARS2020/kernels/spk/m2020_surf_rover_loc_runout.bsp",
+    "start": "2026-02-08",
+    "stop": "2036-02-08"
+  }
+]

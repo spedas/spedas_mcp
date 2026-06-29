@@ -284,7 +284,7 @@ def test_browse_observatories_uses_cdaweb_catalog(monkeypatch):
     assert any(obs.get("id") == "ace" for obs in data)
 
 
-def test_unified_spice_browse_uses_xhelio_spice_registry():
+def test_unified_spice_browse_uses_in_tree_spice_registry():
     server = create_server()
     data = json.loads(_call_tool(server, "browse_data_sources", {"source_type": "spice"}))
     assert data["status"] == "success"
@@ -292,7 +292,7 @@ def test_unified_spice_browse_uses_xhelio_spice_registry():
     assert any(mission.get("mission_key") == "PSP" for mission in data["payload"])
 
 
-def test_browse_pds_missions_uses_xhelio_pds_catalog(monkeypatch):
+def test_browse_pds_missions_uses_in_tree_pds_catalog(monkeypatch):
     monkeypatch.setenv("SPEDAS_MCP_COMPAT_TOOLS", "1")
     server = create_server()
     data = json.loads(_call_tool(server, "browse_pds_missions"))
@@ -675,7 +675,7 @@ def test_unified_cache_manager_passes_pds_and_spice_kwargs(monkeypatch):
             purge_cache=lambda: [],
         ),
     )
-    monkeypatch.setitem(sys.modules, "xhelio_spice.kernel_manager", spice_mod)
+    monkeypatch.setitem(sys.modules, "spedas_mcp.backends.spice.kernel_manager", spice_mod)
 
     server = create_server()
     pds_data = json.loads(_call_tool(server, "manage_data_cache", {
@@ -1542,7 +1542,7 @@ def test_analysis_safe_tool_converts_unexpected_exception(monkeypatch):
 
 
 def test_spice_keyerror_classified_as_geometry_error():
-    # A geometry KeyError (xhelio_spice "Cannot resolve body name 'X'") must be
+    # A geometry KeyError (SPICE backend "Cannot resolve body name 'X'") must be
     # classified as geometry_error with a geometry hint, not the generic
     # KeyError -> invalid_argument mapping (issue #27 should-fix #3).
     code, hint = _classify_exception(KeyError("Cannot resolve body name 'NOPE'"))
@@ -1560,7 +1560,7 @@ def test_get_ephemeris_invalid_body_now_unsupported_spice_target():
     # Issue #26: an unsupported target is now caught by the network-free preflight
     # *before* the backend, so it returns the dedicated unsupported_spice_target
     # error (with alternatives) rather than the generic geometry_error that only
-    # surfaced after touching xhelio_spice. The geometry_error classifier still
+    # surfaced after touching the SPICE backend. The geometry_error classifier still
     # covers genuinely unguarded SPICE failures (see
     # test_spice_keyerror_classified_as_geometry_error).
     server = create_server()
@@ -1599,7 +1599,7 @@ def test_error_response_sanitizes_string_extras():
 # These tests must NEVER trigger a real kernel download. They:
 #   * isolate the kernel cache to an empty tmp dir via XHELIO_SPICE_KERNEL_DIR
 #     and reset the KernelManager singleton, so "missing kernels" is deterministic;
-#   * monkeypatch xhelio_spice.get_state/get_trajectory/transform_vector to raise
+#   * monkeypatch spedas_mcp.backends.spice get_state/get_trajectory/transform_vector to raise
 #     if ever called, proving the preflight short-circuits before the backend.
 # ---------------------------------------------------------------------------
 
@@ -1614,13 +1614,13 @@ from spedas_mcp.server import (  # noqa: E402
 
 @pytest.fixture
 def empty_kernel_cache(tmp_path, monkeypatch):
-    """Point xhelio_spice at an empty kernel cache and reset its singleton.
+    """Point the in-tree SPICE backend at an empty kernel cache and reset its singleton.
 
     Yields the cache dir. With no files present, every mission's required
     kernels are "missing", so the #29 confirmation gate fires deterministically
     regardless of the developer's real ~/.xhelio_spice cache.
     """
-    import xhelio_spice.kernel_manager as km_mod
+    import spedas_mcp.backends.spice.kernel_manager as km_mod
 
     cache_dir = tmp_path / "kernels"
     cache_dir.mkdir()
@@ -1633,19 +1633,19 @@ def empty_kernel_cache(tmp_path, monkeypatch):
 
 @pytest.fixture
 def no_backend_downloads(monkeypatch):
-    """Make any real xhelio_spice geometry/download call fail loudly.
+    """Make any real in-tree SPICE backend geometry/download call fail loudly.
 
     The preflight is supposed to return before these run; if it does not, the
     test fails with a clear marker instead of attempting a network download.
     """
-    import xhelio_spice
+    import spedas_mcp.backends.spice as spice_backend
 
     def _boom(*args, **kwargs):  # pragma: no cover - only hit on regression
         raise AssertionError("backend geometry call reached — preflight did not gate it")
 
-    monkeypatch.setattr(xhelio_spice, "get_state", _boom)
-    monkeypatch.setattr(xhelio_spice, "get_trajectory", _boom)
-    monkeypatch.setattr(xhelio_spice, "transform_vector", _boom)
+    monkeypatch.setattr(spice_backend, "get_state", _boom)
+    monkeypatch.setattr(spice_backend, "get_trajectory", _boom)
+    monkeypatch.setattr(spice_backend, "transform_vector", _boom)
     return _boom
 
 
@@ -1835,8 +1835,8 @@ def test_get_ephemeris_cached_target_proceeds_to_backend(empty_kernel_cache, mon
     # When all required kernels are present on disk, the gate must NOT fire and
     # the real geometry path runs. We fake-cache the generic + PSP files and stub
     # get_state so no download or SPICE call is needed.
-    import xhelio_spice
-    from xhelio_spice.missions import GENERIC_KERNELS, MISSION_KERNELS
+    import spedas_mcp.backends.spice as spice_backend
+    from spedas_mcp.backends.spice.missions import GENERIC_KERNELS, MISSION_KERNELS
 
     for fname in list(GENERIC_KERNELS) + list(MISSION_KERNELS["PSP"]):
         (empty_kernel_cache / fname).write_bytes(b"x")  # non-zero size = "cached"
@@ -1845,7 +1845,7 @@ def test_get_ephemeris_cached_target_proceeds_to_backend(empty_kernel_cache, mon
         return {"x_km": 1.0, "y_km": 2.0, "z_km": 3.0, "target": target,
                 "observer": observer, "frame": frame, "time": time}
 
-    monkeypatch.setattr(xhelio_spice, "get_state", _fake_get_state)
+    monkeypatch.setattr(spice_backend, "get_state", _fake_get_state)
 
     server = create_server()
     raw = _call_tool(server, "get_ephemeris", {
@@ -1860,13 +1860,13 @@ def test_get_ephemeris_cached_target_proceeds_to_backend(empty_kernel_cache, mon
 def test_get_ephemeris_allow_kernel_download_bypasses_gate(empty_kernel_cache, monkeypatch):
     # allow_kernel_download=True is the explicit opt-in: the gate is skipped even
     # though the cache is empty, and the (stubbed) backend runs.
-    import xhelio_spice
+    import spedas_mcp.backends.spice as spice_backend
 
     def _fake_get_state(target, observer, time, frame):
         return {"x_km": 9.0, "target": target, "observer": observer,
                 "frame": frame, "time": time}
 
-    monkeypatch.setattr(xhelio_spice, "get_state", _fake_get_state)
+    monkeypatch.setattr(spice_backend, "get_state", _fake_get_state)
 
     server = create_server()
     raw = _call_tool(server, "get_ephemeris", {
@@ -1881,12 +1881,12 @@ def test_get_ephemeris_allow_kernel_download_bypasses_gate(empty_kernel_cache, m
 
 def test_transform_coordinates_output_vector_is_json_array(empty_kernel_cache, monkeypatch):
     import numpy as np
-    import xhelio_spice
+    import spedas_mcp.backends.spice as spice_backend
 
     def _fake_transform_vector(vector, time, from_frame, to_frame, spacecraft=None):
         return np.array([1.0, 2.5, 3.0])
 
-    monkeypatch.setattr(xhelio_spice, "transform_vector", _fake_transform_vector)
+    monkeypatch.setattr(spice_backend, "transform_vector", _fake_transform_vector)
     server = create_server()
     raw = _call_tool(server, "transform_coordinates", {
         "vector": [1.0, 0.0, 0.0],

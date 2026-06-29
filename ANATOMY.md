@@ -20,7 +20,7 @@ An MCP server that gives an AI agent one unified door to heliophysics data (CDAW
 ## Connections
 
 - **Client → facade.** MCP stdio JSON-RPC; client sees tool names/schemas only, receives `{status, file_path, stats}` — never bulk arrays (artifact-first).
-- **Facade → backends.** `server.py` lazily imports `xhelio-cdaweb` / `pdsmcp` / `xhelio-spice` (data + geometry) and, when `[analysis]` is present, the `analysis/` functions and `datasources/`. Unified `fetch_data_product(source_type=...)` dispatches by source.
+- **Facade → backends.** `server.py` lazily imports the in-tree vendored `spedas_mcp.backends.cdaweb` / `pds` / `spice` packages (data + geometry) and, when `[analysis]` is present, the `analysis/` functions and `datasources/`. Unified `fetch_data_product(source_type=...)` dispatches by source.
 - **Plugin → server.** `plugins/spedas-claude/.mcp.json` launches the `spedas` server; commands + skills reference its unified tools.
 
 ## Composition

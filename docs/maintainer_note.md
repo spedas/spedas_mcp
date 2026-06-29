@@ -50,7 +50,7 @@ Good fits for backend packages:
 
 - CDAWeb catalog/fetch semantics → vendored `spedas_mcp.backends.cdaweb` backend (formerly `xhelio-cdaweb`).
 - PDS archive resolution and dataset metadata → vendored `spedas_mcp.backends.pds` backend (formerly `xhelio-pds`).
-- SPICE kernel registry and geometry computation → `xhelio-spice` backend.
+- SPICE kernel registry and geometry computation → vendored `spedas_mcp.backends.spice` backend (formerly `xhelio-spice`).
 
 Good fits for `spedas_mcp`:
 

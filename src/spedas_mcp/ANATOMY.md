@@ -19,7 +19,7 @@ The Python package: a FastMCP **facade** that registers heliophysics tools and d
 ## Connections
 
 - **In:** MCP client calls a registered tool → its closure in `create_server()`.
-- **Out:** lazily imports `xhelio-cdaweb`/`pdsmcp`/`xhelio-spice` for data+geometry; calls `analysis/` and `datasources/` functions for the analysis/optional tools.
+- **Out:** lazily imports the in-tree vendored `backends.cdaweb`/`backends.pds`/`backends.spice` packages for data+geometry; calls `analysis/` and `datasources/` functions for the analysis/optional tools.
 - Dispatch fans `fetch_data_product`/`browse_*`/`manage_data_cache` to the right backend by `source_type`.
 
 ## Composition

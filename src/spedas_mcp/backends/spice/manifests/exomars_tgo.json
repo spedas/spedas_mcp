@@ -1,0 +1,1934 @@
+[
+  {
+    "file": "em16_tgo_cog_106_01_20180220_20200118_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_106_01_20180220_20200118_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-01-18"
+  },
+  {
+    "file": "em16_tgo_cog_107_01_20180220_20200125_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_107_01_20180220_20200125_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-01-25"
+  },
+  {
+    "file": "em16_tgo_cog_108_01_20180220_20200201_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_108_01_20180220_20200201_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-02-01"
+  },
+  {
+    "file": "em16_tgo_cog_109_01_20180220_20200208_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_109_01_20180220_20200208_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-02-08"
+  },
+  {
+    "file": "em16_tgo_cog_110_01_20180220_20200215_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_110_01_20180220_20200215_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-02-15"
+  },
+  {
+    "file": "em16_tgo_cog_111_01_20180220_20200222_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_111_01_20180220_20200222_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-02-22"
+  },
+  {
+    "file": "em16_tgo_cog_112_01_20180220_20200229_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_112_01_20180220_20200229_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-02-29"
+  },
+  {
+    "file": "em16_tgo_cog_113_01_20180220_20200307_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_113_01_20180220_20200307_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-03-07"
+  },
+  {
+    "file": "em16_tgo_cog_114_01_20180220_20200314_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_114_01_20180220_20200314_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-03-14"
+  },
+  {
+    "file": "em16_tgo_cog_115_01_20180220_20200321_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_115_01_20180220_20200321_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-03-21"
+  },
+  {
+    "file": "em16_tgo_cog_116_01_20180220_20200328_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_116_01_20180220_20200328_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-03-28"
+  },
+  {
+    "file": "em16_tgo_cog_117_01_20180220_20200909_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_117_01_20180220_20200909_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-09-09"
+  },
+  {
+    "file": "em16_tgo_cog_119_01_20180220_20200418_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_119_01_20180220_20200418_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-04-18"
+  },
+  {
+    "file": "em16_tgo_cog_120_01_20180220_20200425_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_120_01_20180220_20200425_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-04-25"
+  },
+  {
+    "file": "em16_tgo_cog_121_01_20180220_20200502_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_121_01_20180220_20200502_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-05-02"
+  },
+  {
+    "file": "em16_tgo_cog_122_01_20180220_20200509_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_122_01_20180220_20200509_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-05-09"
+  },
+  {
+    "file": "em16_tgo_cog_123_01_20180220_20200516_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_123_01_20180220_20200516_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-05-16"
+  },
+  {
+    "file": "em16_tgo_cog_124_01_20180220_20200523_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_124_01_20180220_20200523_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-05-23"
+  },
+  {
+    "file": "em16_tgo_cog_125_01_20180220_20200530_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_125_01_20180220_20200530_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-05-30"
+  },
+  {
+    "file": "em16_tgo_cog_126_01_20180220_20200606_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_126_01_20180220_20200606_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-06-06"
+  },
+  {
+    "file": "em16_tgo_cog_127_01_20180220_20200613_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_127_01_20180220_20200613_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-06-13"
+  },
+  {
+    "file": "em16_tgo_cog_128_01_20180220_20200620_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_128_01_20180220_20200620_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-06-20"
+  },
+  {
+    "file": "em16_tgo_cog_129_01_20180220_20200627_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_129_01_20180220_20200627_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-06-27"
+  },
+  {
+    "file": "em16_tgo_cog_130_01_20180220_20200704_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_130_01_20180220_20200704_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-07-04"
+  },
+  {
+    "file": "em16_tgo_cog_131_01_20180220_20200711_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_131_01_20180220_20200711_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-07-11"
+  },
+  {
+    "file": "em16_tgo_cog_132_01_20180220_20200718_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_132_01_20180220_20200718_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-07-18"
+  },
+  {
+    "file": "em16_tgo_cog_133_01_20180220_20200725_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_133_01_20180220_20200725_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-07-25"
+  },
+  {
+    "file": "em16_tgo_cog_134_01_20180220_20200801_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_134_01_20180220_20200801_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-08-01"
+  },
+  {
+    "file": "em16_tgo_cog_135_01_20180220_20200808_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_135_01_20180220_20200808_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-08-08"
+  },
+  {
+    "file": "em16_tgo_cog_136_01_20180220_20200815_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_136_01_20180220_20200815_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-08-15"
+  },
+  {
+    "file": "em16_tgo_cog_137_01_20180220_20200822_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_137_01_20180220_20200822_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-08-22"
+  },
+  {
+    "file": "em16_tgo_cog_138_01_20180220_20200829_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_138_01_20180220_20200829_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-08-29"
+  },
+  {
+    "file": "em16_tgo_cog_139_01_20180220_20200905_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_139_01_20180220_20200905_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-09-05"
+  },
+  {
+    "file": "em16_tgo_cog_140_01_20180220_20200912_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_140_01_20180220_20200912_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-09-12"
+  },
+  {
+    "file": "em16_tgo_cog_141_01_20180220_20200919_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_141_01_20180220_20200919_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-09-19"
+  },
+  {
+    "file": "em16_tgo_cog_142_01_20180220_20200926_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_142_01_20180220_20200926_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-09-26"
+  },
+  {
+    "file": "em16_tgo_cog_143_01_20180220_20201003_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_143_01_20180220_20201003_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-10-03"
+  },
+  {
+    "file": "em16_tgo_cog_144_01_20180220_20201010_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_144_01_20180220_20201010_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-10-10"
+  },
+  {
+    "file": "em16_tgo_cog_145_01_20180220_20201017_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_145_01_20180220_20201017_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-10-17"
+  },
+  {
+    "file": "em16_tgo_cog_146_01_20180220_20201024_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_146_01_20180220_20201024_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-10-24"
+  },
+  {
+    "file": "em16_tgo_cog_147_01_20180220_20201031_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_147_01_20180220_20201031_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-10-31"
+  },
+  {
+    "file": "em16_tgo_cog_148_01_20180220_20201107_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_148_01_20180220_20201107_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-11-07"
+  },
+  {
+    "file": "em16_tgo_cog_149_01_20180220_20201114_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_149_01_20180220_20201114_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-11-14"
+  },
+  {
+    "file": "em16_tgo_cog_150_01_20180220_20201121_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_150_01_20180220_20201121_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-11-21"
+  },
+  {
+    "file": "em16_tgo_cog_151_01_20180220_20201128_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_151_01_20180220_20201128_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-11-28"
+  },
+  {
+    "file": "em16_tgo_cog_152_01_20180220_20201205_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_152_01_20180220_20201205_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-12-05"
+  },
+  {
+    "file": "em16_tgo_cog_153_01_20180220_20201212_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_153_01_20180220_20201212_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-12-12"
+  },
+  {
+    "file": "em16_tgo_cog_154_01_20180220_20201219_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_154_01_20180220_20201219_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-12-19"
+  },
+  {
+    "file": "em16_tgo_cog_155_01_20180220_20201226_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_155_01_20180220_20201226_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2020-12-26"
+  },
+  {
+    "file": "em16_tgo_cog_156_01_20180220_20210102_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_156_01_20180220_20210102_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-01-02"
+  },
+  {
+    "file": "em16_tgo_cog_157_01_20180220_20210109_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_157_01_20180220_20210109_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-01-09"
+  },
+  {
+    "file": "em16_tgo_cog_158_01_20180220_20210116_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_158_01_20180220_20210116_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-01-16"
+  },
+  {
+    "file": "em16_tgo_cog_159_01_20180220_20210123_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_159_01_20180220_20210123_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-01-23"
+  },
+  {
+    "file": "em16_tgo_cog_160_01_20180220_20210130_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_160_01_20180220_20210130_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-01-30"
+  },
+  {
+    "file": "em16_tgo_cog_161_01_20180220_20210206_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_161_01_20180220_20210206_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-02-06"
+  },
+  {
+    "file": "em16_tgo_cog_162_01_20180220_20210213_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_162_01_20180220_20210213_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-02-13"
+  },
+  {
+    "file": "em16_tgo_cog_163_01_20180220_20210220_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_163_01_20180220_20210220_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-02-20"
+  },
+  {
+    "file": "em16_tgo_cog_164_01_20180220_20210227_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_164_01_20180220_20210227_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-02-27"
+  },
+  {
+    "file": "em16_tgo_cog_165_01_20180220_20210306_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_165_01_20180220_20210306_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-03-06"
+  },
+  {
+    "file": "em16_tgo_cog_166_01_20180220_20210313_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_166_01_20180220_20210313_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-03-13"
+  },
+  {
+    "file": "em16_tgo_cog_167_01_20180220_20210320_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_167_01_20180220_20210320_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-03-20"
+  },
+  {
+    "file": "em16_tgo_cog_168_01_20180220_20210327_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_168_01_20180220_20210327_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-03-27"
+  },
+  {
+    "file": "em16_tgo_cog_169_01_20180220_20210403_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_169_01_20180220_20210403_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-04-03"
+  },
+  {
+    "file": "em16_tgo_cog_170_01_20180220_20210410_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_170_01_20180220_20210410_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-04-10"
+  },
+  {
+    "file": "em16_tgo_cog_171_01_20180220_20210417_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_171_01_20180220_20210417_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-04-17"
+  },
+  {
+    "file": "em16_tgo_cog_172_01_20180220_20210424_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_172_01_20180220_20210424_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-04-24"
+  },
+  {
+    "file": "em16_tgo_cog_173_01_20180220_20210501_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_173_01_20180220_20210501_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-05-01"
+  },
+  {
+    "file": "em16_tgo_cog_174_01_20180220_20210508_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_174_01_20180220_20210508_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-05-08"
+  },
+  {
+    "file": "em16_tgo_cog_175_01_20180220_20210515_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_175_01_20180220_20210515_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-05-15"
+  },
+  {
+    "file": "em16_tgo_cog_176_01_20180220_20210522_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_176_01_20180220_20210522_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-05-22"
+  },
+  {
+    "file": "em16_tgo_cog_177_01_20180220_20210529_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_177_01_20180220_20210529_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-05-29"
+  },
+  {
+    "file": "em16_tgo_cog_178_01_20180220_20210605_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_178_01_20180220_20210605_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-06-05"
+  },
+  {
+    "file": "em16_tgo_cog_179_01_20180220_20210612_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_179_01_20180220_20210612_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-06-12"
+  },
+  {
+    "file": "em16_tgo_cog_180_01_20180220_20210619_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_180_01_20180220_20210619_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-06-19"
+  },
+  {
+    "file": "em16_tgo_cog_181_01_20180220_20210626_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_181_01_20180220_20210626_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-06-26"
+  },
+  {
+    "file": "em16_tgo_cog_182_01_20180220_20210703_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_182_01_20180220_20210703_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-07-03"
+  },
+  {
+    "file": "em16_tgo_cog_183_01_20180220_20210710_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_183_01_20180220_20210710_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-07-10"
+  },
+  {
+    "file": "em16_tgo_cog_184_01_20180220_20210717_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_184_01_20180220_20210717_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-07-17"
+  },
+  {
+    "file": "em16_tgo_cog_185_01_20180220_20210724_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_185_01_20180220_20210724_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-07-24"
+  },
+  {
+    "file": "em16_tgo_cog_186_01_20180220_20210731_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_186_01_20180220_20210731_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-07-31"
+  },
+  {
+    "file": "em16_tgo_cog_187_01_20180220_20210807_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_187_01_20180220_20210807_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-08-07"
+  },
+  {
+    "file": "em16_tgo_cog_188_01_20180220_20210814_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_188_01_20180220_20210814_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-08-14"
+  },
+  {
+    "file": "em16_tgo_cog_189_01_20180220_20210821_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_189_01_20180220_20210821_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-08-21"
+  },
+  {
+    "file": "em16_tgo_cog_190_01_20180220_20210828_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_190_01_20180220_20210828_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-08-28"
+  },
+  {
+    "file": "em16_tgo_cog_191_01_20180220_20210904_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_191_01_20180220_20210904_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-09-04"
+  },
+  {
+    "file": "em16_tgo_cog_192_01_20180220_20210911_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_192_01_20180220_20210911_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-09-11"
+  },
+  {
+    "file": "em16_tgo_cog_193_01_20180220_20210918_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_193_01_20180220_20210918_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-09-18"
+  },
+  {
+    "file": "em16_tgo_cog_194_01_20180220_20210925_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_194_01_20180220_20210925_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-09-25"
+  },
+  {
+    "file": "em16_tgo_cog_195_01_20180220_20211002_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_195_01_20180220_20211002_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-10-02"
+  },
+  {
+    "file": "em16_tgo_cog_196_01_20180220_20211009_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_196_01_20180220_20211009_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-10-09"
+  },
+  {
+    "file": "em16_tgo_cog_197_01_20180220_20211016_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_197_01_20180220_20211016_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-10-16"
+  },
+  {
+    "file": "em16_tgo_cog_198_01_20180220_20211023_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_198_01_20180220_20211023_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-10-23"
+  },
+  {
+    "file": "em16_tgo_cog_199_01_20180220_20211030_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_199_01_20180220_20211030_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-10-30"
+  },
+  {
+    "file": "em16_tgo_cog_200_01_20180220_20211106_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_200_01_20180220_20211106_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-11-06"
+  },
+  {
+    "file": "em16_tgo_cog_201_01_20180220_20211113_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_201_01_20180220_20211113_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-11-13"
+  },
+  {
+    "file": "em16_tgo_cog_202_01_20180220_20211120_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_202_01_20180220_20211120_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-11-20"
+  },
+  {
+    "file": "em16_tgo_cog_203_01_20180220_20211127_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_203_01_20180220_20211127_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-11-27"
+  },
+  {
+    "file": "em16_tgo_cog_204_01_20180220_20211204_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_204_01_20180220_20211204_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-12-04"
+  },
+  {
+    "file": "em16_tgo_cog_205_01_20180220_20211211_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_205_01_20180220_20211211_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-12-11"
+  },
+  {
+    "file": "em16_tgo_cog_206_01_20180220_20211218_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_206_01_20180220_20211218_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-12-18"
+  },
+  {
+    "file": "em16_tgo_cog_207_01_20180220_20211225_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_207_01_20180220_20211225_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2021-12-25"
+  },
+  {
+    "file": "em16_tgo_cog_208_01_20180220_20220101_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_208_01_20180220_20220101_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-01-01"
+  },
+  {
+    "file": "em16_tgo_cog_209_01_20180220_20220108_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_209_01_20180220_20220108_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-01-08"
+  },
+  {
+    "file": "em16_tgo_cog_210_01_20180220_20220115_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_210_01_20180220_20220115_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-01-15"
+  },
+  {
+    "file": "em16_tgo_cog_211_01_20180220_20220122_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_211_01_20180220_20220122_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-01-22"
+  },
+  {
+    "file": "em16_tgo_cog_212_01_20180220_20220129_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_212_01_20180220_20220129_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-01-29"
+  },
+  {
+    "file": "em16_tgo_cog_213_01_20180220_20220205_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_213_01_20180220_20220205_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-02-05"
+  },
+  {
+    "file": "em16_tgo_cog_214_01_20180220_20220212_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_214_01_20180220_20220212_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-02-12"
+  },
+  {
+    "file": "em16_tgo_cog_215_01_20180220_20220219_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_215_01_20180220_20220219_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-02-19"
+  },
+  {
+    "file": "em16_tgo_cog_216_01_20180220_20220226_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_216_01_20180220_20220226_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-02-26"
+  },
+  {
+    "file": "em16_tgo_cog_217_01_20180220_20220305_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_217_01_20180220_20220305_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-03-05"
+  },
+  {
+    "file": "em16_tgo_cog_218_01_20180220_20220312_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_218_01_20180220_20220312_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-03-12"
+  },
+  {
+    "file": "em16_tgo_cog_219_01_20180220_20220319_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_219_01_20180220_20220319_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-03-19"
+  },
+  {
+    "file": "em16_tgo_cog_220_01_20180220_20220326_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_220_01_20180220_20220326_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-03-26"
+  },
+  {
+    "file": "em16_tgo_cog_221_01_20180220_20220402_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_221_01_20180220_20220402_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-04-02"
+  },
+  {
+    "file": "em16_tgo_cog_222_01_20180220_20220409_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_222_01_20180220_20220409_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-04-09"
+  },
+  {
+    "file": "em16_tgo_cog_223_01_20180220_20220416_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_223_01_20180220_20220416_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-04-16"
+  },
+  {
+    "file": "em16_tgo_cog_224_01_20180220_20220423_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_224_01_20180220_20220423_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-04-23"
+  },
+  {
+    "file": "em16_tgo_cog_225_01_20180220_20220430_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_225_01_20180220_20220430_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-04-30"
+  },
+  {
+    "file": "em16_tgo_cog_226_01_20180220_20220507_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_226_01_20180220_20220507_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-05-07"
+  },
+  {
+    "file": "em16_tgo_cog_227_01_20180220_20220514_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_227_01_20180220_20220514_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-05-14"
+  },
+  {
+    "file": "em16_tgo_cog_228_01_20180220_20220521_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_228_01_20180220_20220521_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-05-21"
+  },
+  {
+    "file": "em16_tgo_cog_229_01_20180220_20220528_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_229_01_20180220_20220528_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-05-28"
+  },
+  {
+    "file": "em16_tgo_cog_230_01_20180220_20220604_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_230_01_20180220_20220604_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-06-04"
+  },
+  {
+    "file": "em16_tgo_cog_231_01_20180220_20220611_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_231_01_20180220_20220611_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-06-11"
+  },
+  {
+    "file": "em16_tgo_cog_232_01_20180220_20220618_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_232_01_20180220_20220618_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-06-18"
+  },
+  {
+    "file": "em16_tgo_cog_233_01_20180220_20220625_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_233_01_20180220_20220625_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-06-25"
+  },
+  {
+    "file": "em16_tgo_cog_234_01_20180220_20220702_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_234_01_20180220_20220702_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-07-02"
+  },
+  {
+    "file": "em16_tgo_cog_235_01_20180220_20220709_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_235_01_20180220_20220709_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-07-09"
+  },
+  {
+    "file": "em16_tgo_cog_236_01_20180220_20220716_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_236_01_20180220_20220716_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-07-16"
+  },
+  {
+    "file": "em16_tgo_cog_237_01_20180220_20220723_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_237_01_20180220_20220723_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-07-23"
+  },
+  {
+    "file": "em16_tgo_cog_238_01_20180220_20220730_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_238_01_20180220_20220730_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-07-30"
+  },
+  {
+    "file": "em16_tgo_cog_239_01_20180220_20220806_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_239_01_20180220_20220806_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-08-06"
+  },
+  {
+    "file": "em16_tgo_cog_240_01_20180220_20220813_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_240_01_20180220_20220813_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-08-13"
+  },
+  {
+    "file": "em16_tgo_cog_241_01_20180220_20220820_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_241_01_20180220_20220820_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-08-20"
+  },
+  {
+    "file": "em16_tgo_cog_242_01_20180220_20220827_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_242_01_20180220_20220827_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-08-27"
+  },
+  {
+    "file": "em16_tgo_cog_243_01_20180220_20220903_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_243_01_20180220_20220903_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-09-03"
+  },
+  {
+    "file": "em16_tgo_cog_244_01_20180220_20220910_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_244_01_20180220_20220910_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-09-10"
+  },
+  {
+    "file": "em16_tgo_cog_245_01_20180220_20220917_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_245_01_20180220_20220917_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-09-17"
+  },
+  {
+    "file": "em16_tgo_cog_246_01_20180220_20220924_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_246_01_20180220_20220924_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-09-24"
+  },
+  {
+    "file": "em16_tgo_cog_247_01_20180220_20221001_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_247_01_20180220_20221001_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-10-01"
+  },
+  {
+    "file": "em16_tgo_cog_248_01_20180220_20221008_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_248_01_20180220_20221008_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-10-08"
+  },
+  {
+    "file": "em16_tgo_cog_249_01_20180220_20221015_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_249_01_20180220_20221015_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-10-15"
+  },
+  {
+    "file": "em16_tgo_cog_250_01_20180220_20221022_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_250_01_20180220_20221022_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-10-22"
+  },
+  {
+    "file": "em16_tgo_cog_251_01_20180220_20221029_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_251_01_20180220_20221029_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-10-29"
+  },
+  {
+    "file": "em16_tgo_cog_252_01_20180220_20221105_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_252_01_20180220_20221105_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-11-05"
+  },
+  {
+    "file": "em16_tgo_cog_253_01_20180220_20221112_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_253_01_20180220_20221112_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-11-12"
+  },
+  {
+    "file": "em16_tgo_cog_254_01_20180220_20221119_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_254_01_20180220_20221119_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-11-19"
+  },
+  {
+    "file": "em16_tgo_cog_255_01_20180220_20221126_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_255_01_20180220_20221126_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-11-26"
+  },
+  {
+    "file": "em16_tgo_cog_256_01_20180220_20221203_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_256_01_20180220_20221203_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-12-03"
+  },
+  {
+    "file": "em16_tgo_cog_257_01_20180220_20221210_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_257_01_20180220_20221210_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-12-10"
+  },
+  {
+    "file": "em16_tgo_cog_258_01_20180220_20221217_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_258_01_20180220_20221217_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-12-17"
+  },
+  {
+    "file": "em16_tgo_cog_259_01_20180220_20221224_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_259_01_20180220_20221224_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-12-24"
+  },
+  {
+    "file": "em16_tgo_cog_260_01_20180220_20221231_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_260_01_20180220_20221231_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2022-12-31"
+  },
+  {
+    "file": "em16_tgo_cog_261_01_20180220_20230107_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_261_01_20180220_20230107_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2023-01-07"
+  },
+  {
+    "file": "em16_tgo_cog_262_01_20180220_20230114_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_262_01_20180220_20230114_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2023-01-14"
+  },
+  {
+    "file": "em16_tgo_cog_263_01_20180220_20230121_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_263_01_20180220_20230121_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2023-01-21"
+  },
+  {
+    "file": "em16_tgo_cog_264_01_20180220_20230128_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_264_01_20180220_20230128_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2023-01-28"
+  },
+  {
+    "file": "em16_tgo_cog_265_01_20180220_20230204_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_265_01_20180220_20230204_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2023-02-04"
+  },
+  {
+    "file": "em16_tgo_cog_266_01_20180220_20230211_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_266_01_20180220_20230211_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2023-02-11"
+  },
+  {
+    "file": "em16_tgo_cog_267_01_20180220_20230218_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_267_01_20180220_20230218_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2023-02-18"
+  },
+  {
+    "file": "em16_tgo_cog_268_01_20180220_20230225_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_268_01_20180220_20230225_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2023-02-25"
+  },
+  {
+    "file": "em16_tgo_cog_269_01_20180220_20230304_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_269_01_20180220_20230304_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2023-03-04"
+  },
+  {
+    "file": "em16_tgo_cog_270_01_20180220_20230311_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_270_01_20180220_20230311_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2023-03-11"
+  },
+  {
+    "file": "em16_tgo_cog_271_01_20180220_20230318_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_271_01_20180220_20230318_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2023-03-18"
+  },
+  {
+    "file": "em16_tgo_cog_272_01_20180220_20230325_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_272_01_20180220_20230325_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2023-03-25"
+  },
+  {
+    "file": "em16_tgo_cog_273_01_20180220_20230401_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_273_01_20180220_20230401_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2023-04-01"
+  },
+  {
+    "file": "em16_tgo_cog_274_01_20180220_20230408_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_274_01_20180220_20230408_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2023-04-08"
+  },
+  {
+    "file": "em16_tgo_cog_275_01_20180220_20230415_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_275_01_20180220_20230415_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2023-04-15"
+  },
+  {
+    "file": "em16_tgo_cog_276_01_20180220_20230422_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_276_01_20180220_20230422_v01.bsp",
+    "start": "2018-02-20",
+    "stop": "2023-04-22"
+  },
+  {
+    "file": "em16_tgo_cog_277_01_20220101_20230429_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_277_01_20220101_20230429_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-04-29"
+  },
+  {
+    "file": "em16_tgo_cog_278_01_20220101_20230506_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_278_01_20220101_20230506_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-05-06"
+  },
+  {
+    "file": "em16_tgo_cog_279_01_20220101_20230513_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_279_01_20220101_20230513_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-05-13"
+  },
+  {
+    "file": "em16_tgo_cog_280_01_20220101_20230520_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_280_01_20220101_20230520_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-05-20"
+  },
+  {
+    "file": "em16_tgo_cog_281_01_20220101_20230527_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_281_01_20220101_20230527_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-05-27"
+  },
+  {
+    "file": "em16_tgo_cog_282_01_20220101_20230603_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_282_01_20220101_20230603_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-06-03"
+  },
+  {
+    "file": "em16_tgo_cog_283_01_20220101_20230610_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_283_01_20220101_20230610_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-06-10"
+  },
+  {
+    "file": "em16_tgo_cog_284_01_20220101_20230617_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_284_01_20220101_20230617_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-06-17"
+  },
+  {
+    "file": "em16_tgo_cog_285_01_20220101_20230624_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_285_01_20220101_20230624_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-06-24"
+  },
+  {
+    "file": "em16_tgo_cog_286_01_20220101_20230701_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_286_01_20220101_20230701_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-07-01"
+  },
+  {
+    "file": "em16_tgo_cog_287_01_20220101_20230708_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_287_01_20220101_20230708_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-07-08"
+  },
+  {
+    "file": "em16_tgo_cog_288_01_20220101_20230715_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_288_01_20220101_20230715_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-07-15"
+  },
+  {
+    "file": "em16_tgo_cog_289_01_20220101_20230722_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_289_01_20220101_20230722_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-07-22"
+  },
+  {
+    "file": "em16_tgo_cog_290_01_20220101_20230729_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_290_01_20220101_20230729_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-07-29"
+  },
+  {
+    "file": "em16_tgo_cog_291_01_20220101_20230805_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_291_01_20220101_20230805_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-08-05"
+  },
+  {
+    "file": "em16_tgo_cog_292_01_20220101_20230812_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_292_01_20220101_20230812_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-08-12"
+  },
+  {
+    "file": "em16_tgo_cog_293_01_20220101_20230819_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_293_01_20220101_20230819_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-08-19"
+  },
+  {
+    "file": "em16_tgo_cog_294_01_20220101_20230826_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_294_01_20220101_20230826_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-08-26"
+  },
+  {
+    "file": "em16_tgo_cog_295_01_20220101_20230902_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_295_01_20220101_20230902_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-09-02"
+  },
+  {
+    "file": "em16_tgo_cog_296_01_20220101_20230909_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_296_01_20220101_20230909_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-09-09"
+  },
+  {
+    "file": "em16_tgo_cog_297_01_20220101_20230916_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_297_01_20220101_20230916_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-09-16"
+  },
+  {
+    "file": "em16_tgo_cog_298_01_20220101_20230923_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_298_01_20220101_20230923_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-09-23"
+  },
+  {
+    "file": "em16_tgo_cog_299_01_20220101_20230930_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_299_01_20220101_20230930_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-09-30"
+  },
+  {
+    "file": "em16_tgo_cog_300_01_20220101_20231007_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_300_01_20220101_20231007_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-10-07"
+  },
+  {
+    "file": "em16_tgo_cog_301_01_20220101_20231014_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_301_01_20220101_20231014_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-10-14"
+  },
+  {
+    "file": "em16_tgo_cog_302_01_20220101_20231021_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_302_01_20220101_20231021_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-10-21"
+  },
+  {
+    "file": "em16_tgo_cog_303_01_20220101_20231028_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_303_01_20220101_20231028_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-10-28"
+  },
+  {
+    "file": "em16_tgo_cog_304_01_20220101_20231104_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_304_01_20220101_20231104_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-11-04"
+  },
+  {
+    "file": "em16_tgo_cog_305_01_20220101_20231111_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_305_01_20220101_20231111_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-11-11"
+  },
+  {
+    "file": "em16_tgo_cog_306_01_20220101_20231118_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_306_01_20220101_20231118_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-11-18"
+  },
+  {
+    "file": "em16_tgo_cog_307_01_20220101_20231125_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_307_01_20220101_20231125_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-11-25"
+  },
+  {
+    "file": "em16_tgo_cog_308_01_20220101_20231202_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_308_01_20220101_20231202_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-12-02"
+  },
+  {
+    "file": "em16_tgo_cog_309_01_20220101_20231209_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_309_01_20220101_20231209_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-12-09"
+  },
+  {
+    "file": "em16_tgo_cog_310_01_20220101_20231216_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_310_01_20220101_20231216_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-12-16"
+  },
+  {
+    "file": "em16_tgo_cog_311_01_20220101_20231223_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_311_01_20220101_20231223_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-12-23"
+  },
+  {
+    "file": "em16_tgo_cog_312_01_20220101_20231230_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_312_01_20220101_20231230_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2023-12-30"
+  },
+  {
+    "file": "em16_tgo_cog_313_01_20220101_20240106_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_313_01_20220101_20240106_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-01-06"
+  },
+  {
+    "file": "em16_tgo_cog_314_01_20220101_20240113_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_314_01_20220101_20240113_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-01-13"
+  },
+  {
+    "file": "em16_tgo_cog_315_01_20220101_20240120_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_315_01_20220101_20240120_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-01-20"
+  },
+  {
+    "file": "em16_tgo_cog_316_01_20220101_20240127_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_316_01_20220101_20240127_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-01-27"
+  },
+  {
+    "file": "em16_tgo_cog_317_01_20220101_20240203_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_317_01_20220101_20240203_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-02-03"
+  },
+  {
+    "file": "em16_tgo_cog_318_01_20220101_20240210_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_318_01_20220101_20240210_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-02-10"
+  },
+  {
+    "file": "em16_tgo_cog_319_01_20220101_20240217_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_319_01_20220101_20240217_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-02-17"
+  },
+  {
+    "file": "em16_tgo_cog_320_01_20220101_20240224_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_320_01_20220101_20240224_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-02-24"
+  },
+  {
+    "file": "em16_tgo_cog_321_01_20220101_20240302_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_321_01_20220101_20240302_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-03-02"
+  },
+  {
+    "file": "em16_tgo_cog_322_01_20220101_20240309_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_322_01_20220101_20240309_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-03-09"
+  },
+  {
+    "file": "em16_tgo_cog_323_01_20220101_20240316_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_323_01_20220101_20240316_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-03-16"
+  },
+  {
+    "file": "em16_tgo_cog_324_01_20220101_20240323_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_324_01_20220101_20240323_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-03-23"
+  },
+  {
+    "file": "em16_tgo_cog_325_01_20220101_20240330_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_325_01_20220101_20240330_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-03-30"
+  },
+  {
+    "file": "em16_tgo_cog_326_01_20220101_20240406_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_326_01_20220101_20240406_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-04-06"
+  },
+  {
+    "file": "em16_tgo_cog_327_01_20220101_20240413_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_327_01_20220101_20240413_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-04-13"
+  },
+  {
+    "file": "em16_tgo_cog_328_01_20220101_20240420_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_328_01_20220101_20240420_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-04-20"
+  },
+  {
+    "file": "em16_tgo_cog_329_01_20220101_20240427_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_329_01_20220101_20240427_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-04-27"
+  },
+  {
+    "file": "em16_tgo_cog_330_01_20220101_20240504_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_330_01_20220101_20240504_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-05-04"
+  },
+  {
+    "file": "em16_tgo_cog_331_01_20220101_20240511_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_331_01_20220101_20240511_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-05-11"
+  },
+  {
+    "file": "em16_tgo_cog_332_01_20220101_20240518_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_332_01_20220101_20240518_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-05-18"
+  },
+  {
+    "file": "em16_tgo_cog_333_01_20220101_20240525_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_333_01_20220101_20240525_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-05-25"
+  },
+  {
+    "file": "em16_tgo_cog_334_01_20220101_20240601_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_334_01_20220101_20240601_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-06-01"
+  },
+  {
+    "file": "em16_tgo_cog_335_01_20220101_20240608_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_335_01_20220101_20240608_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-06-08"
+  },
+  {
+    "file": "em16_tgo_cog_336_01_20220101_20240615_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_336_01_20220101_20240615_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-06-15"
+  },
+  {
+    "file": "em16_tgo_cog_337_01_20220101_20240622_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_337_01_20220101_20240622_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-06-22"
+  },
+  {
+    "file": "em16_tgo_cog_338_01_20220101_20240629_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_338_01_20220101_20240629_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-06-29"
+  },
+  {
+    "file": "em16_tgo_cog_339_01_20220101_20240706_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_339_01_20220101_20240706_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-07-06"
+  },
+  {
+    "file": "em16_tgo_cog_340_01_20220101_20240713_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_340_01_20220101_20240713_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-07-13"
+  },
+  {
+    "file": "em16_tgo_cog_341_01_20220101_20240720_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_341_01_20220101_20240720_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-07-20"
+  },
+  {
+    "file": "em16_tgo_cog_342_01_20220101_20240727_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_342_01_20220101_20240727_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-07-27"
+  },
+  {
+    "file": "em16_tgo_cog_343_01_20220101_20240803_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_343_01_20220101_20240803_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-08-03"
+  },
+  {
+    "file": "em16_tgo_cog_344_01_20220101_20240810_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_344_01_20220101_20240810_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-08-10"
+  },
+  {
+    "file": "em16_tgo_cog_345_01_20220101_20240817_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_345_01_20220101_20240817_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-08-17"
+  },
+  {
+    "file": "em16_tgo_cog_346_01_20220101_20240824_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_346_01_20220101_20240824_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-08-24"
+  },
+  {
+    "file": "em16_tgo_cog_347_01_20220101_20240831_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_347_01_20220101_20240831_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-08-31"
+  },
+  {
+    "file": "em16_tgo_cog_348_01_20220101_20240907_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_348_01_20220101_20240907_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-09-07"
+  },
+  {
+    "file": "em16_tgo_cog_349_01_20220101_20240914_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_349_01_20220101_20240914_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-09-14"
+  },
+  {
+    "file": "em16_tgo_cog_350_01_20220101_20240921_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_350_01_20220101_20240921_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-09-21"
+  },
+  {
+    "file": "em16_tgo_cog_351_01_20220101_20240928_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_351_01_20220101_20240928_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-09-28"
+  },
+  {
+    "file": "em16_tgo_cog_352_01_20220101_20241005_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_352_01_20220101_20241005_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-10-05"
+  },
+  {
+    "file": "em16_tgo_cog_353_01_20220101_20241012_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_353_01_20220101_20241012_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-10-12"
+  },
+  {
+    "file": "em16_tgo_cog_354_01_20220101_20241019_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_354_01_20220101_20241019_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-10-19"
+  },
+  {
+    "file": "em16_tgo_cog_355_01_20220101_20241026_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_355_01_20220101_20241026_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-10-26"
+  },
+  {
+    "file": "em16_tgo_cog_356_01_20220101_20241102_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_356_01_20220101_20241102_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-11-02"
+  },
+  {
+    "file": "em16_tgo_cog_357_01_20220101_20241109_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_357_01_20220101_20241109_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-11-09"
+  },
+  {
+    "file": "em16_tgo_cog_358_01_20220101_20241116_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_358_01_20220101_20241116_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-11-16"
+  },
+  {
+    "file": "em16_tgo_cog_359_01_20220101_20241123_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_359_01_20220101_20241123_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-11-23"
+  },
+  {
+    "file": "em16_tgo_cog_360_01_20220101_20241130_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_360_01_20220101_20241130_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-11-30"
+  },
+  {
+    "file": "em16_tgo_cog_361_01_20220101_20241207_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_361_01_20220101_20241207_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-12-07"
+  },
+  {
+    "file": "em16_tgo_cog_362_01_20220101_20241214_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_362_01_20220101_20241214_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-12-14"
+  },
+  {
+    "file": "em16_tgo_cog_363_01_20220101_20241221_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_363_01_20220101_20241221_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-12-21"
+  },
+  {
+    "file": "em16_tgo_cog_364_01_20220101_20241228_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_364_01_20220101_20241228_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2024-12-28"
+  },
+  {
+    "file": "em16_tgo_cog_365_01_20220101_20250104_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_365_01_20220101_20250104_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-01-04"
+  },
+  {
+    "file": "em16_tgo_cog_366_01_20220101_20250111_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_366_01_20220101_20250111_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-01-11"
+  },
+  {
+    "file": "em16_tgo_cog_367_01_20220101_20250118_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_367_01_20220101_20250118_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-01-18"
+  },
+  {
+    "file": "em16_tgo_cog_368_01_20220101_20250125_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_368_01_20220101_20250125_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-01-25"
+  },
+  {
+    "file": "em16_tgo_cog_369_01_20220101_20250201_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_369_01_20220101_20250201_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-02-01"
+  },
+  {
+    "file": "em16_tgo_cog_370_01_20220101_20250208_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_370_01_20220101_20250208_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-02-08"
+  },
+  {
+    "file": "em16_tgo_cog_371_01_20220101_20250215_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_371_01_20220101_20250215_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-02-15"
+  },
+  {
+    "file": "em16_tgo_cog_372_01_20220101_20250222_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_372_01_20220101_20250222_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-02-22"
+  },
+  {
+    "file": "em16_tgo_cog_373_01_20220101_20250301_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_373_01_20220101_20250301_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-03-01"
+  },
+  {
+    "file": "em16_tgo_cog_374_01_20220101_20250308_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_374_01_20220101_20250308_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-03-08"
+  },
+  {
+    "file": "em16_tgo_cog_375_01_20220101_20250315_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_375_01_20220101_20250315_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-03-15"
+  },
+  {
+    "file": "em16_tgo_cog_376_01_20220101_20250322_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_376_01_20220101_20250322_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-03-22"
+  },
+  {
+    "file": "em16_tgo_cog_377_01_20220101_20250329_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_377_01_20220101_20250329_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-03-29"
+  },
+  {
+    "file": "em16_tgo_cog_378_01_20220101_20250405_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_378_01_20220101_20250405_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-04-05"
+  },
+  {
+    "file": "em16_tgo_cog_379_01_20220101_20250412_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_379_01_20220101_20250412_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-04-12"
+  },
+  {
+    "file": "em16_tgo_cog_380_01_20220101_20250419_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_380_01_20220101_20250419_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-04-19"
+  },
+  {
+    "file": "em16_tgo_cog_381_01_20220101_20250426_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_381_01_20220101_20250426_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-04-26"
+  },
+  {
+    "file": "em16_tgo_cog_382_01_20220101_20250503_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_382_01_20220101_20250503_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-05-03"
+  },
+  {
+    "file": "em16_tgo_cog_383_01_20220101_20250510_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_383_01_20220101_20250510_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-05-10"
+  },
+  {
+    "file": "em16_tgo_cog_384_01_20220101_20250517_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_384_01_20220101_20250517_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-05-17"
+  },
+  {
+    "file": "em16_tgo_cog_385_01_20220101_20250524_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_385_01_20220101_20250524_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-05-24"
+  },
+  {
+    "file": "em16_tgo_cog_386_01_20220101_20250531_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_386_01_20220101_20250531_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-05-31"
+  },
+  {
+    "file": "em16_tgo_cog_387_01_20220101_20250607_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_387_01_20220101_20250607_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-06-07"
+  },
+  {
+    "file": "em16_tgo_cog_388_01_20220101_20250614_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_388_01_20220101_20250614_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-06-14"
+  },
+  {
+    "file": "em16_tgo_cog_389_01_20220101_20250621_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_389_01_20220101_20250621_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-06-21"
+  },
+  {
+    "file": "em16_tgo_cog_390_01_20220101_20250628_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_390_01_20220101_20250628_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-06-28"
+  },
+  {
+    "file": "em16_tgo_cog_391_01_20220101_20250705_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_391_01_20220101_20250705_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-07-05"
+  },
+  {
+    "file": "em16_tgo_cog_392_01_20220101_20250712_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_392_01_20220101_20250712_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-07-12"
+  },
+  {
+    "file": "em16_tgo_cog_393_01_20220101_20250719_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_393_01_20220101_20250719_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-07-19"
+  },
+  {
+    "file": "em16_tgo_cog_394_01_20220101_20250726_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_394_01_20220101_20250726_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-07-26"
+  },
+  {
+    "file": "em16_tgo_cog_395_01_20220101_20250802_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_395_01_20220101_20250802_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-08-02"
+  },
+  {
+    "file": "em16_tgo_cog_396_01_20220101_20250809_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_396_01_20220101_20250809_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-08-09"
+  },
+  {
+    "file": "em16_tgo_cog_397_01_20220101_20250816_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_397_01_20220101_20250816_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-08-16"
+  },
+  {
+    "file": "em16_tgo_cog_398_01_20220101_20250823_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_398_01_20220101_20250823_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-08-23"
+  },
+  {
+    "file": "em16_tgo_cog_399_01_20220101_20250830_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_399_01_20220101_20250830_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-08-30"
+  },
+  {
+    "file": "em16_tgo_cog_400_01_20220101_20250906_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_400_01_20220101_20250906_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-09-06"
+  },
+  {
+    "file": "em16_tgo_cog_401_01_20220101_20250913_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_401_01_20220101_20250913_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-09-13"
+  },
+  {
+    "file": "em16_tgo_cog_402_01_20220101_20250920_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_402_01_20220101_20250920_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-09-20"
+  },
+  {
+    "file": "em16_tgo_cog_403_01_20220101_20250927_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_403_01_20220101_20250927_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-09-27"
+  },
+  {
+    "file": "em16_tgo_cog_404_01_20220101_20251004_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_404_01_20220101_20251004_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-10-04"
+  },
+  {
+    "file": "em16_tgo_cog_405_01_20220101_20251011_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_405_01_20220101_20251011_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-10-11"
+  },
+  {
+    "file": "em16_tgo_cog_406_01_20220101_20251018_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_406_01_20220101_20251018_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-10-18"
+  },
+  {
+    "file": "em16_tgo_cog_407_01_20220101_20251025_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_407_01_20220101_20251025_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-10-25"
+  },
+  {
+    "file": "em16_tgo_cog_408_01_20220101_20251101_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_408_01_20220101_20251101_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-11-01"
+  },
+  {
+    "file": "em16_tgo_cog_409_01_20220101_20251108_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_409_01_20220101_20251108_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-11-08"
+  },
+  {
+    "file": "em16_tgo_cog_410_01_20220101_20251115_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_410_01_20220101_20251115_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-11-15"
+  },
+  {
+    "file": "em16_tgo_cog_411_01_20220101_20251122_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_411_01_20220101_20251122_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-11-22"
+  },
+  {
+    "file": "em16_tgo_cog_412_01_20220101_20251129_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_412_01_20220101_20251129_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-11-29"
+  },
+  {
+    "file": "em16_tgo_cog_413_01_20220101_20251206_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_413_01_20220101_20251206_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-12-06"
+  },
+  {
+    "file": "em16_tgo_cog_414_01_20220101_20251213_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_414_01_20220101_20251213_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-12-13"
+  },
+  {
+    "file": "em16_tgo_cog_415_01_20220101_20251220_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_415_01_20220101_20251220_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-12-20"
+  },
+  {
+    "file": "em16_tgo_cog_416_01_20220101_20251227_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_416_01_20220101_20251227_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2025-12-27"
+  },
+  {
+    "file": "em16_tgo_cog_417_01_20220101_20260103_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_417_01_20220101_20260103_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2026-01-03"
+  },
+  {
+    "file": "em16_tgo_cog_418_01_20220101_20260110_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_418_01_20220101_20260110_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2026-01-10"
+  },
+  {
+    "file": "em16_tgo_cog_419_01_20220101_20260117_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_419_01_20220101_20260117_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2026-01-17"
+  },
+  {
+    "file": "em16_tgo_cog_420_01_20220101_20260124_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_420_01_20220101_20260124_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2026-01-24"
+  },
+  {
+    "file": "em16_tgo_cog_421_01_20220101_20260131_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_421_01_20220101_20260131_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2026-01-31"
+  },
+  {
+    "file": "em16_tgo_cog_422_01_20220101_20260207_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_422_01_20220101_20260207_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2026-02-07"
+  },
+  {
+    "file": "em16_tgo_cog_423_01_20220101_20260214_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_423_01_20220101_20260214_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2026-02-14"
+  },
+  {
+    "file": "em16_tgo_cog_424_01_20220101_20260221_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_424_01_20220101_20260221_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2026-02-21"
+  },
+  {
+    "file": "em16_tgo_cog_425_01_20220101_20260228_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_425_01_20220101_20260228_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2026-02-28"
+  },
+  {
+    "file": "em16_tgo_cog_426_01_20220101_20260307_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_426_01_20220101_20260307_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2026-03-07"
+  },
+  {
+    "file": "em16_tgo_cog_427_01_20220101_20260314_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_427_01_20220101_20260314_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2026-03-14"
+  },
+  {
+    "file": "em16_tgo_cog_428_01_20220101_20260321_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/EXOMARS2016/kernels/spk/em16_tgo_cog_428_01_20220101_20260321_v01.bsp",
+    "start": "2022-01-01",
+    "stop": "2026-03-21"
+  }
+]

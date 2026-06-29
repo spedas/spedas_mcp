@@ -1,0 +1,26 @@
+[
+  {
+    "file": "lp_ask_980111-980531.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/LPM/kernels/spk/lp_ask_980111-980531.bsp",
+    "start": "1998-01-11",
+    "stop": "1998-06-01"
+  },
+  {
+    "file": "lp_ask_980601-981031.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/LPM/kernels/spk/lp_ask_980601-981031.bsp",
+    "start": "1998-06-01",
+    "stop": "1998-11-01"
+  },
+  {
+    "file": "lp_ask_981101-990331.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/LPM/kernels/spk/lp_ask_981101-990331.bsp",
+    "start": "1998-11-01",
+    "stop": "1999-04-01"
+  },
+  {
+    "file": "lp_ask_990401-990730.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/LPM/kernels/spk/lp_ask_990401-990730.bsp",
+    "start": "1999-04-01",
+    "stop": "1999-07-30"
+  }
+]

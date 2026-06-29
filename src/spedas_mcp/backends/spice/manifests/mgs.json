@@ -1,0 +1,446 @@
+[
+  {
+    "file": "mgs_crus.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_crus.bsp",
+    "start": "1996-11-07",
+    "stop": "1997-09-11"
+  },
+  {
+    "file": "mgs_ab1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ab1.bsp",
+    "start": "1997-09-12",
+    "stop": "1998-03-26"
+  },
+  {
+    "file": "mgs_spo1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_spo1.bsp",
+    "start": "1998-03-25",
+    "stop": "1998-05-27"
+  },
+  {
+    "file": "mgs_spo2.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_spo2.bsp",
+    "start": "1998-05-27",
+    "stop": "1998-09-23"
+  },
+  {
+    "file": "mgs_ab2.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ab2.bsp",
+    "start": "1998-09-23",
+    "stop": "1999-03-09"
+  },
+  {
+    "file": "mgs_mapc_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_mapc_ipng_mgs95j.bsp",
+    "start": "1999-02-04",
+    "stop": "1999-03-09"
+  },
+  {
+    "file": "mgs_map1_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_map1_ipng_mgs95j.bsp",
+    "start": "1999-03-08",
+    "stop": "1999-06-02"
+  },
+  {
+    "file": "mgs_map1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_map1.bsp",
+    "start": "1999-03-09",
+    "stop": "1999-06-02"
+  },
+  {
+    "file": "mgs_map2.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_map2.bsp",
+    "start": "1999-06-01",
+    "stop": "1999-08-25"
+  },
+  {
+    "file": "mgs_map2_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_map2_ipng_mgs95j.bsp",
+    "start": "1999-06-01",
+    "stop": "1999-08-25"
+  },
+  {
+    "file": "mgs_map3.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_map3.bsp",
+    "start": "1999-08-24",
+    "stop": "1999-11-17"
+  },
+  {
+    "file": "mgs_map3_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_map3_ipng_mgs95j.bsp",
+    "start": "1999-08-24",
+    "stop": "1999-11-17"
+  },
+  {
+    "file": "mgs_map4.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_map4.bsp",
+    "start": "1999-11-16",
+    "stop": "2000-02-09"
+  },
+  {
+    "file": "mgs_map4_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_map4_ipng_mgs95j.bsp",
+    "start": "1999-11-16",
+    "stop": "2000-02-09"
+  },
+  {
+    "file": "mgs_map5.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_map5.bsp",
+    "start": "2000-02-08",
+    "stop": "2000-05-03"
+  },
+  {
+    "file": "mgs_map5_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_map5_ipng_mgs95j.bsp",
+    "start": "2000-02-08",
+    "stop": "2000-05-03"
+  },
+  {
+    "file": "mgs_map6.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_map6.bsp",
+    "start": "2000-05-02",
+    "stop": "2000-07-26"
+  },
+  {
+    "file": "mgs_map6_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_map6_ipng_mgs95j.bsp",
+    "start": "2000-05-02",
+    "stop": "2000-06-19"
+  },
+  {
+    "file": "mgs_map7.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_map7.bsp",
+    "start": "2000-07-25",
+    "stop": "2000-10-18"
+  },
+  {
+    "file": "mgs_map7_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_map7_ipng_mgs95j.bsp",
+    "start": "2000-07-29",
+    "stop": "2000-10-18"
+  },
+  {
+    "file": "mgs_map8.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_map8.bsp",
+    "start": "2000-10-17",
+    "stop": "2001-02-01"
+  },
+  {
+    "file": "mgs_map8_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_map8_ipng_mgs95j.bsp",
+    "start": "2000-10-17",
+    "stop": "2001-02-01"
+  },
+  {
+    "file": "mgs_ext1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext1.bsp",
+    "start": "2001-01-31",
+    "stop": "2001-04-04"
+  },
+  {
+    "file": "mgs_ext1_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext1_ipng_mgs95j.bsp",
+    "start": "2001-01-31",
+    "stop": "2001-04-04"
+  },
+  {
+    "file": "mgs_ext2.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext2.bsp",
+    "start": "2001-04-03",
+    "stop": "2001-06-27"
+  },
+  {
+    "file": "mgs_ext2_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext2_ipng_mgs95j.bsp",
+    "start": "2001-04-03",
+    "stop": "2001-06-27"
+  },
+  {
+    "file": "mgs_ext3.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext3.bsp",
+    "start": "2001-06-26",
+    "stop": "2001-09-19"
+  },
+  {
+    "file": "mgs_ext3_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext3_ipng_mgs95j.bsp",
+    "start": "2001-06-26",
+    "stop": "2001-09-19"
+  },
+  {
+    "file": "mgs_ext4.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext4.bsp",
+    "start": "2001-09-18",
+    "stop": "2001-12-12"
+  },
+  {
+    "file": "mgs_ext4_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext4_ipng_mgs95j.bsp",
+    "start": "2001-09-18",
+    "stop": "2001-12-12"
+  },
+  {
+    "file": "mgs_ext5.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext5.bsp",
+    "start": "2001-12-11",
+    "stop": "2002-03-06"
+  },
+  {
+    "file": "mgs_ext5_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext5_ipng_mgs95j.bsp",
+    "start": "2001-12-11",
+    "stop": "2002-03-06"
+  },
+  {
+    "file": "mgs_ext6.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext6.bsp",
+    "start": "2002-03-05",
+    "stop": "2002-05-29"
+  },
+  {
+    "file": "mgs_ext6_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext6_ipng_mgs95j.bsp",
+    "start": "2002-03-05",
+    "stop": "2002-05-29"
+  },
+  {
+    "file": "mgs_ext7.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext7.bsp",
+    "start": "2002-05-28",
+    "stop": "2002-08-21"
+  },
+  {
+    "file": "mgs_ext7_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext7_ipng_mgs95j.bsp",
+    "start": "2002-05-28",
+    "stop": "2002-07-15"
+  },
+  {
+    "file": "mgs_ext8.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext8.bsp",
+    "start": "2002-08-20",
+    "stop": "2002-11-13"
+  },
+  {
+    "file": "mgs_ext8_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext8_ipng_mgs95j.bsp",
+    "start": "2002-09-09",
+    "stop": "2002-11-13"
+  },
+  {
+    "file": "mgs_ext9.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext9.bsp",
+    "start": "2002-11-12",
+    "stop": "2003-02-05"
+  },
+  {
+    "file": "mgs_ext9_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext9_ipng_mgs95j.bsp",
+    "start": "2002-11-12",
+    "stop": "2003-02-05"
+  },
+  {
+    "file": "mgs_ext10.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext10.bsp",
+    "start": "2003-02-04",
+    "stop": "2003-04-30"
+  },
+  {
+    "file": "mgs_ext10_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext10_ipng_mgs95j.bsp",
+    "start": "2003-02-04",
+    "stop": "2003-04-30"
+  },
+  {
+    "file": "mgs_ext11.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext11.bsp",
+    "start": "2003-04-29",
+    "stop": "2003-07-23"
+  },
+  {
+    "file": "mgs_ext11_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext11_ipng_mgs95j.bsp",
+    "start": "2003-04-29",
+    "stop": "2003-07-23"
+  },
+  {
+    "file": "mgs_ext12.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext12.bsp",
+    "start": "2003-07-22",
+    "stop": "2003-10-15"
+  },
+  {
+    "file": "mgs_ext12_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext12_ipng_mgs95j.bsp",
+    "start": "2003-07-22",
+    "stop": "2003-10-15"
+  },
+  {
+    "file": "mgs_ext13.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext13.bsp",
+    "start": "2003-10-14",
+    "stop": "2004-01-07"
+  },
+  {
+    "file": "mgs_ext13_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext13_ipng_mgs95j.bsp",
+    "start": "2003-10-14",
+    "stop": "2004-01-07"
+  },
+  {
+    "file": "mgs_ext14.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext14.bsp",
+    "start": "2004-01-06",
+    "stop": "2004-03-31"
+  },
+  {
+    "file": "mgs_ext14_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext14_ipng_mgs95j.bsp",
+    "start": "2004-01-06",
+    "stop": "2004-03-31"
+  },
+  {
+    "file": "mgs_ext15.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext15.bsp",
+    "start": "2004-03-30",
+    "stop": "2004-06-23"
+  },
+  {
+    "file": "mgs_ext15_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext15_ipng_mgs95j.bsp",
+    "start": "2004-03-30",
+    "stop": "2004-06-23"
+  },
+  {
+    "file": "mgs_ext16.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext16.bsp",
+    "start": "2004-06-22",
+    "stop": "2004-09-15"
+  },
+  {
+    "file": "mgs_ext16_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext16_ipng_mgs95j.bsp",
+    "start": "2004-06-22",
+    "stop": "2004-08-19"
+  },
+  {
+    "file": "mgs_ext17.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext17.bsp",
+    "start": "2004-09-14",
+    "stop": "2004-12-08"
+  },
+  {
+    "file": "mgs_ext17_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext17_ipng_mgs95j.bsp",
+    "start": "2004-10-06",
+    "stop": "2004-12-08"
+  },
+  {
+    "file": "mgs_ext18.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext18.bsp",
+    "start": "2004-12-07",
+    "stop": "2005-03-02"
+  },
+  {
+    "file": "mgs_ext18_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext18_ipng_mgs95j.bsp",
+    "start": "2004-12-07",
+    "stop": "2005-03-02"
+  },
+  {
+    "file": "mgs_ext19.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext19.bsp",
+    "start": "2005-03-01",
+    "stop": "2005-05-25"
+  },
+  {
+    "file": "mgs_ext19_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext19_ipng_mgs95j.bsp",
+    "start": "2005-03-01",
+    "stop": "2005-05-25"
+  },
+  {
+    "file": "mgs_ext20.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext20.bsp",
+    "start": "2005-05-24",
+    "stop": "2005-08-17"
+  },
+  {
+    "file": "mgs_ext20_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext20_ipng_mgs95j.bsp",
+    "start": "2005-05-24",
+    "stop": "2005-07-29"
+  },
+  {
+    "file": "mgs_ext21.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext21.bsp",
+    "start": "2005-08-16",
+    "stop": "2005-11-09"
+  },
+  {
+    "file": "mgs_ext21_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext21_ipng_mgs95j.bsp",
+    "start": "2005-09-21",
+    "stop": "2005-11-09"
+  },
+  {
+    "file": "mgs_ext22.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext22.bsp",
+    "start": "2005-11-08",
+    "stop": "2006-02-01"
+  },
+  {
+    "file": "mgs_ext22_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext22_ipng_mgs95j.bsp",
+    "start": "2005-11-08",
+    "stop": "2006-02-01"
+  },
+  {
+    "file": "mgs_ext23.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext23.bsp",
+    "start": "2006-01-31",
+    "stop": "2006-04-26"
+  },
+  {
+    "file": "mgs_ext23_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext23_ipng_mgs95j.bsp",
+    "start": "2006-01-31",
+    "stop": "2006-04-26"
+  },
+  {
+    "file": "mgs_ext24.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext24.bsp",
+    "start": "2006-04-25",
+    "stop": "2006-07-19"
+  },
+  {
+    "file": "mgs_ext24_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext24_ipng_mgs95j.bsp",
+    "start": "2006-04-25",
+    "stop": "2006-07-19"
+  },
+  {
+    "file": "mgs_ext25.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext25.bsp",
+    "start": "2006-07-18",
+    "stop": "2006-10-11"
+  },
+  {
+    "file": "mgs_ext25_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext25_ipng_mgs95j.bsp",
+    "start": "2006-07-18",
+    "stop": "2006-10-11"
+  },
+  {
+    "file": "mgs_ext26.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext26.bsp",
+    "start": "2006-10-10",
+    "stop": "2006-11-03"
+  },
+  {
+    "file": "mgs_ext26_ipng_mgs95j.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/mgs-m-spice-6-v1.0/mgsp_1000/data/spk/mgs_ext26_ipng_mgs95j.bsp",
+    "start": "2006-10-10",
+    "stop": "2006-11-08"
+  }
+]

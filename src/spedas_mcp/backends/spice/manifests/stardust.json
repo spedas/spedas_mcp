@@ -1,0 +1,86 @@
+[
+  {
+    "file": "sdu_l_1999.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/sdu-c-spice-6-v1.0/sdsp_1000/data/spk/sdu_l_1999.bsp",
+    "start": "1999-02-07",
+    "stop": "2000-01-01"
+  },
+  {
+    "file": "sdu_l_2000.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/sdu-c-spice-6-v1.0/sdsp_1000/data/spk/sdu_l_2000.bsp",
+    "start": "1999-12-31",
+    "stop": "2001-01-01"
+  },
+  {
+    "file": "sdu_l_2001.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/sdu-c-spice-6-v1.0/sdsp_1000/data/spk/sdu_l_2001.bsp",
+    "start": "2000-12-31",
+    "stop": "2002-01-01"
+  },
+  {
+    "file": "sdu_l_2002.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/sdu-c-spice-6-v1.0/sdsp_1000/data/spk/sdu_l_2002.bsp",
+    "start": "2001-12-31",
+    "stop": "2003-01-01"
+  },
+  {
+    "file": "sdu_l_2003_w2.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/sdu-c-spice-6-v1.0/sdsp_1000/data/spk/sdu_l_2003_w2.bsp",
+    "start": "2002-12-31",
+    "stop": "2004-01-15"
+  },
+  {
+    "file": "sdu_l_2004.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/sdu-c-spice-6-v1.0/sdsp_1000/data/spk/sdu_l_2004.bsp",
+    "start": "2004-01-15",
+    "stop": "2005-01-01"
+  },
+  {
+    "file": "sdu_l_2005_return.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/sdu-c-spice-6-v1.0/sdsp_1000/data/spk/sdu_l_2005_return.bsp",
+    "start": "2005-01-01",
+    "stop": "2006-01-16"
+  },
+  {
+    "file": "sdu_l_2006.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/sdu-c-spice-6-v1.0/sdsp_1000/data/spk/sdu_l_2006.bsp",
+    "start": "2006-01-14",
+    "stop": "2006-12-31"
+  },
+  {
+    "file": "sdu_l_2007.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/sdu-c-spice-6-v1.0/sdsp_1000/data/spk/sdu_l_2007.bsp",
+    "start": "2006-12-31",
+    "stop": "2007-12-31"
+  },
+  {
+    "file": "sdu_l_2008.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/sdu-c-spice-6-v1.0/sdsp_1000/data/spk/sdu_l_2008.bsp",
+    "start": "2007-12-31",
+    "stop": "2008-12-31"
+  },
+  {
+    "file": "sdu_l_2009.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/sdu-c-spice-6-v1.0/sdsp_1000/data/spk/sdu_l_2009.bsp",
+    "start": "2008-12-31",
+    "stop": "2009-12-31"
+  },
+  {
+    "file": "sdu_l_2010.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/sdu-c-spice-6-v1.0/sdsp_1000/data/spk/sdu_l_2010.bsp",
+    "start": "2009-12-31",
+    "stop": "2010-12-31"
+  },
+  {
+    "file": "sdu_l_2011_t1.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/sdu-c-spice-6-v1.0/sdsp_1000/data/spk/sdu_l_2011_t1.bsp",
+    "start": "2010-12-31",
+    "stop": "2011-04-30"
+  },
+  {
+    "file": "sdu_l_2011_runout.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/sdu-c-spice-6-v1.0/sdsp_1000/data/spk/sdu_l_2011_runout.bsp",
+    "start": "2011-04-30",
+    "stop": "2111-04-06"
+  }
+]

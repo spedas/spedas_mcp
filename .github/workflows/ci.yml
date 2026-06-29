@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  # Prevent spiceypy source builds from trying to download CSPICE from NAIF in CI.
+  PIP_ONLY_BINARY: spiceypy
+
 jobs:
   test:
     runs-on: ubuntu-latest

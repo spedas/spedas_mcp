@@ -1,0 +1,68 @@
+[
+  {
+    "file": "vco_2010_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/vco-v-spice-6-v1.0/vcosp_1000/data/spk/vco_2010_v01.bsp",
+    "start": "2010-05-21",
+    "stop": "2011-01-01"
+  },
+  {
+    "file": "vco_2011_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/vco-v-spice-6-v1.0/vcosp_1000/data/spk/vco_2011_v01.bsp",
+    "start": "2011-01-01",
+    "stop": "2012-01-01"
+  },
+  {
+    "file": "vco_2012_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/vco-v-spice-6-v1.0/vcosp_1000/data/spk/vco_2012_v01.bsp",
+    "start": "2012-01-01",
+    "stop": "2013-01-01"
+  },
+  {
+    "file": "vco_2013_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/vco-v-spice-6-v1.0/vcosp_1000/data/spk/vco_2013_v01.bsp",
+    "start": "2013-01-01",
+    "stop": "2014-01-01"
+  },
+  {
+    "file": "vco_2014_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/vco-v-spice-6-v1.0/vcosp_1000/data/spk/vco_2014_v01.bsp",
+    "start": "2014-01-01",
+    "stop": "2015-01-01"
+  },
+  {
+    "file": "vco_2015_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/vco-v-spice-6-v1.0/vcosp_1000/data/spk/vco_2015_v01.bsp",
+    "start": "2015-01-01",
+    "stop": "2016-01-01"
+  },
+  {
+    "file": "vco_2016_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/vco-v-spice-6-v1.0/vcosp_1000/data/spk/vco_2016_v01.bsp",
+    "start": "2016-01-01",
+    "stop": "2017-01-01"
+  },
+  {
+    "file": "vco_2017_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/vco-v-spice-6-v1.0/vcosp_1000/data/spk/vco_2017_v01.bsp",
+    "start": "2017-01-01",
+    "stop": "2018-01-01"
+  },
+  {
+    "file": "vco_2018_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/vco-v-spice-6-v1.0/vcosp_1000/data/spk/vco_2018_v01.bsp",
+    "start": "2018-01-01",
+    "stop": "2019-01-01"
+  },
+  {
+    "file": "vco_2019_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/vco-v-spice-6-v1.0/vcosp_1000/data/spk/vco_2019_v01.bsp",
+    "start": "2019-01-01",
+    "stop": "2020-01-01"
+  },
+  {
+    "file": "vco_2020_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/vco-v-spice-6-v1.0/vcosp_1000/data/spk/vco_2020_v01.bsp",
+    "start": "2020-01-01",
+    "stop": "2021-01-01"
+  }
+]

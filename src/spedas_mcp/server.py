@@ -616,7 +616,7 @@ _GEOMETRY_HINT = (
 )
 
 # Substrings that mark a ``KeyError`` as a geometry lookup failure (unresolvable
-# body/frame/mission/kernel) raised by xhelio_spice, rather than a generic dict
+# body/frame/mission/kernel) raised by the in-tree SPICE backend, rather than a generic dict
 # miss. Matched case-insensitively against the exception text.
 _GEOMETRY_KEYERROR_SIGNALS = (
     "body name",
@@ -636,7 +636,7 @@ def _classify_exception(exc: BaseException) -> tuple[str, str | None]:
     fallback so we do not need to import optional backends just to classify their
     errors. Anything unrecognized degrades to a generic ``backend_error``.
     """
-    # A geometry ``KeyError`` (e.g. xhelio_spice "Cannot resolve body name 'X'")
+    # A geometry ``KeyError`` (e.g. SPICE backend "Cannot resolve body name 'X'")
     # must reach the geometry-specific code/hint, not the generic
     # ``KeyError -> invalid_argument`` mapping below, so SPICE callers get an
     # actionable recovery path (issue #27). Detect it by message signal before
@@ -737,7 +737,7 @@ def _find_validation_error(exc: BaseException) -> BaseException | None:
 # ---------------------------------------------------------------------------
 # Geometry/SPICE safety preflight (issues #26, #27, #29).
 #
-# The xhelio_spice geometry routines (get_state/get_trajectory/transform_vector)
+# The in-tree SPICE geometry routines (get_state/get_trajectory/transform_vector)
 # resolve body names and *download* SPICE kernels on first use — generic kernels
 # (~120 MB, e.g. de440s.bsp) plus per-mission SPK files (PSP ~266 MB, up to
 # ~1 GB for some segmented missions). Two problems follow:
@@ -749,7 +749,7 @@ def _find_validation_error(exc: BaseException) -> BaseException | None:
 #     manage_data_cache(source_type='spice', action='load') gate.
 #
 # Both are solved by a pure, network-free preflight that runs entirely in this
-# process *before* any xhelio_spice call: resolve_mission() is an in-memory
+# process *before* any SPICE backend call: resolve_mission() is an in-memory
 # registry lookup, and kernel-cache presence is a stat() on the cache dir. The
 # preflight never downloads, so it is safe to run on every geometry call.
 # ---------------------------------------------------------------------------
@@ -767,7 +767,7 @@ def _spice_resolve_target(name: str) -> dict[str, Any]:
     SPICE-supported body/mission (issue #26); the caller turns that into a
     structured ``unsupported_spice_target`` error.
     """
-    from xhelio_spice.missions import has_kernels, resolve_mission
+    from spedas_mcp.backends.spice.missions import has_kernels, resolve_mission
 
     try:
         naif_id, key = resolve_mission(name)
@@ -789,7 +789,7 @@ def _spice_supported_targets_sample(limit: int = 12) -> list[str]:
     ``browse_data_sources(source_type='spice')`` for the full catalog.
     """
     try:
-        from xhelio_spice import list_supported_missions
+        from spedas_mcp.backends.spice import list_supported_missions
     except Exception:  # pragma: no cover - backend not installed
         return []
     keys = [m.get("mission_key") for m in list_supported_missions() if m.get("mission_key")]
@@ -855,7 +855,16 @@ def _spice_frame_catalog() -> dict[str, Any]:
     answer "what frames can I transform between?" without adding another base
     tool.
     """
-    from xhelio_spice import list_frames_with_descriptions
+    try:
+        from spedas_mcp.backends.spice import list_frames_with_descriptions
+    except Exception:  # pragma: no cover - backend not installed
+        return {
+            "catalog_type": "spice_coordinate_frames",
+            "frames": [],
+            "frame_names": [],
+            "aliases": [],
+            "supported_frame_names": [],
+        }
 
     frames: list[dict[str, Any]] = []
     for entry in list_frames_with_descriptions():
@@ -863,7 +872,7 @@ def _spice_frame_catalog() -> dict[str, Any]:
             frames.append(dict(entry))
 
     try:
-        from xhelio_spice.frames import FRAME_ALIASES
+        from spedas_mcp.backends.spice.frames import FRAME_ALIASES
     except Exception:  # pragma: no cover - backend internals changed
         raw_aliases: dict[str, str] = {}
     else:
@@ -897,7 +906,7 @@ def _spice_frame_catalog() -> dict[str, Any]:
 def _spice_supported_frames() -> list[str]:
     """Return supported SPICE coordinate frame names for validation/errors.
 
-    Uses the same xhelio_spice frame catalog exposed through the unified SPICE
+    Uses the same in-tree SPICE frame catalog exposed through the unified SPICE
     data-source responses so geometry tools can reject unknown frame arguments
     before SPICE emits a raw multi-line CSPICE banner (issue #77).
     """
@@ -956,8 +965,8 @@ def _spice_missing_kernels(mission_keys: list[str]) -> dict[str, Any]:
     they are folded into the check. A file counts as cached only if it exists on
     disk with non-zero size — the same test the downloader uses.
     """
-    from xhelio_spice.kernel_manager import get_kernel_manager
-    from xhelio_spice.missions import (
+    from spedas_mcp.backends.spice.kernel_manager import get_kernel_manager
+    from spedas_mcp.backends.spice.missions import (
         GENERIC_KERNELS,
         MISSION_KERNELS,
         SEGMENTED_MISSIONS,
@@ -1073,7 +1082,7 @@ def _spice_geometry_preflight(
     """Run the #26/#29 preflight for a geometry call; return an error envelope or None.
 
     ``names`` is a list of ``(name, role)`` pairs for the target/observer/
-    spacecraft this call will pass to xhelio_spice; ``role`` (e.g. "target",
+    spacecraft this call will pass to the SPICE backend; ``role`` (e.g. "target",
     "observer", "spacecraft") is echoed back in an unsupported-target error so
     the agent knows which argument to fix. The preflight:
 
@@ -1609,7 +1618,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
     @_safe_tool
     def list_spice_missions() -> str:
         """List supported SPICE spacecraft/body missions with NAIF IDs and kernel status."""
-        from xhelio_spice import list_supported_missions
+        from spedas_mcp.backends.spice import list_supported_missions
 
         return _json(list_supported_missions())
 
@@ -1637,8 +1646,8 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         with ``manage_data_cache(source_type='spice', action='load', mission=...)``) to proceed
         (issue #29).
         """
-        from xhelio_spice import get_state, get_trajectory
-        from xhelio_spice.kernel_manager import get_kernel_manager
+        from spedas_mcp.backends.spice import get_state, get_trajectory
+        from spedas_mcp.backends.spice.kernel_manager import get_kernel_manager
 
         frame_preflight = _spice_frame_preflight(
             [(frame, "frame")],
@@ -1712,7 +1721,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         ``allow_kernel_download=True`` (issue #29).
         """
         import numpy as np
-        from xhelio_spice import get_trajectory
+        from spedas_mcp.backends.spice import get_trajectory
 
         preflight = _spice_geometry_preflight(
             [(target1, "target1"), (target2, "target2"), ("SUN", "observer")],
@@ -1759,7 +1768,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         ``unsupported_spice_target`` (issue #26).
         """
         import numpy as np
-        from xhelio_spice import transform_vector
+        from spedas_mcp.backends.spice import transform_vector
 
         frame_preflight = _spice_frame_preflight(
             [(from_frame, "from_frame"), (to_frame, "to_frame")],
@@ -1854,7 +1863,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         filenames: list[str] | None = None,
     ) -> str:
         """Manage SPICE kernels/cache; use manage_data_cache(source_type="spice") for data-layer cache status."""
-        from xhelio_spice.kernel_manager import check_remote_kernels, get_kernel_manager
+        from spedas_mcp.backends.spice.kernel_manager import check_remote_kernels, get_kernel_manager
 
         km = get_kernel_manager()
         if action == "status":

@@ -1,0 +1,50 @@
+[
+  {
+    "file": "PRECYCL1.BSP",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MGN/kernels/spk/nav/PRECYCL1.BSP",
+    "start": "1990-08-16",
+    "stop": "1990-08-17"
+  },
+  {
+    "file": "CYCLE1.BSP",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MGN/kernels/spk/nav/CYCLE1.BSP",
+    "start": "1990-09-15",
+    "stop": "1991-05-16"
+  },
+  {
+    "file": "CYCLE2.BSP",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MGN/kernels/spk/nav/CYCLE2.BSP",
+    "start": "1991-05-15",
+    "stop": "1992-01-16"
+  },
+  {
+    "file": "CYCLE3.BSP",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MGN/kernels/spk/nav/CYCLE3.BSP",
+    "start": "1992-01-25",
+    "stop": "1992-09-15"
+  },
+  {
+    "file": "CYCLE4.BSP",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MGN/kernels/spk/nav/CYCLE4.BSP",
+    "start": "1992-09-13",
+    "stop": "1993-05-26"
+  },
+  {
+    "file": "AEROBRAK.BSP",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MGN/kernels/spk/nav/AEROBRAK.BSP",
+    "start": "1993-05-25",
+    "stop": "1993-08-16"
+  },
+  {
+    "file": "CYCLE5.BSP",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MGN/kernels/spk/nav/CYCLE5.BSP",
+    "start": "1993-08-15",
+    "stop": "1994-04-16"
+  },
+  {
+    "file": "CYCLE6.BSP",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/MGN/kernels/spk/nav/CYCLE6.BSP",
+    "start": "1994-04-15",
+    "stop": "1994-10-14"
+  }
+]

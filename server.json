@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.spedas/spedas-mcp",
   "title": "SPEDAS MCP",
-  "description": "Unified SPEDAS-oriented MCP server combining XHelio CDAWeb, PDS PPI, and SPICE capabilities",
+  "description": "Unified SPEDAS-oriented MCP server combining vendored CDAWeb, PDS PPI, and SPICE capabilities",
   "repository": {
     "url": "https://github.com/spedas/spedas_mcp",
     "source": "github"

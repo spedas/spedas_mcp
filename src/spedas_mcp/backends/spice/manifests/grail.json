@@ -1,0 +1,56 @@
+[
+  {
+    "file": "grail_110910_120102_nav_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/grail-l-spice-6-v1.0/grlsp_1000/data/spk/grail_110910_120102_nav_v01.bsp",
+    "start": "2011-09-10",
+    "stop": "2012-01-02"
+  },
+  {
+    "file": "grail_120102_120301_nav_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/grail-l-spice-6-v1.0/grlsp_1000/data/spk/grail_120102_120301_nav_v01.bsp",
+    "start": "2012-01-02",
+    "stop": "2012-03-01"
+  },
+  {
+    "file": "grail_120301_120529_nav_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/grail-l-spice-6-v1.0/grlsp_1000/data/spk/grail_120301_120529_nav_v01.bsp",
+    "start": "2012-03-01",
+    "stop": "2012-05-29"
+  },
+  {
+    "file": "grail_120301_120529_sci_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/grail-l-spice-6-v1.0/grlsp_1000/data/spk/grail_120301_120529_sci_v01.bsp",
+    "start": "2012-03-01",
+    "stop": "2012-05-29"
+  },
+  {
+    "file": "grail_120301_120529_sci_v02.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/grail-l-spice-6-v1.0/grlsp_1000/data/spk/grail_120301_120529_sci_v02.bsp",
+    "start": "2012-03-01",
+    "stop": "2012-05-29"
+  },
+  {
+    "file": "grail_120529_120830_nav_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/grail-l-spice-6-v1.0/grlsp_1000/data/spk/grail_120529_120830_nav_v01.bsp",
+    "start": "2012-05-29",
+    "stop": "2012-08-30"
+  },
+  {
+    "file": "grail_120830_121026_sci_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/grail-l-spice-6-v1.0/grlsp_1000/data/spk/grail_120830_121026_sci_v01.bsp",
+    "start": "2012-08-30",
+    "stop": "2012-10-26"
+  },
+  {
+    "file": "grail_120830_121217_nav_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/grail-l-spice-6-v1.0/grlsp_1000/data/spk/grail_120830_121217_nav_v01.bsp",
+    "start": "2012-08-30",
+    "stop": "2012-12-17"
+  },
+  {
+    "file": "grail_121026_121214_sci_v01.bsp",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/pds/data/grail-l-spice-6-v1.0/grlsp_1000/data/spk/grail_121026_121214_sci_v01.bsp",
+    "start": "2012-10-26",
+    "stop": "2012-12-14"
+  }
+]
