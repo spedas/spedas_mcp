@@ -7,13 +7,13 @@ The Python package: a FastMCP **facade** that registers heliophysics tools and d
 ## Components
 
 - **`__init__.py:6`** `main()` — entry point; builds and runs the server (`create_server().run()`). `__main__.py` makes `python -m spedas_mcp` work.
-- **`server.py`** (3231 lines) — the whole facade. Key anchors:
-  - `create_server()` `server.py:1071` — constructs the FastMCP, registers all `@mcp.tool` closures (the 19 base + ~10 analysis + 8 compat tools). One big factory; tools are nested closures, so grep by tool name finds the `def`.
-  - `_analysis_dependencies_available()` `server.py:156` (driven by `_ANALYSIS_REQUIRED_IMPORTS` `server.py:54`) — gates the 10 analysis tools; probes pyspedas submodules (a wrong probe path here once hid all 10 — keep entries at the function-bearing module).
-  - `_compat_tools_enabled()` `server.py:175` — gates the 8 legacy per-source tools behind `SPEDAS_MCP_COMPAT_TOOLS`.
-  - `_normalize_source_type()` `server.py:1849`, `_wrap_data_payload()` `server.py:1929` — the unified-dispatch core: route by `source_type`, wrap backend output.
-  - `_error_response()` `server.py:397` — the structured `{status,code,message,hint}` contract (issue #27).
-  - `_install_argument_validation_guard()` `server.py:3146` — turns FastMCP arg-validation failures into structured errors.
+- **`server.py`** — the whole facade. Key anchors:
+  - `create_server()` `server.py:1072` — constructs the FastMCP and registers all `@mcp.tool` closures (17 base/optional data+geometry tools in the lean environment, plus 13 optional analysis tools when dependencies import, plus 8 legacy compat tools when enabled). One big factory; tools are nested closures, so grep by tool name finds the `def`.
+  - `_analysis_dependencies_available()` `server.py:157` (driven by `_ANALYSIS_REQUIRED_IMPORTS` `server.py:55`; names listed in `ANALYSIS_TOOL_NAMES` `server.py:34`) — gates the analysis group; probes pyspedas submodules (a wrong probe path here once hid the group — keep entries at the function-bearing module).
+  - `_compat_tools_enabled()` `server.py:176` — gates the 8 legacy per-source tools behind `SPEDAS_MCP_COMPAT_TOOLS`.
+  - `_normalize_source_type()` `server.py:1846`, `_wrap_data_payload()` `server.py:1926` — the unified-dispatch core: route by `source_type`, wrap backend output.
+  - `_error_response()` `server.py:398` — the structured `{status,code,message,hint}` contract (issue #27).
+  - `_install_argument_validation_guard()` `server.py:3201` — turns FastMCP arg-validation failures into structured errors.
 - **`workflows.py`** (1087 lines) — pure-Python planning behind the workflow tools: `search_data_sources` `:816`, `compare_sources` `:848`, `plan_observation` `:870`, `create_analysis_bundle` `:1016`. No backend dependency → robust; this is why bugs cluster in adapters, not here.
 
 ## Connections

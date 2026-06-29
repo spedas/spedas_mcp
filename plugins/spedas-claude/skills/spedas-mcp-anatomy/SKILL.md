@@ -45,12 +45,12 @@ A folder earns an `ANATOMY.md` when an agent could usefully reason about it as a
 5. **State** — persistent state written; ephemeral state managed.
 6. **Notes** — bounded rationale/gotchas not visible in code.
 
-Citations look like `src/spedas_mcp/server.py:1071`. Keep them current — they drift when code moves; fixing drift is part of any edit.
+Citations look like `src/spedas_mcp/server.py:1072`. Keep them current — they drift when code moves; fixing drift is part of any edit.
 
 ## Maintenance contract (do these in the SAME commit as the code change)
 
-- **Add/rename/move a tool** → update `src/spedas_mcp/ANATOMY.md` (and root if the surface count changes). New capability lands as a unified `source_type` or a **skill**, NOT a new top-level tool, unless it truly cannot be either (the consolidation goal: keep the advertised surface small — 19 base).
-- **Add an analysis function** → put it in `analysis/`, register it in `create_server()`, add its backend to `_ANALYSIS_REQUIRED_IMPORTS` at the **submodule** path (`server.py:54`; a package-level probe silently hides ALL analysis tools), and update `analysis/ANATOMY.md`.
+- **Add/rename/move a tool** → update `src/spedas_mcp/ANATOMY.md` (and root if the surface count changes). New capability lands as a unified `source_type` or a **skill**, NOT a new top-level tool, unless it truly cannot be either (the consolidation goal: keep the advertised base surface small; verify the current count with `scripts/smoke_mcp_list_tools.py`).
+- **Add an analysis function** → put it in `analysis/`, register it in `create_server()`, add its backend to `_ANALYSIS_REQUIRED_IMPORTS` at the **submodule** path (`server.py:55`; a package-level probe silently hides ALL analysis tools), and update `analysis/ANATOMY.md`.
 - **Add a data source** → `datasources/` with a precise `require_*` guard; update `datasources/ANATOMY.md`.
 - **Add a skill** → one dir under `plugins/spedas-claude/skills/`, follow the existing SKILL.md shape (When to use / Tool chain / Backend with VERIFIED contract / Procedure / Guardrails / Example), index it in `spedas-skills-index`, and reference only the unified tools.
 
