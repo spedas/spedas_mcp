@@ -3029,13 +3029,15 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         def render_tplot(
             input_files: list[str],
             output_file: str,
-            panel_types: list[str] | None = None,
+            panel_types: list[str] | str | None = None,
             trange: list[str] | None = None,
             xsize: int = 12,
             ysize: int | None = None,
             dpi: int = 200,
-            ylog: list[bool] | None = None,
-            zlog: list[bool] | None = None,
+            ylog: list[bool] | bool | None = None,
+            zlog: list[bool] | bool | None = None,
+            x_component: list[int] | int | None = None,
+            y_component: list[int] | int | None = None,
         ) -> str:
             """Analysis: render a multi-panel tplot-style PNG from analysis artifacts.
 
@@ -3044,10 +3046,13 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             'power'/'spectrogram' with 'time' + 'freq'/'axis' axes) and CSV/JSON or
             .npz/.npy time-series — and stacks one panel per input_file (top to
             bottom). Spectrogram artifacts render as pcolormesh panels with a
-            colorbar; time-series render as line panels. panel_types overrides the
-            per-file auto-detection (each of 'auto', 'line'/'timeseries',
-            'spectrogram'); it may be None (all auto), a single token (broadcast), or
-            a list matching input_files. trange (2-element ISO-8601 or Unix-second
+            colorbar; time-series render as line panels; explicit 'scatter'/'xy'
+            panels render one 2-D matrix per input as a parametric x-y/hodogram plot
+            using x_component/y_component column indices (default 0 vs 1).
+            panel_types overrides the per-file auto-detection (each of 'auto',
+            'line'/'timeseries', 'spectrogram', or 'scatter'/'xy'); it may be None
+            (all auto), a single token (broadcast), or a list matching input_files.
+            trange (2-element ISO-8601 or Unix-second
             bounds) filters samples; ylog/zlog (per-panel booleans or a scalar
             broadcast) set log y / log color scales and are rejected when values are
             non-positive. xsize/ysize are inches; dpi is bounded to avoid absurd
@@ -3068,6 +3073,8 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                 dpi=dpi,
                 ylog=ylog,
                 zlog=zlog,
+                x_component=x_component,
+                y_component=y_component,
             ))
 
         # ------------------------------------------------------------------

@@ -100,7 +100,9 @@ class _FakeAxes:
         self.calls: list[str] = []
         self.plot_args: list[tuple[tuple, dict]] = []
         self.pcolormesh_args: list[tuple[tuple, dict]] = []
+        self.scatter_args: list[tuple[tuple, dict]] = []
         self.xlabel = None
+        self.ylabel = None
         self.xaxis = _FakeXAxis()
 
     def plot(self, *a, **k):
@@ -112,11 +114,16 @@ class _FakeAxes:
         self.pcolormesh_args.append((a, k))
         return object()
 
+    def scatter(self, *a, **k):
+        self.calls.append("scatter")
+        self.scatter_args.append((a, k))
+        return object()
+
     def set_yscale(self, *a, **k):
         self.calls.append(f"yscale:{a[0] if a else ''}")
 
     def set_ylabel(self, *a, **k):
-        pass
+        self.ylabel = a[0] if a else None
 
     def set_xlabel(self, *a, **k):
         self.xlabel = a[0] if a else None
@@ -383,6 +390,88 @@ def test_panel_type_override_forces_line_on_npz(tmp_path, spectrogram_npz, monke
     assert out["status"] == "success"
     assert out["panels"][0]["type"] == "line"
 
+
+
+def test_renders_scatter_npz_default_components(tmp_path, monkeypatch):
+    state = _install_fake_matplotlib(monkeypatch)
+    t = np.arange(25, dtype="float64") + 1_600_000_000.0
+    values = np.column_stack([np.sin(np.arange(25) / 3.0), np.cos(np.arange(25) / 3.0), np.arange(25)])
+    p = tmp_path / "bvec.npz"
+    np.savez_compressed(p, time=t, values=values)
+
+    out = plotting.render_tplot(
+        input_files=[str(p)], output_file=str(tmp_path / "xy.png"), panel_types="xy"
+    )
+
+    assert out["status"] == "success"
+    panel = out["panels"][0]
+    assert panel["type"] == "scatter"
+    assert panel["shape"] == [25, 3]
+    assert panel["components"] == [0, 1]
+    assert panel["matrix_key"] == "values"
+    assert panel["x_range"] is not None and panel["y_range"] is not None
+    ax = state["figures"][0]._axes[0]
+    assert "plot" in ax.calls
+    assert "scatter" in ax.calls
+    assert ax.xlabel == "values[0]"
+    assert ax.ylabel == "values[1]"
+
+
+def test_scatter_npz_selects_components(tmp_path, monkeypatch):
+    _install_fake_matplotlib(monkeypatch)
+    t = np.arange(10, dtype="float64") + 1_600_000_000.0
+    b_gsm = np.column_stack([np.arange(10), np.arange(10) + 10, np.arange(10) + 20])
+    p = tmp_path / "b.npz"
+    np.savez_compressed(p, time=t, b_gsm=b_gsm)
+
+    out = plotting.render_tplot(
+        input_files=[str(p)],
+        output_file=str(tmp_path / "xz.png"),
+        panel_types=["hodogram"],
+        x_component=[0],
+        y_component=[2],
+    )
+
+    assert out["status"] == "success"
+    assert out["panels"][0]["components"] == [0, 2]
+    assert out["panels"][0]["matrix_key"] == "b_gsm"
+    assert out["panels"][0]["y_range"] == [20.0, 29.0]
+
+
+def test_scatter_component_out_of_bounds_errors(tmp_path, monkeypatch):
+    _install_fake_matplotlib(monkeypatch)
+    p = tmp_path / "two_col.npz"
+    np.savez_compressed(p, values=np.ones((5, 2)))
+
+    out = plotting.render_tplot(
+        input_files=[str(p)],
+        output_file=str(tmp_path / "bad.png"),
+        panel_types="scatter",
+        y_component=3,
+    )
+
+    assert out["status"] == "error"
+    assert out["code"] == "invalid_argument"
+    assert "out of bounds" in out["message"]
+
+
+def test_scatter_table_uses_numeric_columns(tmp_path, line_csv, monkeypatch):
+    state = _install_fake_matplotlib(monkeypatch)
+
+    out = plotting.render_tplot(
+        input_files=[str(line_csv)],
+        output_file=str(tmp_path / "csv_xy.png"),
+        panel_types="scatter",
+        x_component=1,
+        y_component=0,
+    )
+
+    assert out["status"] == "success"
+    assert out["panels"][0]["type"] == "scatter"
+    assert out["panels"][0]["components"] == [1, 0]
+    ax = state["figures"][0]._axes[0]
+    assert ax.xlabel == "by"
+    assert ax.ylabel == "bx"
 
 def test_zlog_applied_to_spectrogram(tmp_path, spectrogram_npz, monkeypatch):
     _install_fake_matplotlib(monkeypatch)
