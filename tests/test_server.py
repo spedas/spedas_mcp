@@ -173,6 +173,36 @@ def test_browse_data_sources_filters_spice_query():
     assert all("psp" in json.dumps(entry).lower() or "parker" in json.dumps(entry).lower() for entry in data["payload"])
 
 
+def test_browse_data_sources_cdaweb_dataset_query_mms_fgm():
+    server = create_server()
+    data = json.loads(_call_tool(server, "browse_data_sources", {"source_type": "cdaweb", "query": "MMS FGM"}))
+
+    assert data["status"] == "success"
+    assert data["discovery_mode"] == "dataset_query"
+    dataset_ids = [entry["dataset_id"] for entry in data["payload"]]
+    assert "MMS1_FGM_SRVY_L2" in dataset_ids
+    assert "MMS1_FGM_BRST_L2" in dataset_ids
+    first = data["payload"][0]
+    assert first["source_id"] == "mms"
+    assert first["why"]
+    assert any("browse_data_parameters" in call and first["dataset_id"] in call for call in first["next_tools"])
+
+
+def test_browse_data_sources_cdaweb_dataset_query_themis_fgm_and_negative():
+    server = create_server()
+    themis = json.loads(_call_tool(server, "browse_data_sources", {"source_type": "cdaweb", "query": "THEMIS FGM"}))
+
+    assert themis["status"] == "success"
+    assert themis["discovery_mode"] == "dataset_query"
+    dataset_ids = {entry["dataset_id"] for entry in themis["payload"]}
+    assert {"THA_L2_FGM", "THB_L2_FGM"} <= dataset_ids
+    assert all(entry["why"] for entry in themis["payload"][:3])
+
+    negative = json.loads(_call_tool(server, "browse_data_sources", {"source_type": "cdaweb", "query": "zzzz notarealproduct"}))
+    assert negative["status"] == "success"
+    assert negative["payload"] == []
+
+
 def test_browse_data_sources_discovers_curated_omni_and_geomagnetic_indices():
     server = create_server()
 
