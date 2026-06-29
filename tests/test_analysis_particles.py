@@ -389,6 +389,7 @@ def test_spectra_writes_npz_per_type(dist_npz, tmp_path, monkeypatch):
     )
     assert out["status"] == "success"
     assert set(out["succeeded"]) == {"energy", "phi", "theta"}
+    expected_units = {"energy": "eV", "phi": "deg", "theta": "deg"}
     for stype in ("energy", "phi", "theta"):
         entry = out["spectra"][stype]
         assert entry["status"] == "success"
@@ -398,6 +399,11 @@ def test_spectra_writes_npz_per_type(dist_npz, tmp_path, monkeypatch):
         assert npz["spectrogram"].shape[0] == 3  # n_time
         assert "time" in npz and "axis" in npz
         assert entry["shape"][0] == 3
+        # Issue #150: the .npz is self-describing so render_tplot can label the
+        # y-axis/colorbar without falling back to the filename stem.
+        assert str(npz["axis_label"]) == stype
+        assert str(npz["axis_units"]) == expected_units[stype]
+        assert str(npz["value_label"]) == "flux"
 
 
 def test_spectra_resolution_controls_bins(dist_npz, tmp_path, monkeypatch):
@@ -468,6 +474,11 @@ def test_pitch_angle_uses_embedded_magf_without_mag_file(dist_npz, tmp_path, mon
     spec = np.load(entry["spectrogram_file"])
     assert spec["spectrogram"].shape == (3, 18)
     assert np.isfinite(spec["spectrogram"]).all()
+    # Issue #150: the PAD .npz carries axis label/units (deg, 0-180) and a flux
+    # (z) label so render_tplot can label the pitch-angle axis and colorbar.
+    assert str(spec["axis_label"]) == "pitch_angle"
+    assert str(spec["axis_units"]) == "deg"
+    assert str(spec["value_label"]) == "flux"
 
 
 def test_pitch_angle_single_embedded_magf_vector_broadcast(tmp_path, monkeypatch):

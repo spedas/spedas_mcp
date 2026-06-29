@@ -58,6 +58,31 @@ def particle_spectrogram_npz(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
+def labeled_pad_npz(tmp_path: Path) -> Path:
+    """A PAD-style spectra .npz that is self-describing (issue #150).
+
+    Mirrors what ``compute_particle_spectra(["pitch_angle"])`` now writes: the
+    spectrogram matrix plus optional ``axis_label`` / ``axis_units`` /
+    ``value_label`` string keys.
+    """
+    n_time, n_pa = 24, 18
+    t = np.arange(n_time, dtype="float64") + 1_600_000_000.0
+    axis = np.linspace(5.0, 175.0, n_pa)
+    spectrogram = np.abs(np.random.default_rng(2).standard_normal((n_time, n_pa))) + 0.1
+    path = tmp_path / "particle_spectra_pitch_angle.npz"
+    np.savez_compressed(
+        path,
+        time=t,
+        axis=axis,
+        spectrogram=spectrogram,
+        axis_label="pitch_angle",
+        axis_units="deg",
+        value_label="flux",
+    )
+    return path
+
+
+@pytest.fixture
 def line_csv(tmp_path: Path) -> Path:
     """A data-layer-style CSV time-series (time + two numeric channels)."""
     n = 50
@@ -136,9 +161,11 @@ class _FakeFigure:
     def __init__(self, n):
         self._axes = [_FakeAxes() for _ in range(n)]
         self.colorbars = 0
+        self.colorbar_labels: list[str | None] = []
 
     def colorbar(self, *a, **k):
         self.colorbars += 1
+        self.colorbar_labels.append(k.get("label"))
 
     def tight_layout(self, *a, **k):
         pass
@@ -353,6 +380,46 @@ def test_renders_spectrogram_panel(tmp_path, spectrogram_npz, monkeypatch):
     # The Agg backend must be forced and a colorbar drawn for the spectrogram.
     assert state["backend"] == "Agg"
     assert state["figures"][0].colorbars == 1
+
+
+def test_spectrogram_prefers_embedded_axis_labels(tmp_path, labeled_pad_npz, monkeypatch):
+    # Issue #150: a self-describing PAD .npz drives the y-axis label ("pitch_angle
+    # [deg]") and colorbar label ("flux") instead of the filename stem.
+    state = _install_fake_matplotlib(monkeypatch)
+    out = plotting.render_tplot(
+        input_files=[str(labeled_pad_npz)], output_file=str(tmp_path / "o.png")
+    )
+    assert out["status"] == "success"
+    panel = out["panels"][0]
+    assert panel["type"] == "spectrogram"
+    # Returned metadata surfaces the resolved label, and it is NOT the stem.
+    assert panel["axis_label"] == "pitch_angle [deg]"
+    assert panel["axis_label"] != Path(labeled_pad_npz).stem
+    assert panel["value_label"] == "flux"
+    # The y-axis and colorbar are labeled from the embedded keys.
+    fig = state["figures"][0]
+    assert fig._axes[0].ylabel == "pitch_angle [deg]"
+    assert fig.colorbar_labels == ["flux"]
+
+
+def test_spectrogram_falls_back_to_stem_for_unlabeled_npz(
+    tmp_path, particle_spectrogram_npz, monkeypatch
+):
+    # Back-compat: an older artifact without the issue #150 label keys still
+    # renders, with the filename stem as the y-axis label and no colorbar label.
+    state = _install_fake_matplotlib(monkeypatch)
+    out = plotting.render_tplot(
+        input_files=[str(particle_spectrogram_npz)], output_file=str(tmp_path / "o.png")
+    )
+    assert out["status"] == "success"
+    panel = out["panels"][0]
+    assert panel["type"] == "spectrogram"
+    stem = Path(particle_spectrogram_npz).stem
+    assert panel["axis_label"] == stem
+    assert "value_label" not in panel
+    fig = state["figures"][0]
+    assert fig._axes[0].ylabel == stem
+    assert fig.colorbar_labels == [None]
 
 
 def test_renders_line_panel_with_two_series(tmp_path, line_csv, monkeypatch):

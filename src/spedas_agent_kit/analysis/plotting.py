@@ -80,6 +80,13 @@ _MAX_PIXELS_PER_DIM = 20_000
 _SPECTROGRAM_KEYS = ("power", "spectrogram", "spec", "z")
 _TIME_KEYS = ("time", "times", "t", "x")
 _YAXIS_KEYS = ("freq", "frequency", "period", "axis", "energy", "y")
+# Optional string-valued .npz keys that make a spectra artifact self-describing
+# (issue #150): when present, render_tplot prefers them for the y-axis label and
+# the colorbar label over the filename-stem fallback. Older artifacts that omit
+# them keep the legacy stem behavior.
+_AXIS_LABEL_KEYS = ("axis_label",)
+_AXIS_UNITS_KEYS = ("axis_units",)
+_VALUE_LABEL_KEYS = ("value_label", "z_label")
 
 
 def _error(
@@ -111,6 +118,63 @@ def _finite_range(array: Any) -> list[float] | None:
     if finite.size == 0:
         return None
     return [float(finite.min()), float(finite.max())]
+
+
+def _read_label_keys(loaded: Any) -> dict[str, str]:
+    """Extract optional self-describing string labels from a loaded ``.npz``.
+
+    Reads ``axis_label`` / ``axis_units`` / ``value_label`` (issue #150) when
+    present, decoding 0-d/bytes/str values to plain strings. Missing or blank
+    values are omitted so callers can fall back cleanly (e.g. to the filename
+    stem) for older artifacts that never wrote these keys.
+    """
+    out: dict[str, str] = {}
+    for canonical, keys in (
+        ("axis_label", _AXIS_LABEL_KEYS),
+        ("axis_units", _AXIS_UNITS_KEYS),
+        ("value_label", _VALUE_LABEL_KEYS),
+    ):
+        for key in keys:
+            if key not in loaded.files:
+                continue
+            text = _coerce_label(loaded[key])
+            if text:
+                out[canonical] = text
+                break
+    return out
+
+
+def _coerce_label(value: Any) -> str | None:
+    """Decode an ``.npz`` label entry (0-d array / bytes / str) to a string."""
+    import numpy as np
+
+    arr = np.asarray(value)
+    try:
+        item = arr.item() if arr.ndim == 0 else (arr.tolist()[0] if arr.size else None)
+    except (ValueError, IndexError):
+        item = None
+    if item is None:
+        return None
+    if isinstance(item, bytes):
+        item = item.decode("utf-8", "replace")
+    text = str(item).strip()
+    return text or None
+
+
+def _spectrogram_ylabel(panel: dict[str, Any]) -> str:
+    """Resolve a spectrogram y-axis label, preferring embedded artifact labels.
+
+    Uses ``"<axis_label> [<axis_units>]"`` when the artifact carries them
+    (issue #150), ``"<axis_label>"`` if only the label is present, and falls
+    back to the filename stem for older label-less artifacts.
+    """
+    label = panel.get("axis_label")
+    units = panel.get("axis_units")
+    if label and units:
+        return f"{label} [{units}]"
+    if label:
+        return str(label)
+    return Path(panel["file"]).stem
 
 
 def _normalize_panel_types(
@@ -274,12 +338,21 @@ def _load_array_artifact(
     """Load a ``.npz`` / ``.npy`` artifact (matrix or value array)."""
     import numpy as np
 
+    labels: dict[str, str] = {}
     if suffix == ".npy":
         data = np.asarray(np.load(path), dtype="float64")
         npz = {"_array": data}
     else:
         loaded = np.load(path)
-        npz = {k: np.asarray(loaded[k], dtype="float64") for k in loaded.files}
+        # Optional self-describing string keys (issue #150) must be read before
+        # the float64 cast below, which would raise on a non-numeric value.
+        labels = _read_label_keys(loaded)
+        label_keys = set(_AXIS_LABEL_KEYS) | set(_AXIS_UNITS_KEYS) | set(_VALUE_LABEL_KEYS)
+        npz = {
+            k: np.asarray(loaded[k], dtype="float64")
+            for k in loaded.files
+            if k not in label_keys
+        }
 
     # Locate a 2-D spectrogram matrix by known key, else any 2-D array.
     spec_key = next((k for k in _SPECTROGRAM_KEYS if k in npz and npz[k].ndim == 2), None)
@@ -320,6 +393,10 @@ def _load_array_artifact(
             "z": z,
             "shape": [int(n_time), int(n_y)],
             "value_range": _finite_range(z),
+            # Optional self-describing labels (issue #150); empty for older npz.
+            "axis_label": labels.get("axis_label"),
+            "axis_units": labels.get("axis_units"),
+            "value_label": labels.get("value_label"),
         }
 
     if want_spec:
@@ -784,6 +861,11 @@ def _draw_figure(
                 _draw_spectrogram(fig, ax, panel, zlog_flags[idx], LogNorm, mdates)
                 entry["axis_range"] = _finite_range(panel["yaxis"])
                 entry["zlog"] = bool(zlog_flags[idx])
+                # Surface the resolved axis/colorbar labels so callers can see
+                # the artifact was self-describing (issue #150).
+                entry["axis_label"] = _spectrogram_ylabel(panel)
+                if panel.get("value_label"):
+                    entry["value_label"] = panel["value_label"]
             elif panel["kind"] == _PANEL_SCATTER:
                 _draw_scatter(ax, panel)
                 entry["components"] = panel.get("components")
@@ -795,7 +877,10 @@ def _draw_figure(
                 _draw_line(ax, panel, ylog_flags[idx], mdates)
                 entry["ylog"] = bool(ylog_flags[idx])
                 entry["n_series"] = len(panel.get("series", []))
-            if panel["kind"] != _PANEL_SCATTER:
+            if panel["kind"] == _PANEL_SPECTROGRAM:
+                # Prefer the embedded axis label/units; fall back to the stem.
+                ax.set_ylabel(_spectrogram_ylabel(panel), fontsize=8)
+            elif panel["kind"] != _PANEL_SCATTER:
                 ax.set_ylabel(Path(panel["file"]).stem, fontsize=8)
             meta.append(entry)
 
@@ -884,7 +969,13 @@ def _draw_spectrogram(
 
     # pcolormesh expects z as (n_y, n_time) with matching axis coordinates.
     mesh = ax.pcolormesh(time, yaxis, z.T, shading="auto", norm=norm)
-    fig.colorbar(mesh, ax=ax, pad=0.01)
+    # Label the colorbar from the embedded flux/z label when present (issue
+    # #150); older artifacts without it get an unlabeled colorbar as before.
+    value_label = panel.get("value_label")
+    if value_label:
+        fig.colorbar(mesh, ax=ax, pad=0.01, label=str(value_label))
+    else:
+        fig.colorbar(mesh, ax=ax, pad=0.01)
 
 
 __all__ = ["render_tplot"]

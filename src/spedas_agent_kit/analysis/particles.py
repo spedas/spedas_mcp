@@ -1446,11 +1446,19 @@ def compute_particle_spectra(
 
         spectrogram = np.vstack(rows)  # (n_time, n_bin)
         spec_path = out_dir / f"particle_spectra_{stype}.npz"
+        # Persist the axis label/units and a flux (z) label so the standalone
+        # artifact is self-describing: render_tplot can label the y-axis and
+        # colorbar from these keys instead of falling back to the filename stem
+        # (issue #150). Stored as 0-d string arrays; back-compat for older
+        # artifacts that omit them is handled on the reader side.
         np.savez_compressed(
             spec_path,
             time=times,
             axis=axis_ref,
             spectrogram=spectrogram,
+            axis_label=axis_label,
+            axis_units=axis_units,
+            value_label="flux",
         )
         spectra_out[stype] = {
             "status": "success",
@@ -1631,11 +1639,17 @@ def _pitch_angle_entry(
 
     spectrogram = np.vstack(rows)  # (n_time, n_pa)
     spec_path = out_dir / "particle_spectra_pitch_angle.npz"
+    # Self-describing labels so render_tplot can label the PAD y-axis as
+    # "pitch_angle [deg]" (0-180) and the colorbar as flux, instead of the
+    # filename stem (issue #150). See the energy/phi/theta save above.
     np.savez_compressed(
         spec_path,
         time=times,
         axis=axis_ref,
         spectrogram=spectrogram,
+        axis_label="pitch_angle",
+        axis_units="deg",
+        value_label="flux",
     )
     return {
         "status": "success",
