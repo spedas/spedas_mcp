@@ -846,29 +846,65 @@ def _suggest_spice_targets(name: str, limit: int = 5) -> list[str]:
 
 
 
-def _spice_supported_frames() -> list[str]:
-    """Return supported SPICE coordinate frame names for validation/errors.
+def _spice_frame_catalog() -> dict[str, Any]:
+    """Return the programmatic SPICE coordinate-frame catalog.
 
-    Uses the same xhelio_spice frame catalog exposed through
-    ``load_data_source(source_type='spice', ...)`` so geometry tools can reject unknown frame arguments before SPICE emits a raw
-    multi-line CSPICE banner (issue #77).
+    The public tool surface intentionally keeps the old ``list_coordinate_frames``
+    compatibility tool hidden by default (#109).  This helper lets the unified
+    data-layer tools expose the same catalog as structured JSON so agents can
+    answer "what frames can I transform between?" without adding another base
+    tool.
     """
-    try:
-        from xhelio_spice import list_frames_with_descriptions
-    except Exception:  # pragma: no cover - backend not installed
-        return []
-    frames: list[str] = []
+    from xhelio_spice import list_frames_with_descriptions
+
+    frames: list[dict[str, Any]] = []
     for entry in list_frames_with_descriptions():
-        frame = entry.get("frame") if isinstance(entry, dict) else None
-        if frame:
-            frames.append(str(frame))
+        if isinstance(entry, dict):
+            frames.append(dict(entry))
+
     try:
         from xhelio_spice.frames import FRAME_ALIASES
     except Exception:  # pragma: no cover - backend internals changed
-        aliases: list[str] = []
+        raw_aliases: dict[str, str] = {}
     else:
-        aliases = [str(frame) for frame in FRAME_ALIASES]
-    return list(dict.fromkeys(frames + aliases))
+        raw_aliases = {str(alias): str(frame) for alias, frame in dict(FRAME_ALIASES).items()}
+
+    frame_names = [str(entry["frame"]) for entry in frames if entry.get("frame")]
+    aliases = [
+        {"alias": alias, "frame": frame}
+        for alias, frame in raw_aliases.items()
+        if alias.upper() != frame.upper()
+    ]
+    supported = list(dict.fromkeys([*frame_names, *raw_aliases.keys()]))
+
+    return {
+        "catalog_type": "spice_coordinate_frames",
+        "frames": frames,
+        "frame_names": frame_names,
+        "aliases": aliases,
+        "supported_frame_names": supported,
+        "frame_count": len(frame_names),
+        "alias_count": len(aliases),
+        "transform_tool": "transform_coordinates",
+        "usage_notes": [
+            "Use any supported_frame_names value as from_frame/to_frame in transform_coordinates.",
+            "RTN is spacecraft-dependent; pass spacecraft=<mission/target> when transforming to or from RTN.",
+            "This catalog describes coordinate frames, not measurement parameters; SPICE geometry calls still require cached/allowed kernels.",
+        ],
+    }
+
+
+def _spice_supported_frames() -> list[str]:
+    """Return supported SPICE coordinate frame names for validation/errors.
+
+    Uses the same xhelio_spice frame catalog exposed through the unified SPICE
+    data-source responses so geometry tools can reject unknown frame arguments
+    before SPICE emits a raw multi-line CSPICE banner (issue #77).
+    """
+    try:
+        return list(_spice_frame_catalog().get("supported_frame_names", []))
+    except Exception:  # pragma: no cover - backend not installed
+        return []
 
 
 def _unknown_spice_frame_error(frame: str, *, role: str, tool: str) -> str:
@@ -1757,10 +1793,8 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
 
     @_safe_tool
     def list_coordinate_frames() -> str:
-        """List supported SPICE coordinate frames and usage notes."""
-        from xhelio_spice import list_frames_with_descriptions
-
-        return _json(list_frames_with_descriptions())
+        """Compatibility: list supported SPICE coordinate frames and usage notes."""
+        return _json(_spice_frame_catalog()["frames"])
 
     def manage_cdaweb_cache(
         action: Literal["status", "clean", "refresh_metadata", "refresh_time_ranges", "rebuild_catalog"],
@@ -2209,7 +2243,19 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         if source == "pds":
             return _wrap_data_payload(source, browse_pds_missions(query=query), query=query)
         if source == "spice":
-            return _wrap_data_payload(source, _filter_json_records(list_spice_missions(), query), query=query, note="SPICE is exposed as the geometry data-source category.")
+            frame_catalog = _spice_frame_catalog()
+            return _wrap_data_payload(
+                source,
+                _filter_json_records(list_spice_missions(), query),
+                query=query,
+                note=(
+                    "SPICE is exposed as the geometry data-source category. "
+                    "The frame_catalog field lists transform_coordinates from_frame/to_frame values with descriptions."
+                ),
+                frame_catalog=frame_catalog,
+                frame_names=frame_catalog["frame_names"],
+                supported_frame_names=frame_catalog["supported_frame_names"],
+            )
         if source == "hapi":
             return _json({
                 "status": "success",
@@ -2318,11 +2364,20 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                 normalized_source_id=normalized_source_id,
             )
         if source == "spice":
+            frame_catalog = _spice_frame_catalog()
             return _wrap_data_payload(
                 source,
-                list_coordinate_frames(),
+                _json(frame_catalog["frames"]),
                 source_id=source_id,
-                note="SPICE source loading returns the global coordinate-frame catalog; use geometry tools with mission/target arguments for mission-specific context.",
+                frame_catalog=frame_catalog,
+                frame_names=frame_catalog["frame_names"],
+                supported_frame_names=frame_catalog["supported_frame_names"],
+                note=(
+                    "SPICE source loading returns the global coordinate-frame catalog; "
+                    "use frame_catalog.frames for descriptions and supported_frame_names as "
+                    "transform_coordinates from_frame/to_frame values. Use geometry tools "
+                    "with mission/target arguments for mission-specific context."
+                ),
             )
         if source == "hapi":
             return _error_response(
@@ -2359,11 +2414,19 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         if source == "pds":
             return _wrap_data_payload(source, browse_pds_parameters(dataset_id=dataset_id, dataset_ids=dataset_ids), dataset_id=dataset_id)
         if source == "spice":
+            frame_catalog = _spice_frame_catalog()
             return _wrap_data_payload(
                 source,
-                list_coordinate_frames(),
+                _json(frame_catalog["frames"]),
                 dataset_id=dataset_id,
-                note="SPICE does not expose measurement parameters; use frames/targets/observer geometry instead.",
+                frame_catalog=frame_catalog,
+                frame_names=frame_catalog["frame_names"],
+                supported_frame_names=frame_catalog["supported_frame_names"],
+                note=(
+                    "SPICE does not expose measurement parameters; this response is the "
+                    "coordinate-frame catalog. Use supported_frame_names with "
+                    "transform_coordinates and use frames entries for descriptions."
+                ),
             )
         if source == "hapi":
             return _error_response(

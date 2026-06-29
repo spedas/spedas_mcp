@@ -185,8 +185,8 @@ Start here for open-ended science requests.
 
 SPICE is exposed as a data source category, but geometry operations are clearer as explicit tools:
 
-- Browse SPICE missions with `browse_data_sources(source_type="spice")`.
-- Browse SPICE frame context with `load_data_source(source_type="spice", source_id=...)`.
+- Browse SPICE missions with `browse_data_sources(source_type="spice")`; the response also includes a `frame_catalog` with frame descriptions and aliases.
+- Browse the same SPICE coordinate-frame catalog explicitly with `load_data_source(source_type="spice", source_id="frames")` or `browse_data_parameters(source_type="spice", dataset_id="frames")`; use `supported_frame_names` as `transform_coordinates` `from_frame`/`to_frame` values.
 - `get_ephemeris(mission, target, start, stop, step="1h", frame="J2000", observer=None)`
 - `compute_distance(mission, target, observer, start, stop, step="1h")`
 - `transform_coordinates(mission, coordinates, from_frame, to_frame, epoch=None)`

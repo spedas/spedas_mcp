@@ -47,10 +47,12 @@ SPICE geometry operations (`get_ephemeris`, `compute_distance`, and
 `transform_coordinates`) remain explicit public tools because they are scientific
 operations rather than archive fetch aliases. SPICE mission and frame catalogs are
 reachable through the unified data layer (`browse_data_sources(source_type="spice")`,
-`load_data_source(source_type="spice", source_id=...)`, or
-`browse_data_parameters(source_type="spice", dataset_id=...)`) instead of separate
-standalone catalog tools. The unified data layer routes SPICE data-product fetch
-attempts to the geometry tools.
+`load_data_source(source_type="spice", source_id="frames")`, or
+`browse_data_parameters(source_type="spice", dataset_id="frames")`) instead of separate
+standalone catalog tools. Those responses expose a structured `frame_catalog`
+(`frames`, `supported_frame_names`, aliases, and usage notes) so agents can answer
+which frames `transform_coordinates` accepts without re-adding legacy tools. The
+unified data layer routes SPICE data-product fetch attempts to the geometry tools.
 
 ## Deprecation guidance
 
