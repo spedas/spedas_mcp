@@ -2320,6 +2320,138 @@ def test_unified_browse_data_parameters_unknown_lists_new_sources():
     assert {"hapi", "fdsn"} <= set(data["allowed"])
 
 
+# Issue #137: wide products (e.g. THA_L2_ESA, ~200 params/~53 KB) overflow the
+# response budget. browse_data_parameters gains parameter_query/limit/offset so
+# agents can narrow parameter metadata before fetching data. The bundled PDS
+# dataset below resolves offline and exposes 8 distinctly-named parameters.
+_PDS_PARAM_DATASET = "pds3:JNO-J-3-FGM-CAL-V1.0:DATA"
+
+
+def _browse_pds_params(server, **extra):
+    args = {"source_type": "pds", "dataset_id": _PDS_PARAM_DATASET}
+    args.update(extra)
+    return json.loads(_call_tool(server, "browse_data_parameters", args))
+
+
+def test_browse_data_parameters_unfiltered_returns_all_params():
+    server = create_server()
+    data = _browse_pds_params(server)
+    assert data["status"] == "success"
+    params = data["payload"]["parameters"]
+    assert len(params) == 8
+    # Backwards-compatible: no pagination metadata when no filter/page applied.
+    assert "parameter_page" not in data["payload"]
+
+
+def test_browse_data_parameters_query_filters_by_name():
+    server = create_server()
+    # "BX PLANETOCENTRIC" is unique to a single parameter name.
+    data = _browse_pds_params(server, parameter_query="bx planetocentric")
+    assert data["status"] == "success"
+    page = data["payload"]["parameter_page"]
+    assert page["query"] == "bx planetocentric"
+    assert page["total"] == 1
+    assert page["returned"] == 1
+    names = [p["name"] for p in data["payload"]["parameters"]]
+    assert names == ["BX PLANETOCENTRIC"]
+
+
+def test_browse_data_parameters_query_matches_description():
+    server = create_server()
+    # "planetocentric" appears in the names of the B-field components AND in the
+    # descriptions of the X/Y/Z spacecraft-position parameters, so the query
+    # searches description text too.
+    data = _browse_pds_params(server, parameter_query="planetocentric")
+    page = data["payload"]["parameter_page"]
+    assert page["total"] == 6
+    names = {p["name"] for p in data["payload"]["parameters"]}
+    assert names == {
+        "BX PLANETOCENTRIC", "BY PLANETOCENTRIC", "BZ PLANETOCENTRIC",
+        "X", "Y", "Z",
+    }
+
+
+def test_browse_data_parameters_query_is_case_insensitive():
+    server = create_server()
+    data = _browse_pds_params(server, parameter_query="RANGE")
+    names = [p["name"] for p in data["payload"]["parameters"]]
+    assert names == ["INSTRUMENT RANGE"]
+
+
+def test_browse_data_parameters_limit_and_offset_paginate():
+    server = create_server()
+    data = _browse_pds_params(server, limit=3, offset=2)
+    page = data["payload"]["parameter_page"]
+    assert page["total"] == 8
+    assert page["returned"] == 3
+    assert page["offset"] == 2
+    assert page["limit"] == 3
+    assert page["has_more"] is True
+    names = [p["name"] for p in data["payload"]["parameters"]]
+    assert names == ["BY PLANETOCENTRIC", "BZ PLANETOCENTRIC", "INSTRUMENT RANGE"]
+
+
+def test_browse_data_parameters_query_and_limit_compose():
+    server = create_server()
+    data = _browse_pds_params(server, parameter_query="planetocentric", limit=2)
+    page = data["payload"]["parameter_page"]
+    assert page["total"] == 6  # total counts matches before pagination
+    assert page["returned"] == 2
+    assert page["has_more"] is True
+    names = [p["name"] for p in data["payload"]["parameters"]]
+    assert names == ["BX PLANETOCENTRIC", "BY PLANETOCENTRIC"]
+
+
+def test_browse_data_parameters_offset_past_end_returns_empty_page():
+    server = create_server()
+    data = _browse_pds_params(server, offset=100)
+    page = data["payload"]["parameter_page"]
+    assert page["total"] == 8
+    assert page["returned"] == 0
+    assert page["has_more"] is False
+    assert data["payload"]["parameters"] == []
+
+
+def test_browse_data_parameters_query_no_match_is_clean_success():
+    server = create_server()
+    data = _browse_pds_params(server, parameter_query="no-such-parameter-xyz")
+    assert data["status"] == "success"
+    page = data["payload"]["parameter_page"]
+    assert page["total"] == 0
+    assert page["returned"] == 0
+    assert data["payload"]["parameters"] == []
+
+
+def test_browse_data_parameters_rejects_negative_limit():
+    server = create_server()
+    data = _browse_pds_params(server, limit=0)
+    assert data["status"] == "error"
+    assert data["code"] == "invalid_argument"
+
+
+def test_browse_data_parameters_rejects_negative_offset():
+    server = create_server()
+    data = _browse_pds_params(server, offset=-1)
+    assert data["status"] == "error"
+    assert data["code"] == "invalid_argument"
+
+
+def test_browse_data_parameters_existing_source_type_behavior_preserved():
+    # source_type routing for spice/unknown must be unaffected by the new filter.
+    server = create_server()
+    spice = json.loads(_call_tool(server, "browse_data_parameters", {
+        "source_type": "spice", "dataset_id": "PSP",
+    }))
+    assert spice["status"] == "success"
+    assert spice["payload"]
+
+    unknown = json.loads(_call_tool(server, "browse_data_parameters", {
+        "source_type": "nope", "dataset_id": "x", "parameter_query": "anything",
+    }))
+    assert unknown["status"] == "error"
+    assert unknown["code"] == "invalid_argument"
+
+
 def test_browse_hapi_catalog_missing_dep_or_size_safe_success(tmp_path: Path):
     server = create_server()
     data = json.loads(_call_tool(server, "browse_hapi_catalog", {

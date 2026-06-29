@@ -2949,18 +2949,166 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             )
         return _unknown_source_type_error(source_type, ["cdaweb", "pds", "spice", "hapi", "fdsn"])
 
+    def _param_matches_query(param: dict[str, Any], needle: str) -> bool:
+        """Case-insensitive substring match over a parameter's searchable fields."""
+        for field in ("name", "description", "units"):
+            value = param.get(field)
+            if value and needle in str(value).casefold():
+                return True
+        return False
+
+    def _filter_parameter_list(
+        params: list[Any],
+        *,
+        query: str | None,
+        limit: int | None,
+        offset: int,
+    ) -> tuple[list[Any], dict[str, Any]]:
+        """Filter/paginate a parameter list, returning the slice and a page summary.
+
+        Issue #137: wide products return ~200 parameters that can overflow the
+        response budget. ``query`` narrows by name/description/units; ``limit``
+        and ``offset`` page through the (filtered) list.
+        """
+        if query:
+            needle = query.casefold()
+            matched = [
+                p for p in params
+                if isinstance(p, dict) and _param_matches_query(p, needle)
+            ]
+        else:
+            matched = list(params)
+        total = len(matched)
+        sliced = matched[offset:]
+        if limit is not None:
+            sliced = sliced[:limit]
+        page: dict[str, Any] = {
+            "total": total,
+            "returned": len(sliced),
+            "offset": offset,
+            "has_more": offset + len(sliced) < total,
+        }
+        if query is not None:
+            page["query"] = query
+        if limit is not None:
+            page["limit"] = limit
+        return sliced, page
+
+    def _apply_parameter_filter(
+        payload: Any,
+        *,
+        query: str | None,
+        limit: int | None,
+        offset: int,
+    ) -> Any:
+        """Apply parameter_query/limit/offset to a browse-parameters payload.
+
+        Handles both the single-dataset shape (``parameters`` at top level) and
+        the batch shape (``datasets`` keyed by dataset id). Anything that does
+        not carry a parameter list is returned unchanged.
+        """
+        if query is None and limit is None and offset == 0:
+            return payload
+        if not isinstance(payload, dict):
+            return payload
+        if isinstance(payload.get("parameters"), list):
+            sliced, page = _filter_parameter_list(
+                payload["parameters"], query=query, limit=limit, offset=offset
+            )
+            payload = {**payload, "parameters": sliced, "parameter_page": page}
+            return payload
+        datasets = payload.get("datasets")
+        if isinstance(datasets, dict):
+            new_datasets: dict[str, Any] = {}
+            for ds_id, entry in datasets.items():
+                if isinstance(entry, dict) and isinstance(entry.get("parameters"), list):
+                    sliced, page = _filter_parameter_list(
+                        entry["parameters"], query=query, limit=limit, offset=offset
+                    )
+                    new_datasets[ds_id] = {**entry, "parameters": sliced, "parameter_page": page}
+                else:
+                    new_datasets[ds_id] = entry
+            return {**payload, "datasets": new_datasets}
+        return payload
+
+    def _wrap_filtered_parameters(
+        source: str,
+        raw: str,
+        *,
+        dataset_id: str,
+        query: str | None,
+        limit: int | None,
+        offset: int,
+    ) -> str:
+        """Parse a backend parameter payload, apply the filter, and re-serialize."""
+        if query is None and limit is None and offset == 0:
+            return _wrap_data_payload(source, raw, dataset_id=dataset_id)
+        try:
+            payload = json.loads(raw)
+        except Exception:
+            # Non-JSON means an error/traceback; preserve existing handling.
+            return _wrap_data_payload(source, raw, dataset_id=dataset_id)
+        if isinstance(payload, dict) and _payload_has_error(payload):
+            return _wrap_data_payload(source, raw, dataset_id=dataset_id)
+        filtered = _apply_parameter_filter(payload, query=query, limit=limit, offset=offset)
+        return _wrap_data_payload(source, _json(filtered), dataset_id=dataset_id)
+
     @_primary_tool()
     def browse_data_parameters(
         source_type: str,
         dataset_id: str,
         dataset_ids: list[str] | None = None,
+        parameter_query: str | None = None,
+        limit: int | None = None,
+        offset: int = 0,
     ) -> str:
-        """Primary data layer: browse parameters/metadata using source_type rather than source-specific tool names."""
+        """Primary data layer: browse parameters/metadata using source_type rather than source-specific tool names.
+
+        For wide products (issue #137) use parameter_query to narrow by
+        name/description/units, and/or limit/offset to page through the
+        parameter list. A ``parameter_page`` summary ({total, returned, offset,
+        limit, has_more, query}) is added to the payload when any of these are
+        supplied. Without them the response is unchanged for back-compat.
+        """
         source = _normalize_source_type(source_type)
+        if limit is not None and limit <= 0:
+            return _error_response(
+                "invalid_argument",
+                "browse_data_parameters limit must be a positive integer when provided.",
+                hint="Pass limit >= 1, or omit limit and use parameter_query/offset to narrow.",
+                sanitize=False,
+                source_type=source,
+                dataset_id=dataset_id,
+                unsupported_argument="limit",
+            )
+        if offset < 0:
+            return _error_response(
+                "invalid_argument",
+                "browse_data_parameters offset must be a non-negative integer.",
+                hint="Pass offset >= 0 (0 starts at the first parameter).",
+                sanitize=False,
+                source_type=source,
+                dataset_id=dataset_id,
+                unsupported_argument="offset",
+            )
         if source == "cdaweb":
-            return _wrap_data_payload(source, browse_parameters(dataset_id=dataset_id, dataset_ids=dataset_ids), dataset_id=dataset_id)
+            return _wrap_filtered_parameters(
+                source,
+                browse_parameters(dataset_id=dataset_id, dataset_ids=dataset_ids),
+                dataset_id=dataset_id,
+                query=parameter_query,
+                limit=limit,
+                offset=offset,
+            )
         if source == "pds":
-            return _wrap_data_payload(source, browse_pds_parameters(dataset_id=dataset_id, dataset_ids=dataset_ids), dataset_id=dataset_id)
+            return _wrap_filtered_parameters(
+                source,
+                browse_pds_parameters(dataset_id=dataset_id, dataset_ids=dataset_ids),
+                dataset_id=dataset_id,
+                query=parameter_query,
+                limit=limit,
+                offset=offset,
+            )
         if source == "spice":
             frame_catalog = _spice_frame_catalog()
             return _wrap_data_payload(
