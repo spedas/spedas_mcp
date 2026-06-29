@@ -97,7 +97,9 @@ If instead you want to **recompute** moments yourself, or produce **pitch-angle/
 
 ### 5b. Distribution → moments / pitch-angle (the `*-DIST` path)
 
-The in-kit particle tools (`compute_particle_moments`, `compute_particle_spectra`) require a **3D distribution artifact** on disk, built from a mission `*-DIST` product — never from `*-MOMS`. Build it with the `#95` bridge, then compute. The `mag_file` below is a separate small `.npz` B-field reference with key `b` shaped `(T, 3)`; if you do not have that file yet, omit `mag_file` or request only non-PAD spectra and the pitch-angle entry will report `needs_input` rather than blocking energy spectra.
+The in-kit particle tools (`compute_particle_moments`, `compute_particle_spectra`) require a **3D distribution artifact** on disk, built from a mission `*-DIST` product — never from `*-MOMS`. Build it with the `#95` bridge, then compute.
+
+The bridge already needs a **B field** to write the artifact (`mag_tplot_name=` or `magf=`), and it stores those B vectors as embedded `magf` shaped `(T, 3)` inside the artifact. **Pitch-angle (PAD) spectra reuse that embedded `magf` automatically** — you do **not** need a separate `mag_file`. Just point `compute_particle_spectra` at the same distribution artifact:
 
 ```json
 {"tool":"build_particle_distribution_artifact","args":{
@@ -113,14 +115,28 @@ The in-kit particle tools (`compute_particle_moments`, `compute_particle_spectra
 {"tool":"compute_particle_spectra","args":{
   "dist_file":".t001_artifacts/data/dis_dist.npz",
   "output_dir":".t001_artifacts/data",
+  "spectrum_types":["energy","pitch_angle"]
+}}
+```
+
+The pitch-angle entry comes back with `mag_source: "distribution_artifact_magf"`, confirming it used the embedded B field.
+
+`mag_file` is now an **optional override**, not the first path. Supply it only when you want a *different* B reference than the one baked into the artifact (e.g. a higher-cadence or differently-framed magnetometer product). It is a separate small `.npz`/`.json` with key `b` shaped `(T, 3)` (or `(3,)` to broadcast):
+
+```json
+{"tool":"compute_particle_spectra","args":{
+  "dist_file":".t001_artifacts/data/dis_dist.npz",
+  "output_dir":".t001_artifacts/data",
   "spectrum_types":["energy","pitch_angle"],
   "mag_file":".t001_artifacts/data/b_gse.npz"
 }}
 ```
 
+When `mag_file` is given the pitch-angle entry reports `mag_source: "mag_file"` (the override wins over embedded `magf`).
+
 Notes:
 
-- The bridge needs a **B-field input** (`magf` vectors or `mag_tplot_name`); pitch-angle/PAD spectra additionally need `mag_file`. No B → the pitch-angle entry returns `needs_input` (other spectra still compute).
+- The bridge needs a **B-field input** (`magf` vectors or `mag_tplot_name`) to write the artifact; PAD spectra then reuse that embedded `magf`. Only if the artifact has **no** embedded `magf` **and** you pass no `mag_file` does the pitch-angle entry return `needs_input` (`mag_source: "missing"`) — other spectra still compute.
 - Supported bridge converters today are **MMS FPI/HPCA + ERG** only (THEMIS/PSP have no upstream pyspedas Python `*_get_dist` converter yet).
 - For a velocity-space cut (beams/crescents) see the `particle-velocity-slice` skill; for the full PAD pipeline see `pitch-angle-distribution`.
 

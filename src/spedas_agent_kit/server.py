@@ -3930,20 +3930,24 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             distribution over complementary dimensions per time slice into a
             (n_time, n_bin) spectrogram. spectrum_types defaults to
             ['energy','pitch_angle']; 'azimuth'->'phi' and 'elevation'->'theta' aliases
-            are accepted. Field-aligned 'pitch_angle' spectra need a mag_file (B-field
-            reference): each slice is rotated into field-aligned coordinates with
-            spd_pgs_do_fac (B as +z) and the polar (pitch) angle binned over 0-180 deg
-            via spd_pgs_make_theta_spec in colatitude mode (no optional pad backend
-            required). Without mag_file that entry reports needs_input while the other
-            requested spectra still compute. mag_file is an .npz/.json with 'b' as
-            (T,3) (one B vector per slice) or (3,) (broadcast), in the distribution's
-            coordinate frame. Each spectrogram is written to
-            output_dir/particle_spectra_<type>.npz; only paths/ranges/shapes are
-            returned (artifact-first). Produce dist_file first with
-            build_particle_distribution_artifact / load_particle_distribution_artifact
-            from a mission 3D *-DIST product (MMS FPI DIS-DIST/DES-DIST, MMS HPCA, ERG) —
-            the precomputed *-MOMS products are NOT valid inputs. For pitch-angle/PAD,
-            mag_file is the B-field reference; see the pitch-angle-distribution skill.
+            are accepted. Field-aligned 'pitch_angle' spectra need a B-field
+            reference: by default the 'magf' embedded in the distribution artifact by
+            the #95 bridge (mag_source 'distribution_artifact_magf'); pass mag_file
+            only to override it (mag_source 'mag_file'). Each slice is rotated into
+            field-aligned coordinates with spd_pgs_do_fac (B as +z) and the polar
+            (pitch) angle binned over 0-180 deg via spd_pgs_make_theta_spec in
+            colatitude mode (no optional pad backend required). Only when the artifact
+            has no embedded magf AND no mag_file is passed does that entry report
+            needs_input (mag_source 'missing') while the other requested spectra still
+            compute. mag_file is an .npz/.json with 'b' as (T,3) (one B vector per
+            slice) or (3,) (broadcast), in the distribution's coordinate frame. Each
+            spectrogram is written to output_dir/particle_spectra_<type>.npz; only
+            paths/ranges/shapes are returned (artifact-first). Produce dist_file first
+            with build_particle_distribution_artifact /
+            load_particle_distribution_artifact from a mission 3D *-DIST product (MMS
+            FPI DIS-DIST/DES-DIST, MMS HPCA, ERG) — the precomputed *-MOMS products are
+            NOT valid inputs. For PAD, give the B field to the bridge so it is embedded;
+            see the pitch-angle-distribution skill.
             Requires spedas-agent-kit[analysis].
             """
             from spedas_agent_kit.analysis.particles import compute_particle_spectra as _impl

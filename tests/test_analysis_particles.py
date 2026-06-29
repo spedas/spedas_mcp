@@ -421,17 +421,92 @@ def _mag_npz(tmp_path: Path, n_time: int = 3, b=None) -> Path:
     return path
 
 
-def test_pitch_angle_needs_mag_file(dist_npz, tmp_path, monkeypatch):
+@pytest.fixture
+def dist_npz_no_magf(tmp_path: Path) -> Path:
+    """A distribution artifact that carries NO embedded magf (issue #148).
+
+    This is the genuine 'no B reference anywhere' case: with neither an embedded
+    magf nor a mag_file, the pitch-angle entry must report needs_input.
+    """
+    arrays = _make_dist_arrays()
+    arrays.pop("magf")
+    path = tmp_path / "dist_no_magf.npz"
+    np.savez(path, **arrays)
+    return path
+
+
+def test_pitch_angle_needs_input_when_no_mag_anywhere(dist_npz_no_magf, tmp_path, monkeypatch):
+    # No embedded magf AND no mag_file -> needs_input (the call still succeeds for
+    # the other requested spectra). mag_source records the missing reference.
+    _install_fake_pyspedas(monkeypatch)
+    out = particles.compute_particle_spectra(
+        str(dist_npz_no_magf),
+        str(tmp_path / "spec"),
+        spectrum_types=["energy", "pitch_angle"],
+    )
+    assert out["status"] == "success"
+    entry = out["spectra"]["pitch_angle"]
+    assert entry["status"] == "needs_input"
+    assert entry["mag_source"] == "missing"
+    assert "energy" in out["succeeded"]
+
+
+def test_pitch_angle_uses_embedded_magf_without_mag_file(dist_npz, tmp_path, monkeypatch):
+    # Issue #148: a distribution artifact carrying embedded (T,3) magf produces a
+    # PAD with NO separate mag_file. Provenance records the embedded source.
     _install_fake_pyspedas(monkeypatch)
     out = particles.compute_particle_spectra(
         str(dist_npz),
         str(tmp_path / "spec"),
-        spectrum_types=["energy", "pitch_angle"],
+        spectrum_types=["pitch_angle"],
     )
-    # energy succeeds; pitch_angle reports needs_input without failing the call.
     assert out["status"] == "success"
-    assert out["spectra"]["pitch_angle"]["status"] == "needs_input"
-    assert "energy" in out["succeeded"]
+    entry = out["spectra"]["pitch_angle"]
+    assert entry["status"] == "success"
+    assert entry["mag_source"] == "distribution_artifact_magf"
+    assert entry["shape"] == [3, 18]
+    spec = np.load(entry["spectrogram_file"])
+    assert spec["spectrogram"].shape == (3, 18)
+    assert np.isfinite(spec["spectrogram"]).all()
+
+
+def test_pitch_angle_single_embedded_magf_vector_broadcast(tmp_path, monkeypatch):
+    # A single (3,) embedded magf is normalized to (T,3) and still drives the PAD
+    # via the embedded-magf path (no mag_file).
+    _install_fake_pyspedas(monkeypatch)
+    arrays = _make_dist_arrays()
+    arrays["magf"] = np.array([0.0, 0.0, 5.0])
+    dist = tmp_path / "dist_single_embedded_magf.npz"
+    np.savez(dist, **arrays)
+    out = particles.compute_particle_spectra(
+        str(dist),
+        str(tmp_path / "spec"),
+        spectrum_types=["pitch_angle"],
+    )
+    assert out["status"] == "success"
+    entry = out["spectra"]["pitch_angle"]
+    assert entry["status"] == "success"
+    assert entry["mag_source"] == "distribution_artifact_magf"
+    assert entry["shape"][0] == 3
+
+
+def test_pitch_angle_mag_file_overrides_embedded_magf(dist_npz, tmp_path, monkeypatch):
+    # Issue #148 requirement 3: an explicit mag_file wins over embedded magf.
+    # The two B references point along different axes; both fakes succeed, so the
+    # discriminator is the recorded provenance (mag_source == 'mag_file').
+    _install_fake_pyspedas(monkeypatch)
+    # dist_npz embeds magf = [0,0,5]; supply a mag_file along a different axis.
+    mag = _mag_npz(tmp_path, b=np.tile(np.array([1.0, 0.0, 0.0]), (3, 1)))
+    out = particles.compute_particle_spectra(
+        str(dist_npz),
+        str(tmp_path / "spec"),
+        spectrum_types=["pitch_angle"],
+        mag_file=str(mag),
+    )
+    assert out["status"] == "success"
+    entry = out["spectra"]["pitch_angle"]
+    assert entry["status"] == "success"
+    assert entry["mag_source"] == "mag_file"
 
 
 def test_pitch_angle_success_with_mag_file(dist_npz, tmp_path, monkeypatch):
@@ -448,6 +523,7 @@ def test_pitch_angle_success_with_mag_file(dist_npz, tmp_path, monkeypatch):
     assert out["status"] == "success"
     entry = out["spectra"]["pitch_angle"]
     assert entry["status"] == "success"
+    assert entry["mag_source"] == "mag_file"
     assert entry["axis_label"] == "pitch_angle"
     assert entry["axis_units"] == "deg"
     # Default 18 bins over 0-180 deg.
@@ -555,6 +631,7 @@ def test_pitch_angle_unsupported_when_fac_absent(dist_npz, tmp_path, monkeypatch
         mag_file=str(mag),
     )
     assert out["spectra"]["pitch_angle"]["status"] == "unsupported"
+    assert out["spectra"]["pitch_angle"]["mag_source"] == "mag_file"
     assert out["status"] == "error"
 
 

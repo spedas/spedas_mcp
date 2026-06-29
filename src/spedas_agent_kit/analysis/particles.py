@@ -17,8 +17,11 @@ thermodynamic and spectral observables:
   by rotating each slice into field-aligned coordinates with
   ``spd_pgs_do_fac`` (B as the +z axis) and binning the resulting polar
   (pitch) angle via ``spd_pgs_make_theta_spec`` in colatitude mode. This path
-  needs a magnetic-field reference (``mag_file``); when it is absent the
-  pitch-angle entry reports ``needs_input`` instead of failing the whole call.
+  needs a magnetic-field reference: an explicit ``mag_file`` (override) or,
+  failing that, the ``magf`` vectors embedded in the distribution artifact by the
+  #95 bridge (issue #148). When neither is available the pitch-angle entry
+  reports ``needs_input`` instead of failing the whole call, and its
+  ``mag_source`` field records which reference was used.
   It depends only on ``spd_pgs_do_fac`` + ``spd_pgs_make_theta_spec`` (present
   in every pyspedas build), not on the optional ``spd_pgs_make_pad_spec``.
 
@@ -89,8 +92,12 @@ _SPECTRA_REQUIRED = {
     "energy": {"data", "energy", "bins"},
     "phi": {"data", "theta", "dtheta", "phi", "dphi", "bins"},
     "theta": {"data", "theta", "dtheta", "dphi", "bins"},
-    # pitch_angle: FAC rotation needs the full angular geometry; the B reference
-    # comes from mag_file (validated separately), not the distribution artifact.
+    # pitch_angle: FAC rotation needs the full angular geometry. The B reference
+    # is NOT a hard-required field here: it is resolved at run time from an
+    # explicit mag_file or, failing that, the embedded 'magf' the #95 bridge
+    # writes into the artifact (issue #148). 'magf' is loaded opportunistically by
+    # _normalize_distribution whenever present, so it need not be listed as
+    # required for the pitch-angle entry to find it.
     "pitch_angle": {"data", "theta", "dtheta", "phi", "dphi", "bins"},
 }
 
@@ -1321,13 +1328,18 @@ def compute_particle_spectra(
     Backends: ``pyspedas`` ``spd_pgs_make_e_spec`` (energy), ``spd_pgs_make_phi_spec``
     (azimuth/phi), ``spd_pgs_make_theta_spec`` (elevation/theta). Each averages the
     distribution over the complementary dimensions per time slice to build a
-    ``(n_time, n_bin)`` spectrogram. Field-aligned **pitch_angle** spectra require
-    a magnetic-field reference (``mag_file``, see :data:`MAG_SCHEMA_DOC`): each
-    slice is rotated into field-aligned coordinates with ``spd_pgs_do_fac`` (B as
-    +z) and the resulting polar (pitch) angle is binned over 0-180 deg via
-    ``spd_pgs_make_theta_spec`` in colatitude mode. When ``mag_file`` is absent
-    the pitch-angle entry reports ``needs_input`` instead of failing the whole
-    call; the rest of the requested spectra still compute.
+    ``(n_time, n_bin)`` spectrogram. Field-aligned **pitch_angle** spectra need a
+    magnetic-field reference, resolved in priority order (issue #148): an explicit
+    ``mag_file`` (see :data:`MAG_SCHEMA_DOC`) if given, otherwise the ``magf``
+    vectors embedded in the distribution artifact by the #95 bridge. Each slice is
+    rotated into field-aligned coordinates with ``spd_pgs_do_fac`` (B as +z) and
+    the resulting polar (pitch) angle is binned over 0-180 deg via
+    ``spd_pgs_make_theta_spec`` in colatitude mode. When neither a ``mag_file``
+    nor embedded ``magf`` is available the pitch-angle entry reports
+    ``needs_input`` instead of failing the whole call; the rest of the requested
+    spectra still compute. The pitch-angle entry's ``mag_source`` field records
+    which B reference was used (``mag_file`` / ``distribution_artifact_magf`` /
+    ``missing``).
 
     Each spectrogram matrix (with its axes) is written to ``output_dir`` as a
     compressed ``.npz``; only paths plus ranges/shapes are returned (artifact-
@@ -1465,8 +1477,11 @@ def compute_particle_spectra(
             "Each successful spectrum writes a (n_time, n_bin) matrix to its .npz "
             "under key 'spectrogram' with axes 'time' (Unix seconds) and 'axis' "
             "(energy eV / phi deg / theta deg / pitch_angle deg). Pitch-angle "
-            "spectra need mag_file; without it that entry is 'needs_input'. Pair "
-            "with a renderer to view; this tool returns paths/ranges/shapes only."
+            "spectra need a B reference: an explicit mag_file (override) or the "
+            "'magf' embedded in the distribution artifact; without either, that "
+            "entry is 'needs_input'. The pitch_angle entry's 'mag_source' records "
+            "which was used. Pair with a renderer to view; this tool returns "
+            "paths/ranges/shapes only."
         ),
     }
 
@@ -1492,35 +1507,59 @@ def _pitch_angle_entry(
        colatitude from +z = B *is* the pitch angle. Bin it over 0-180 deg with
        ``spd_pgs_make_theta_spec(..., colatitude=True)``.
 
+    B-field resolution (issue #148). The FAC rotation needs a B reference. It is
+    resolved in priority order:
+
+    1. An explicit ``mag_file`` (always wins; ``mag_source="mag_file"``).
+    2. The ``magf`` vectors embedded in the distribution artifact when present -
+       the #95 bridge already populates ``(T,3)`` ``magf`` from
+       ``mag_tplot_name`` / ``magf=`` (``mag_source="distribution_artifact_magf"``).
+    3. Neither available -> ``needs_input`` (``mag_source="missing"``).
+
     Returns a structured per-spectrum entry (this function never raises into the
     caller):
 
-    - ``needs_input`` when ``mag_file`` is absent (the FAC rotation needs a B
-      reference). This is the documented, valid response - not a stub.
+    - ``needs_input`` when no B reference is available (neither ``mag_file`` nor
+      embedded ``magf``). This is the documented, valid response - not a stub.
     - ``unsupported`` when this pyspedas build lacks ``spd_pgs_do_fac`` /
       ``spd_pgs_make_theta_spec`` (exact-availability gate, Batch O lesson).
-    - ``error`` for a bad/missing ``mag_file`` or a backend failure.
-    - ``success`` (with the ``.npz`` artifact path + ranges/shape) otherwise.
+    - ``error`` for a bad/missing ``mag_file`` / unusable embedded ``magf`` or a
+      backend failure.
+    - ``success`` (with the ``.npz`` artifact path + ranges/shape + provenance)
+      otherwise.
     """
-    if mag_file is None:
+    import numpy as np
+
+    embedded_magf = cubes.get("magf")
+    mag_source = (
+        "mag_file"
+        if mag_file is not None
+        else ("distribution_artifact_magf" if embedded_magf is not None else "missing")
+    )
+
+    if mag_source == "missing":
         return {
             "status": "needs_input",
             "code": "needs_input",
+            "mag_source": "missing",
             "message": (
                 "pitch-angle spectra require a magnetic-field reference for the "
-                "field-aligned-coordinate rotation; supply mag_file (an Nx3 B "
-                "time series in the distribution's coordinate frame). "
-                + MAG_SCHEMA_DOC
+                "field-aligned-coordinate rotation. None was found: the "
+                "distribution artifact carries no embedded 'magf' and no mag_file "
+                "was supplied. Provide a distribution artifact with embedded magf "
+                "(build_particle_distribution_artifact / "
+                "load_particle_distribution_artifact with magf=/mag_tplot_name=) or "
+                "pass mag_file (an Nx3 B time series in the distribution's "
+                "coordinate frame). " + MAG_SCHEMA_DOC
             ),
         }
-    if not Path(mag_file).exists():
+    if mag_file is not None and not Path(mag_file).exists():
         return {
             "status": "error",
             "code": "invalid_argument",
+            "mag_source": "mag_file",
             "message": f"mag_file does not exist: {mag_file}",
         }
-
-    import numpy as np
 
     # Exact-availability gate on the two backends this path actually uses. Both
     # ship in every pyspedas build that has the spectra functions, but gate
@@ -1534,12 +1573,28 @@ def _pitch_angle_entry(
             "spd_pgs_make_theta_spec",
         )
     except ParticleBackendError as exc:
-        return {"status": "unsupported", "code": "unsupported", "message": str(exc)}
+        return {
+            "status": "unsupported",
+            "code": "unsupported",
+            "mag_source": mag_source,
+            "message": str(exc),
+        }
 
     try:
-        b = _load_mag(mag_file, n_time)
+        if mag_file is not None:
+            # Explicit override: the separate B-field file wins over embedded magf.
+            b = _load_mag(mag_file, n_time)
+        else:
+            # Fall back to the (T,3) magf already normalized into the cubes by
+            # _normalize_distribution (issue #148). Shape was validated there.
+            b = np.asarray(embedded_magf, dtype="float64")
     except ValueError as exc:
-        return {"status": "error", "code": "invalid_argument", "message": str(exc)}
+        return {
+            "status": "error",
+            "code": "invalid_argument",
+            "mag_source": mag_source,
+            "message": str(exc),
+        }
 
     n_pa = resolution if resolution is not None else _DEFAULT_PAD_BINS
 
@@ -1560,11 +1615,17 @@ def _pitch_angle_entry(
             rows.append(np.asarray(ave, dtype="float64"))
     except ValueError as exc:
         # _fac_matrix raises ValueError on a zero/non-finite B vector.
-        return {"status": "error", "code": "invalid_argument", "message": str(exc)}
+        return {
+            "status": "error",
+            "code": "invalid_argument",
+            "mag_source": mag_source,
+            "message": str(exc),
+        }
     except Exception as exc:  # noqa: BLE001 - convert backend failure to envelope
         return {
             "status": "error",
             "code": "backend_error",
+            "mag_source": mag_source,
             "message": f"pitch-angle FAC pipeline failed: {exc}",
         }
 
@@ -1585,10 +1646,14 @@ def _pitch_angle_entry(
         "axis_range": _finite_range(axis_ref),
         "value_range": _finite_range(spectrogram),
         "n_pitch_angle_bins": int(n_pa),
+        "mag_source": mag_source,
         "note": (
             "Pitch angle = angle between each look direction and +B, via "
             "spd_pgs_do_fac (B as +z) then spd_pgs_make_theta_spec in colatitude "
-            "mode. Axis spans 0-180 deg."
+            "mode. Axis spans 0-180 deg. mag_source records where the B reference "
+            "came from: 'mag_file' (explicit override), "
+            "'distribution_artifact_magf' (embedded magf from the #95 bridge), or "
+            "'missing' (no B; needs_input)."
         ),
     }
 
