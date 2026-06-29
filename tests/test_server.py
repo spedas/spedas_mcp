@@ -1481,6 +1481,18 @@ def test_render_tplot_registered_and_validates(tmp_path: Path):
     }))
     _assert_uniform_error(empty)
 
+    # New scatter/xy arguments are exposed through MCP and validate before any
+    # matplotlib import or file loading.
+    bad_components = json.loads(_call_tool(server, "render_tplot", {
+        "input_files": [str(tmp_path / "a.npz"), str(tmp_path / "b.npz")],
+        "output_file": str(tmp_path / "out.png"),
+        "panel_types": "xy",
+        "x_component": [0],
+        "y_component": [1, 2],
+    }))
+    _assert_uniform_error(bad_components)
+    assert "x_component" in bad_components["message"]
+
 
 def test_render_tplot_missing_file_is_structured(tmp_path: Path):
     server = create_server(include_analysis_tools=True)

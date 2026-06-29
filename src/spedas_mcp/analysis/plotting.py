@@ -5,8 +5,8 @@ spectral, field-model, and particle tools all write bulk arrays to disk as
 artifacts (CSV/JSON time-series and ``.npz`` spectrogram matrices) and return
 only compact summaries, but nothing in the server could turn those artifacts
 into a picture. :func:`render_tplot` consumes one or more of those artifacts and
-renders a multi-panel, tplot-style stacked PNG (line panels + spectrogram panels
-with colorbars).
+renders a multi-panel, tplot-style stacked PNG (line panels, spectrogram panels
+with colorbars, and scatter/xy hodogram panels).
 
 Design contract (mirrors :mod:`spedas_mcp.analysis.spectral` and the rest of the
 analysis layer, roadmap epic #10):
@@ -31,6 +31,9 @@ Supported input artifacts (auto-detected by content, then extension):
 - Line time-series: CSV / JSON objects with a time column/key plus one or more
   numeric value columns (the same shapes the data layer writes), or a 1-D/2-D
   ``.npz``/``.npy`` value array with an optional time axis.
+- Scatter/xy panels (explicit ``panel_types="scatter"`` or ``"xy"``): one
+  2-D numeric matrix per input artifact, with ``x_component`` / ``y_component``
+  selecting columns for hodograms or other parametric x-y plots.
 """
 
 from __future__ import annotations
@@ -47,6 +50,7 @@ from . import AnalysisDependencyError, require_matplotlib
 _PANEL_AUTO = "auto"
 _PANEL_LINE = "line"
 _PANEL_SPECTROGRAM = "spectrogram"
+_PANEL_SCATTER = "scatter"
 # Accepted aliases -> canonical token.
 _PANEL_ALIASES: dict[str, str] = {
     "auto": _PANEL_AUTO,
@@ -57,6 +61,11 @@ _PANEL_ALIASES: dict[str, str] = {
     "spectrogram": _PANEL_SPECTROGRAM,
     "spectra": _PANEL_SPECTROGRAM,
     "spec": _PANEL_SPECTROGRAM,
+    "scatter": _PANEL_SCATTER,
+    "xy": _PANEL_SCATTER,
+    "x-y": _PANEL_SCATTER,
+    "hodogram": _PANEL_SCATTER,
+    "parametric": _PANEL_SCATTER,
 }
 
 # Bounds that keep a single render from producing an absurd / memory-blowing
@@ -199,27 +208,70 @@ def _broadcast_logflags(
     return [bool(f) for f in flags], None
 
 
-def _load_artifact(path: Path, panel_type: str) -> dict[str, Any]:
+def _broadcast_components(
+    components: list[int] | int | None, n_panels: int, name: str
+) -> tuple[list[int | None], dict[str, Any] | None]:
+    """Resolve scatter component selectors to one optional int per input file."""
+    if components is None:
+        return [None] * n_panels, None
+    if isinstance(components, int) and not isinstance(components, bool):
+        return [components] * n_panels, None
+    if isinstance(components, list):
+        if len(components) != n_panels:
+            return [], _error(
+                f"{name} length must match input_files: {len(components)} vs {n_panels}",
+                code="invalid_argument",
+            )
+        out: list[int | None] = []
+        for value in components:
+            if value is None:
+                out.append(None)
+            elif isinstance(value, int) and not isinstance(value, bool):
+                out.append(value)
+            else:
+                return [], _error(
+                    f"{name} entries must be integer column indices",
+                    code="invalid_argument",
+                )
+        return out, None
+    return [], _error(
+        f"{name} must be an integer, a list of integers, or null",
+        code="invalid_argument",
+    )
+
+
+def _load_artifact(
+    path: Path,
+    panel_type: str,
+    x_component: int | None = None,
+    y_component: int | None = None,
+) -> dict[str, Any]:
     """Load one artifact into a normalized panel descriptor.
 
-    Returns a dict with at least ``kind`` (``"line"`` or ``"spectrogram"``) plus
-    the arrays needed to draw it. Raises ``ValueError`` with an actionable
-    message when the artifact cannot be parsed or is ambiguous for the requested
-    ``panel_type``.
+    Returns a dict with at least ``kind`` (``"line"``, ``"spectrogram"``, or
+    ``"scatter"``) plus the arrays needed to draw it. Raises ``ValueError`` with
+    an actionable message when the artifact cannot be parsed or is ambiguous for
+    the requested ``panel_type``.
     """
     suffix = path.suffix.lower()
     if suffix in (".npz", ".npy"):
-        return _load_array_artifact(path, suffix, panel_type)
+        return _load_array_artifact(path, suffix, panel_type, x_component, y_component)
     if suffix in (".csv", ".json"):
-        return _load_table_artifact(path, suffix, panel_type)
+        return _load_table_artifact(path, suffix, panel_type, x_component, y_component)
     raise ValueError(
         f"unsupported artifact extension '{suffix}' for {path.name}; "
         "expected one of .npz, .npy, .csv, .json"
     )
 
 
-def _load_array_artifact(path: Path, suffix: str, panel_type: str) -> dict[str, Any]:
-    """Load a ``.npz`` / ``.npy`` artifact (spectrogram matrix or value array)."""
+def _load_array_artifact(
+    path: Path,
+    suffix: str,
+    panel_type: str,
+    x_component: int | None = None,
+    y_component: int | None = None,
+) -> dict[str, Any]:
+    """Load a ``.npz`` / ``.npy`` artifact (matrix or value array)."""
     import numpy as np
 
     if suffix == ".npy":
@@ -236,6 +288,18 @@ def _load_array_artifact(path: Path, suffix: str, panel_type: str) -> dict[str, 
 
     want_spec = panel_type == _PANEL_SPECTROGRAM
     want_line = panel_type == _PANEL_LINE
+    want_scatter = panel_type == _PANEL_SCATTER
+
+    if want_scatter:
+        matrix_key = _select_scatter_matrix_key(npz)
+        if matrix_key is None:
+            raise ValueError(
+                f"{path.name}: requested a scatter/xy panel but no 2-D matrix was "
+                "found in the artifact"
+            )
+        return _build_scatter_panel(
+            path.name, npz[matrix_key], matrix_key, npz, x_component, y_component
+        )
 
     if spec_key is not None and not want_line:
         z = npz[spec_key]
@@ -295,6 +359,70 @@ def _load_array_artifact(path: Path, suffix: str, panel_type: str) -> dict[str, 
     }
 
 
+def _select_scatter_matrix_key(npz: dict[str, Any]) -> str | None:
+    """Pick the one 2-D value matrix used by an explicit scatter/xy panel."""
+    preferred = ("values", "data", "matrix", "b", "b_gsm", "positions", "xyz", "_array")
+    for key in preferred:
+        if key in npz and npz[key].ndim == 2:
+            return key
+    axis_like = set(_TIME_KEYS) | set(_YAXIS_KEYS)
+    return next((k for k in npz if k not in axis_like and npz[k].ndim == 2), None)
+
+
+def _build_scatter_panel(
+    name: str,
+    matrix: Any,
+    matrix_key: str,
+    npz: dict[str, Any],
+    x_component: int | None,
+    y_component: int | None,
+) -> dict[str, Any]:
+    """Normalize one 2-D matrix into x/y arrays for a hodogram panel."""
+    import numpy as np
+
+    values = np.asarray(matrix, dtype="float64")
+    if values.ndim != 2 or min(values.shape) == 0:
+        raise ValueError(f"{name}: scatter/xy panels require a non-empty 2-D matrix")
+
+    time = _first_present(npz, _TIME_KEYS)
+    had_time_axis = time is not None
+    if time is not None and values.shape[0] != time.shape[0] and values.shape[1] == time.shape[0]:
+        values = values.T
+
+    n_samples, n_components = values.shape
+    x_idx = 0 if x_component is None else int(x_component)
+    y_idx = 1 if y_component is None else int(y_component)
+    for label, idx in (("x_component", x_idx), ("y_component", y_idx)):
+        if idx < 0 or idx >= n_components:
+            raise ValueError(
+                f"{name}: {label}={idx} is out of bounds for matrix '{matrix_key}' "
+                f"with {n_components} columns"
+            )
+    if x_idx == y_idx:
+        raise ValueError(f"{name}: x_component and y_component must be different")
+
+    if time is None or time.shape[0] != n_samples:
+        time = np.arange(n_samples, dtype="float64")
+        had_time_axis = False
+
+    x = values[:, x_idx]
+    y = values[:, y_idx]
+    return {
+        "kind": _PANEL_SCATTER,
+        "time": time,
+        "x": x,
+        "y": y,
+        "shape": [int(n_samples), int(n_components)],
+        "matrix_key": matrix_key,
+        "components": [int(x_idx), int(y_idx)],
+        "labels": [f"{matrix_key}[{x_idx}]", f"{matrix_key}[{y_idx}]"],
+        "value_range": _finite_range(np.concatenate([x.ravel(), y.ravel()])),
+        "x_range": _finite_range(x),
+        "y_range": _finite_range(y),
+        "has_time_axis": bool(had_time_axis),
+    }
+
+
 def _first_present(npz: dict[str, Any], keys: tuple[str, ...], exclude: set[str] | None = None) -> Any:
     """Return the first 1-D array among ``keys`` present in ``npz`` (or ``None``)."""
     exclude = exclude or set()
@@ -304,8 +432,14 @@ def _first_present(npz: dict[str, Any], keys: tuple[str, ...], exclude: set[str]
     return None
 
 
-def _load_table_artifact(path: Path, suffix: str, panel_type: str) -> dict[str, Any]:
-    """Load a CSV / JSON time-series artifact as a (multi-series) line panel."""
+def _load_table_artifact(
+    path: Path,
+    suffix: str,
+    panel_type: str,
+    x_component: int | None = None,
+    y_component: int | None = None,
+) -> dict[str, Any]:
+    """Load a CSV / JSON time-series artifact as a line or scatter panel."""
     import numpy as np
     import pandas as pd
 
@@ -353,6 +487,16 @@ def _load_table_artifact(path: Path, suffix: str, panel_type: str) -> dict[str, 
             f"columns: {list(df.columns)}"
         )
 
+    if panel_type == _PANEL_SCATTER:
+        values = df[value_cols].to_numpy(dtype="float64")
+        npz = {"values": values, "time": time}
+        panel = _build_scatter_panel(path.name, values, "values", npz, x_component, y_component)
+        panel["labels"] = [
+            str(value_cols[panel["components"][0]]),
+            str(value_cols[panel["components"][1]]),
+        ]
+        return panel
+
     series = [df[c].to_numpy(dtype="float64") for c in value_cols]
     return {
         "kind": _PANEL_LINE,
@@ -379,6 +523,13 @@ def _apply_trange(panel: dict[str, Any], bounds: tuple[float, float]) -> dict[st
         out["z"] = np.asarray(panel["z"])[mask, :]
         out["shape"] = [int(out["z"].shape[0]), int(out["z"].shape[1])]
         out["value_range"] = _finite_range(out["z"])
+    elif panel["kind"] == _PANEL_SCATTER:
+        out["x"] = np.asarray(panel["x"])[mask]
+        out["y"] = np.asarray(panel["y"])[mask]
+        out["shape"] = [int(out["time"].shape[0]), int(panel["shape"][1])]
+        out["value_range"] = _finite_range(np.concatenate([out["x"].ravel(), out["y"].ravel()]))
+        out["x_range"] = _finite_range(out["x"])
+        out["y_range"] = _finite_range(out["y"])
     else:
         out["series"] = [np.asarray(s)[mask] for s in panel["series"]]
         out["shape"] = [int(out["time"].shape[0]), len(out["series"])]
@@ -398,13 +549,18 @@ def render_tplot(
     dpi: int = 200,
     ylog: list[bool] | bool | None = None,
     zlog: list[bool] | bool | None = None,
+    x_component: list[int] | int | None = None,
+    y_component: list[int] | int | None = None,
 ) -> dict[str, Any]:
     """Render a multi-panel tplot-style PNG from analysis artifacts (#20).
 
     One stacked panel per input file (top to bottom). Spectrogram artifacts
     (``.npz`` ``power``/``spectrogram`` matrices) render as pcolormesh panels with
     a colorbar; time-series artifacts (CSV/JSON tables, 1-D/2-D arrays) render as
-    line panels. ``panel_types`` overrides the per-file auto-detection. The PNG is
+    line panels. Explicit ``scatter``/``xy`` panels render one 2-D matrix per
+    input file as a parametric x-y plot using ``x_component`` / ``y_component``
+    column indices (default 0 vs 1). ``panel_types`` overrides the per-file
+    auto-detection. The PNG is
     written to ``output_file`` (parent dirs created) and only the path plus
     compact per-panel metadata is returned — **never image bytes or bulk arrays**.
 
@@ -452,6 +608,12 @@ def render_tplot(
     zlog_flags, err = _broadcast_logflags(zlog, n_panels, "zlog")
     if err is not None:
         return err
+    x_components, err = _broadcast_components(x_component, n_panels, "x_component")
+    if err is not None:
+        return err
+    y_components, err = _broadcast_components(y_component, n_panels, "y_component")
+    if err is not None:
+        return err
 
     # Resolve final figure height: default 2.5 in per panel, clamped.
     fig_h = ysize if ysize is not None else min(_MAX_SIZE_IN, max(_MIN_SIZE_IN, 2.5 * n_panels))
@@ -482,7 +644,7 @@ def render_tplot(
 
         panels: list[dict[str, Any]] = []
         for path, ptype in zip(paths, panels_resolved):
-            panel = _load_artifact(path, ptype)
+            panel = _load_artifact(path, ptype, x_components[len(panels)], y_components[len(panels)])
             panel["file"] = str(path)
             panels.append(panel)
     except ValueError as exc:
@@ -500,6 +662,13 @@ def render_tplot(
                 panels[idx] = filtered
                 panel = filtered
 
+        if panel["kind"] == _PANEL_SCATTER and (ylog_flags[idx] or zlog_flags[idx]):
+            return _error(
+                f"log scaling is not supported for scatter/xy panel {idx}; "
+                "use linear components or pre-transform the input matrix",
+                code="invalid_argument",
+                panel_index=idx,
+            )
         if panel["kind"] == _PANEL_LINE and ylog_flags[idx]:
             vr = panel.get("value_range")
             if vr is not None and vr[0] <= 0:
@@ -596,7 +765,8 @@ def _draw_figure(
     from matplotlib.colors import LogNorm
 
     n = len(panels)
-    fig, axes = plt.subplots(n, 1, figsize=(xsize, ysize), squeeze=False, sharex=True)
+    has_scatter = any(panel["kind"] == _PANEL_SCATTER for panel in panels)
+    fig, axes = plt.subplots(n, 1, figsize=(xsize, ysize), squeeze=False, sharex=not has_scatter)
     axes = [row[0] for row in axes]
 
     meta: list[dict[str, Any]] = []
@@ -614,15 +784,29 @@ def _draw_figure(
                 _draw_spectrogram(fig, ax, panel, zlog_flags[idx], LogNorm, mdates)
                 entry["axis_range"] = _finite_range(panel["yaxis"])
                 entry["zlog"] = bool(zlog_flags[idx])
+            elif panel["kind"] == _PANEL_SCATTER:
+                _draw_scatter(ax, panel)
+                entry["components"] = panel.get("components")
+                entry["matrix_key"] = panel.get("matrix_key")
+                entry["x_range"] = panel.get("x_range")
+                entry["y_range"] = panel.get("y_range")
+                entry["has_time_axis"] = bool(panel.get("has_time_axis"))
             else:
                 _draw_line(ax, panel, ylog_flags[idx], mdates)
                 entry["ylog"] = bool(ylog_flags[idx])
                 entry["n_series"] = len(panel.get("series", []))
-            ax.set_ylabel(Path(panel["file"]).stem, fontsize=8)
+            if panel["kind"] != _PANEL_SCATTER:
+                ax.set_ylabel(Path(panel["file"]).stem, fontsize=8)
             meta.append(entry)
 
-        _format_time_axis(axes[-1], mdates)
-        axes[-1].set_xlabel("time (UT)")
+        if has_scatter:
+            for ax, panel in zip(axes, panels):
+                if panel["kind"] != _PANEL_SCATTER:
+                    _format_time_axis(ax, mdates)
+                    ax.set_xlabel("time (UT)")
+        else:
+            _format_time_axis(axes[-1], mdates)
+            axes[-1].set_xlabel("time (UT)")
         fig.tight_layout()
         fig.savefig(out_path, dpi=dpi, format="png")
     finally:
@@ -667,6 +851,19 @@ def _draw_line(ax: Any, panel: dict[str, Any], ylog: bool, mdates: Any) -> None:
         ax.set_yscale("log")
     if len(panel["series"]) > 1:
         ax.legend(fontsize=6, loc="upper right", ncol=2)
+
+
+def _draw_scatter(ax: Any, panel: dict[str, Any]) -> None:
+    """Draw a parametric x-y / hodogram panel from two selected columns."""
+    x = panel["x"]
+    y = panel["y"]
+    labels = panel.get("labels") or ["x", "y"]
+    # Use both a thin connecting path and small points: the path preserves
+    # temporal ordering visually, while points make sparse samples visible.
+    ax.plot(x, y, linewidth=0.6, alpha=0.8)
+    ax.scatter(x, y, s=8, alpha=0.8)
+    ax.set_xlabel(str(labels[0]))
+    ax.set_ylabel(str(labels[1]))
 
 
 def _draw_spectrogram(
