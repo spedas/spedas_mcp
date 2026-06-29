@@ -3315,6 +3315,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             trange: list[str] | None = None,
             single_time: str | None = None,
             magf: list[float] | list[list[float]] | None = None,
+            mag_tplot_name: str | None = None,
             max_slices: int | None = 32,
         ) -> str:
             """Analysis: bridge real pyspedas mission particle distributions into the MCP .npz schema.
@@ -3326,10 +3327,11 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             flattens each energy/angle slice into the documented distribution schema,
             writes output_file (.npz), and validates it for downstream
             compute_particle_moments / compute_particle_spectra. Supply magf as either
-            [Bx,By,Bz] or one vector per output slice; the moments schema requires it.
-            Returns only compact shape/range/provenance metadata plus the artifact path.
-            Requires spedas-mcp[analysis] and pre-loaded tplot data; it does not itself
-            download CDFs.
+            [Bx,By,Bz] or one vector per output slice, or pass mag_tplot_name for a
+            loaded B-field tplot variable that will be interpolated to distribution
+            slice times. Returns only compact shape/range/provenance metadata plus the
+            artifact path. Requires spedas-mcp[analysis] and pre-loaded tplot data; it
+            does not itself download CDFs.
             """
             from spedas_mcp.analysis.particles import build_particle_distribution_artifact as _impl
 
@@ -3346,6 +3348,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                 trange=trange,
                 single_time=single_time,
                 magf=magf,
+                mag_tplot_name=mag_tplot_name,
                 max_slices=max_slices,
             ))
 
@@ -3360,6 +3363,10 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             loader_module: str | None = None,
             loader_function: str | None = None,
             loader_kwargs: dict[str, Any] | None = None,
+            mag_tplot_name: str | None = None,
+            mag_loader_module: str | None = None,
+            mag_loader_function: str | None = None,
+            mag_loader_kwargs: dict[str, Any] | None = None,
             index: int | list[int] | None = None,
             probe: str | None = None,
             data_rate: str | None = None,
@@ -3377,9 +3384,10 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             selects tplot_name or a best-effort loaded distribution tplot variable, then
             writes the same validated .npz schema consumed by compute_particle_moments
             and compute_particle_spectra. Returns only compact paths/shapes/ranges and
-            loader/converter provenance; CDF/tplot arrays stay on disk/in memory. Supply
-            magf as [Bx,By,Bz] or one vector per slice because the downstream schema
-            requires magnetic-field context. Requires spedas-mcp[analysis].
+            loader/converter/magnetic-field provenance; CDF/tplot arrays stay on disk/in
+            memory. Supply magf directly, pass mag_tplot_name, or let the tool try the
+            default B-field loader mappings (MMS FGM / ERG MGF) and interpolate that B
+            field to the distribution slice times. Requires spedas-mcp[analysis].
             """
             from spedas_mcp.analysis.particles import load_particle_distribution_artifact as _impl
 
@@ -3391,6 +3399,10 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                 loader_module=loader_module,
                 loader_function=loader_function,
                 loader_kwargs=loader_kwargs,
+                mag_tplot_name=mag_tplot_name,
+                mag_loader_module=mag_loader_module,
+                mag_loader_function=mag_loader_function,
+                mag_loader_kwargs=mag_loader_kwargs,
                 index=index,
                 probe=probe,
                 data_rate=data_rate,

@@ -9,7 +9,7 @@ The optional `[analysis]` layer: file-in / file-out functions wrapping pyspedas/
 - **`coords.py`** (794) — `transform_timeseries_coordinates` `:338` (Earth-frame cotrans), `generate_fac_matrix` `:439` (field-aligned (N,3,3) stack), `tvector_rotate` `:595` (apply a matrix stack — returns a list of tplot var names), `analyze_minvar_coordinates` `:664` (MVA/LMN; returns eigenvalues + normal + rotated path).
 - **`spectral.py`** (511) — `dynamic_power_spectrum` `:198` (Welch dpwrspc), `wavelet_transform` `:314` (Morlet CWT; `_sampling_interval` median-dt + `cadence_warning`).
 - **`fieldmodels.py`** (819) — `evaluate_magnetic_field` `:475` (IGRF/T89/T96/T01/TS04 + tracing), `calculate_lshell` `:650` (McIlwain L; rejects out-of-domain positions with `position_domain_error`).
-- **`particles.py`** (1114) — `build_particle_distribution_artifact` `:418` (the #95 bridge: real MMS/ERG CDF → distribution schema), `compute_particle_moments` `:642` (needs `magf` in the dist), `compute_particle_spectra` `:823` (energy/phi/theta/pitch-angle).
+- **`particles.py`** (1552) — `build_particle_distribution_artifact` `:704` (the #95 bridge: real MMS/ERG CDF/tplot distribution → schema, with `magf` from argument or B-field tplot), `load_particle_distribution_artifact` `:933` (loader/fetch + converter + optional default MMS FGM / ERG MGF sourcing), `compute_particle_moments` `:1079` (needs `magf` in the dist), `compute_particle_spectra` `:1260` (energy/phi/theta/pitch-angle).
 - **`plotting.py`** — `render_tplot` (headless matplotlib; one stacked panel per file; line/spectrogram plus explicit `scatter`/`xy` panels from one 2-D matrix per input with `x_component`/`y_component` column selection).
 - **`__init__.py`** (82) — lazy-import guards; missing extra → clean `dependency_missing` error.
 
@@ -30,4 +30,4 @@ The optional `[analysis]` layer: file-in / file-out functions wrapping pyspedas/
 ## Notes
 
 - **I/O contract discipline (load-bearing):** pyspedas backends variously *return an array*, *store a tplot var* (retrieve via `get_data`; `tnames()`-listed ≠ retrievable), or *return a dict*. State which in any new tool/skill — mismatches here are the recurring bug class.
-- Reliability gates are a convention: MVA eigenvalue ratio, curlometer ∇·B/∇×B, wavelet `cadence_warning`, L-shell domain guard, particle `magf` requirement. Preserve them when editing.
+- Reliability gates are a convention: MVA eigenvalue ratio, curlometer ∇·B/∇×B, wavelet `cadence_warning`, L-shell domain guard, particle `magf` requirement/sourcing provenance. Preserve them when editing.
