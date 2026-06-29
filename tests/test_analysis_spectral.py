@@ -235,6 +235,15 @@ def test_dpwrspc_writes_spectrogram(channel_csv, tmp_path, monkeypatch):
     assert npz["freq"].shape[0] == npz["power"].shape[1]
     assert len(out["freq_range"]) == 2
     assert len(out["time_range"]) == 2
+    # Issue #152: the .npz is self-describing so render_tplot can label the
+    # y-axis "frequency [Hz]" and the colorbar "power" without falling back to
+    # the filename stem.
+    assert str(npz["axis_label"]) == "frequency"
+    assert str(npz["axis_units"]) == "Hz"
+    assert str(npz["value_label"]) == "power"
+    assert out["axis_label"] == "frequency"
+    assert out["axis_units"] == "Hz"
+    assert out["value_label"] == "power"
 
 
 def test_dpwrspc_rejects_short_interval(channel_csv, tmp_path, monkeypatch):
@@ -281,6 +290,15 @@ def test_wavelet_writes_spectrogram(channel_csv, tmp_path, monkeypatch):
     assert "period" in npz and "freq" in npz
     assert "significance" not in npz
     assert len(out["period_range"]) == 2
+    # Issue #152: the .npz is self-describing so render_tplot can label the
+    # y-axis "frequency [Hz]" and the colorbar "power" (renderer prefers 'freq'
+    # over 'period').
+    assert str(npz["axis_label"]) == "frequency"
+    assert str(npz["axis_units"]) == "Hz"
+    assert str(npz["value_label"]) == "power"
+    assert out["axis_label"] == "frequency"
+    assert out["axis_units"] == "Hz"
+    assert out["value_label"] == "power"
 
 
 def test_wavelet_uses_sample_unit_scales_for_high_rate_data(tmp_path, monkeypatch):
@@ -559,6 +577,52 @@ def test_loader_missing_file(tmp_path, monkeypatch):
     )
     assert out["status"] == "error"
     assert "does not exist" in out["message"]
+
+
+# --------------------------------------------------------------------------
+# Render-label contract (issue #152): the embedded keys feed render_tplot's
+# label resolution. This is a lightweight, backend-free contract check that the
+# spectral writers and the plotting label helpers agree on the y-axis/colorbar
+# text, without invoking matplotlib.
+# --------------------------------------------------------------------------
+
+def test_dpwrspc_artifact_drives_render_labels(channel_csv, tmp_path, monkeypatch):
+    from spedas_agent_kit.analysis import plotting
+
+    _install_fake_pyspedas(monkeypatch)
+    out = spectral.dynamic_power_spectrum(
+        input_file=str(channel_csv),
+        output_dir=str(tmp_path / "dps"),
+        data_col="bx",
+        nboxpoints=128,
+        nshiftpoints=64,
+    )
+    assert out["status"] == "success"
+    spec = out["spectrogram_file"]
+    labels = plotting._read_label_keys(np.load(spec))
+    panel = {"file": spec, **labels}
+    # y-axis label resolves to "frequency [Hz]" (not the filename stem) and the
+    # colorbar (value) label to "power".
+    assert plotting._spectrogram_ylabel(panel) == "frequency [Hz]"
+    assert labels["value_label"] == "power"
+
+
+def test_wavelet_artifact_drives_render_labels(channel_csv, tmp_path, monkeypatch):
+    from spedas_agent_kit.analysis import plotting
+
+    _install_fake_pyspedas(monkeypatch)
+    out = spectral.wavelet_transform(
+        input_file=str(channel_csv),
+        output_dir=str(tmp_path / "wav"),
+        data_col="bx",
+        wavename="morl",
+    )
+    assert out["status"] == "success"
+    spec = out["spectrogram_file"]
+    labels = plotting._read_label_keys(np.load(spec))
+    panel = {"file": spec, **labels}
+    assert plotting._spectrogram_ylabel(panel) == "frequency [Hz]"
+    assert labels["value_label"] == "power"
 
 
 # --------------------------------------------------------------------------

@@ -284,11 +284,18 @@ def dynamic_power_spectrum(
     out_dir = Path(output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     spectrogram_path = out_dir / "dynamic_power_spectrum.npz"
+    # Self-describing spectrogram axes (issue #152): embed string labels so
+    # render_tplot can label the y-axis "frequency [Hz]" and the colorbar
+    # "power" without guessing from the filename stem. Older label-less
+    # artifacts still render via the renderer's stem fallback.
     np.savez_compressed(
         spectrogram_path,
         time=times,
         freq=freqs,
         power=power,
+        axis_label="frequency",
+        axis_units="Hz",
+        value_label="power",
     )
 
     return {
@@ -299,14 +306,19 @@ def dynamic_power_spectrum(
         "shape": list(power.shape),
         "time_range": _finite_range(times),
         "freq_range": _finite_range(freqs),
+        "axis_label": "frequency",
+        "axis_units": "Hz",
+        "value_label": "power",
         "nboxpoints": int(nboxpoints),
         "nshiftpoints": int(nshiftpoints),
         "bin": int(bin),
         "hanning": not bool(nohanning),
         "note": (
             "Power matrix saved as (n_time, n_freq) in the .npz under key 'power' "
-            "with axes 'time' (Unix seconds) and 'freq' (1/time units). Pair with a "
-            "renderer to view; this tool returns ranges/shape only."
+            "with axes 'time' (Unix seconds) and 'freq' (Hz). The .npz also carries "
+            "axis_label='frequency', axis_units='Hz', value_label='power' so a "
+            "renderer can label the y-axis and colorbar. Pair with a renderer to "
+            "view; this tool returns ranges/shape only."
         ),
     }
 
@@ -457,6 +469,12 @@ def wavelet_transform(
         "freq": freqs,
         "period": periods,
         "power": power,
+        # Self-describing spectrogram axes (issue #152): the renderer prefers
+        # 'freq' over 'period', so label the y-axis "frequency [Hz]" and the
+        # colorbar "power". Older label-less artifacts fall back to the stem.
+        "axis_label": "frequency",
+        "axis_units": "Hz",
+        "value_label": "power",
     }
 
     significance_applied = False
@@ -491,6 +509,9 @@ def wavelet_transform(
         "time_range": _finite_range(unix_time),
         "freq_range": _finite_range(freqs),
         "period_range": _finite_range(periods),
+        "axis_label": "frequency",
+        "axis_units": "Hz",
+        "value_label": "power",
         "significance_computed": significance_applied,
         "siglvl": float(siglvl) if significance_applied else None,
         "sampling_interval_s": float(dt),
@@ -499,6 +520,8 @@ def wavelet_transform(
             "Power matrix saved as (n_time, n_freq) in the .npz under key 'power' "
             "with axes 'time' (Unix seconds), 'freq' (Hz), and 'period' (s)"
             + (", plus per-scale 'significance'." if significance_applied else ".")
+            + " The .npz also carries axis_label='frequency', axis_units='Hz', "
+            "value_label='power' so a renderer can label the y-axis and colorbar."
             + " Pair with a renderer to view; this tool returns ranges/shape only."
         ),
     }
