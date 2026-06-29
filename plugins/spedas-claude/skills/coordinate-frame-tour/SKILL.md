@@ -43,7 +43,7 @@ returns through `load_data_source` instead).
 - **Unknown frame** → structured `invalid_argument` error carrying the supported frame list
   (don't guess a frame string — discover it first). Frame-dependent transforms may require
   SPICE kernels: a cold cache returns `needs_confirmation`/`kernel_download_required`; pass
-  `allow_kernel_download=True` or pre-load with `manage_spice_kernels`.
+  `allow_kernel_download=True` after checking/confirming via `manage_data_cache(source_type="spice", action="status")`. Do not route this skill through hidden source-specific kernel tools.
 
 ## Procedure
 
