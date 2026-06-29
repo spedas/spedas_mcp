@@ -1,12 +1,12 @@
-"""Tests for the unified SPEDAS MCP facade."""
+"""Tests for the unified SPEDAS Agent Kit facade."""
 import asyncio
 import json
 import sys
 import types
 from pathlib import Path
 
-from spedas_mcp import __version__
-from spedas_mcp.server import ANALYSIS_TOOL_NAMES, create_server
+from spedas_agent_kit import __version__
+from spedas_agent_kit.server import ANALYSIS_TOOL_NAMES, create_server
 
 COMPAT_CDAWEB_PDS_TOOLS = {
     "browse_observatories",
@@ -32,7 +32,7 @@ def test_version():
 
 
 def test_server_has_expected_tools(monkeypatch):
-    monkeypatch.delenv("SPEDAS_MCP_COMPAT_TOOLS", raising=False)
+    monkeypatch.delenv("SPEDAS_AGENT_KIT_COMPAT_TOOLS", raising=False)
     server = create_server(include_analysis_tools=True)
     tools = asyncio.run(server.list_tools())
     names = {tool.name for tool in tools}
@@ -74,7 +74,7 @@ def test_server_has_expected_tools(monkeypatch):
 
 
 def test_server_advertises_cdaweb_pds_compat_tools_when_flag_set(monkeypatch):
-    monkeypatch.setenv("SPEDAS_MCP_COMPAT_TOOLS", "1")
+    monkeypatch.setenv("SPEDAS_AGENT_KIT_COMPAT_TOOLS", "1")
     server = create_server()
     tools = asyncio.run(server.list_tools())
     names = {tool.name for tool in tools}
@@ -82,7 +82,7 @@ def test_server_advertises_cdaweb_pds_compat_tools_when_flag_set(monkeypatch):
 
 
 def test_analysis_tools_are_gated_when_analysis_extra_is_absent(monkeypatch):
-    from spedas_mcp import server as server_mod
+    from spedas_agent_kit import server as server_mod
 
     monkeypatch.setattr(server_mod, "_analysis_dependencies_available", lambda: False)
     server = create_server()
@@ -92,11 +92,11 @@ def test_analysis_tools_are_gated_when_analysis_extra_is_absent(monkeypatch):
 
     data = json.loads(_call_tool(server, "spedas_overview"))
     assert data["capability_groups"]["analysis"]["tools"] == []
-    assert "install with spedas-mcp[analysis]" in data["capability_groups"]["analysis"]["status"]
+    assert "install with spedas-agent-kit[analysis]" in data["capability_groups"]["analysis"]["status"]
 
 
 def test_analysis_tools_register_when_analysis_extra_is_available(monkeypatch):
-    from spedas_mcp import server as server_mod
+    from spedas_agent_kit import server as server_mod
 
     monkeypatch.setattr(server_mod, "_analysis_dependencies_available", lambda: True)
     server = create_server()
@@ -108,7 +108,7 @@ def test_analysis_tools_register_when_analysis_extra_is_available(monkeypatch):
     assert data["capability_groups"]["analysis"]["tools"] == list(ANALYSIS_TOOL_NAMES)
 
 def test_optional_backend_availability_metadata_when_base_deps_missing(monkeypatch):
-    from spedas_mcp import server as server_mod
+    from spedas_agent_kit import server as server_mod
 
     monkeypatch.setattr(server_mod, "_analysis_dependencies_available", lambda: False)
     monkeypatch.setattr(server_mod, "_module_available", lambda name: False)
@@ -138,14 +138,14 @@ def test_optional_backend_availability_metadata_when_base_deps_missing(monkeypat
     by_type = {entry["source_type"]: entry for entry in sources["source_types"]}
     assert by_type["hapi"]["available"] is False
     assert by_type["hapi"]["requires_extra"] == "hapi"
-    assert by_type["hapi"]["install_hint"] == "pip install 'spedas-mcp[hapi]'"
+    assert by_type["hapi"]["install_hint"] == "pip install 'spedas-agent-kit[hapi]'"
     assert by_type["fdsn"]["available"] is False
     assert by_type["fdsn"]["requires_extra"] == "fdsn"
-    assert by_type["fdsn"]["install_hint"] == "pip install 'spedas-mcp[fdsn]'"
+    assert by_type["fdsn"]["install_hint"] == "pip install 'spedas-agent-kit[fdsn]'"
 
 
 def test_overview_is_compact_json(monkeypatch):
-    monkeypatch.delenv("SPEDAS_MCP_COMPAT_TOOLS", raising=False)
+    monkeypatch.delenv("SPEDAS_AGENT_KIT_COMPAT_TOOLS", raising=False)
     server = create_server()
     data = json.loads(_call_tool(server, "spedas_overview"))
     assert data["status"] == "success"
@@ -154,13 +154,13 @@ def test_overview_is_compact_json(monkeypatch):
     assert "geometry" in data["capability_groups"]
     assert "compatibility_low_level" in data["capability_groups"]
     compat = data["capability_groups"]["compatibility_low_level"]
-    assert compat["env_flag"] == "SPEDAS_MCP_COMPAT_TOOLS=1"
+    assert compat["env_flag"] == "SPEDAS_AGENT_KIT_COMPAT_TOOLS=1"
     assert set(compat["hidden_by_default"]) == COMPAT_CDAWEB_PDS_TOOLS
     assert compat["available_for_existing_clients"] == []
 
 
 def test_overview_advertises_geomagnetic_index_recipe(monkeypatch):
-    monkeypatch.delenv("SPEDAS_MCP_COMPAT_TOOLS", raising=False)
+    monkeypatch.delenv("SPEDAS_AGENT_KIT_COMPAT_TOOLS", raising=False)
     server = create_server()
     data = json.loads(_call_tool(server, "spedas_overview"))
     recipes = data["guided_recipes"]
@@ -174,7 +174,7 @@ def test_overview_advertises_geomagnetic_index_recipe(monkeypatch):
 
 
 def test_base_tools_expose_primary_surface_metadata(monkeypatch):
-    monkeypatch.delenv("SPEDAS_MCP_COMPAT_TOOLS", raising=False)
+    monkeypatch.delenv("SPEDAS_AGENT_KIT_COMPAT_TOOLS", raising=False)
     server = create_server(include_analysis_tools=False)
     tools = {tool.name: tool for tool in asyncio.run(server.list_tools())}
 
@@ -193,7 +193,7 @@ def test_base_tools_expose_primary_surface_metadata(monkeypatch):
 
 
 def test_tool_descriptions_and_meta_mark_primary_and_compatibility_surfaces(monkeypatch):
-    monkeypatch.setenv("SPEDAS_MCP_COMPAT_TOOLS", "1")
+    monkeypatch.setenv("SPEDAS_AGENT_KIT_COMPAT_TOOLS", "1")
     server = create_server()
     tools = {tool.name: tool for tool in asyncio.run(server.list_tools())}
     descriptions = {name: tool.description for name, tool in tools.items()}
@@ -213,7 +213,7 @@ def test_tool_descriptions_and_meta_mark_primary_and_compatibility_surfaces(monk
 
 
 def test_analysis_tools_expose_advanced_surface_metadata(monkeypatch):
-    monkeypatch.delenv("SPEDAS_MCP_COMPAT_TOOLS", raising=False)
+    monkeypatch.delenv("SPEDAS_AGENT_KIT_COMPAT_TOOLS", raising=False)
     server = create_server(include_analysis_tools=True)
     tools = {tool.name: tool for tool in asyncio.run(server.list_tools())}
 
@@ -385,7 +385,7 @@ def test_create_spedas_analysis_bundle_writes_plan_files(tmp_path: Path):
 
 
 def test_browse_observatories_uses_cdaweb_catalog(monkeypatch):
-    monkeypatch.setenv("SPEDAS_MCP_COMPAT_TOOLS", "1")
+    monkeypatch.setenv("SPEDAS_AGENT_KIT_COMPAT_TOOLS", "1")
     server = create_server()
     data = json.loads(_call_tool(server, "browse_observatories"))
     assert isinstance(data, list)
@@ -401,7 +401,7 @@ def test_unified_spice_browse_uses_in_tree_spice_registry():
 
 
 def test_browse_pds_missions_uses_in_tree_pds_catalog(monkeypatch):
-    monkeypatch.setenv("SPEDAS_MCP_COMPAT_TOOLS", "1")
+    monkeypatch.setenv("SPEDAS_AGENT_KIT_COMPAT_TOOLS", "1")
     server = create_server()
     data = json.loads(_call_tool(server, "browse_pds_missions"))
     assert isinstance(data, list)
@@ -409,7 +409,7 @@ def test_browse_pds_missions_uses_in_tree_pds_catalog(monkeypatch):
 
 
 def test_browse_pds_parameters_uses_bundled_metadata(monkeypatch):
-    monkeypatch.setenv("SPEDAS_MCP_COMPAT_TOOLS", "1")
+    monkeypatch.setenv("SPEDAS_AGENT_KIT_COMPAT_TOOLS", "1")
     server = create_server()
     data = json.loads(_call_tool(server, "browse_pds_parameters", {"dataset_id": "pds3:JNO-J-3-FGM-CAL-V1.0:DATA"}))
     assert data["status"] == "success"
@@ -482,7 +482,7 @@ def test_unified_pds_fetch_rejects_unsupported_limit_cleanly(tmp_path: Path):
 def test_user_facing_branding_hides_backend_package_names():
     import inspect
 
-    import spedas_mcp
+    import spedas_agent_kit
 
     server = create_server()
     data = json.loads(_call_tool(server, "browse_data_sources", {"source_type": "all"}))
@@ -490,13 +490,13 @@ def test_user_facing_branding_hides_backend_package_names():
     description_line = next(line for line in pyproject.splitlines() if line.startswith("description = "))
 
     assert "xhelio" not in data["note"].lower()
-    assert "xhelio" not in (spedas_mcp.__doc__ or "").lower()
-    assert "xhelio dependencies" not in inspect.getsource(spedas_mcp.main).lower()
+    assert "xhelio" not in (spedas_agent_kit.__doc__ or "").lower()
+    assert "xhelio dependencies" not in inspect.getsource(spedas_agent_kit.main).lower()
     assert "xhelio" not in description_line.lower()
 
 
 def test_load_data_source_cdaweb_translates_backend_guidance_to_facade(monkeypatch):
-    import spedas_mcp.backends.cdaweb.prompts as prompts
+    import spedas_agent_kit.backends.cdaweb.prompts as prompts
 
     def _fake_prompt(observatory_id: str) -> str:
         return (
@@ -523,7 +523,7 @@ def test_load_data_source_cdaweb_translates_backend_guidance_to_facade(monkeypat
 
 
 def test_load_data_source_pds_translates_backend_guidance_to_facade(monkeypatch):
-    import spedas_mcp.backends.pds.prompts as prompts
+    import spedas_agent_kit.backends.pds.prompts as prompts
 
     def _fake_prompt(mission_id: str) -> str:
         return (
@@ -551,7 +551,7 @@ def test_load_data_source_pds_translates_backend_guidance_to_facade(monkeypatch)
 
 def test_cdaweb_fetch_product_limit_and_quality_stats(monkeypatch, tmp_path: Path):
     import pandas as pd
-    import spedas_mcp.backends.cdaweb.fetch as fetch_mod
+    import spedas_agent_kit.backends.cdaweb.fetch as fetch_mod
 
     def _fake_fetch_data(dataset_id: str, parameters: list[str], start: str, stop: str):
         index = pd.date_range("2025-01-01T00:00:00", periods=5, freq="s")
@@ -604,7 +604,7 @@ def test_cdaweb_fetch_product_limit_and_quality_stats(monkeypatch, tmp_path: Pat
 
 
 def test_fetch_data_product_rejects_bad_times_before_cdaweb_backend(monkeypatch, tmp_path: Path):
-    import spedas_mcp.backends.cdaweb.fetch as fetch_mod
+    import spedas_agent_kit.backends.cdaweb.fetch as fetch_mod
 
     called = False
 
@@ -645,7 +645,7 @@ def test_fetch_data_product_rejects_bad_times_before_cdaweb_backend(monkeypatch,
 
 
 def test_fetch_data_product_shapes_cdaweb_no_data_codes(monkeypatch, tmp_path: Path):
-    import spedas_mcp.backends.cdaweb.fetch as fetch_mod
+    import spedas_agent_kit.backends.cdaweb.fetch as fetch_mod
 
     def _fake_fetch_data(dataset_id: str, parameters: list[str], start: str, stop: str):
         if dataset_id == "PSP_TOTALLY_FAKE_DATASET":
@@ -694,7 +694,7 @@ def test_fetch_data_product_shapes_cdaweb_no_data_codes(monkeypatch, tmp_path: P
 
 
 def test_fetch_data_product_rejects_bad_times_before_pds_backend(monkeypatch, tmp_path: Path):
-    import spedas_mcp.backends.pds.fetch as fetch_mod
+    import spedas_agent_kit.backends.pds.fetch as fetch_mod
 
     called = False
 
@@ -740,7 +740,7 @@ def test_unified_cache_manager_passes_cdaweb_kwargs(monkeypatch):
         refresh_metadata=lambda dataset_ids=None, observatory=None: {"status": "success"},
         refresh_time_ranges=lambda observatory=None: {"status": "success"},
     )
-    monkeypatch.setitem(sys.modules, "spedas_mcp.backends.cdaweb.cache", cache_mod)
+    monkeypatch.setitem(sys.modules, "spedas_agent_kit.backends.cdaweb.cache", cache_mod)
 
     server = create_server()
     data = json.loads(_call_tool(server, "manage_data_cache", {
@@ -772,7 +772,7 @@ def test_unified_cache_manager_passes_pds_and_spice_kwargs(monkeypatch):
         refresh_time_ranges=lambda mission=None: {"status": "success"},
         rebuild_catalog=lambda mission=None: {"status": "success"},
     )
-    monkeypatch.setitem(sys.modules, "spedas_mcp.backends.pds.cache", pds_cache_mod)
+    monkeypatch.setitem(sys.modules, "spedas_agent_kit.backends.pds.cache", pds_cache_mod)
 
     spice_mod = types.SimpleNamespace(
         check_remote_kernels=lambda mission=None: {"status": "success"},
@@ -784,7 +784,7 @@ def test_unified_cache_manager_passes_pds_and_spice_kwargs(monkeypatch):
             purge_cache=lambda: [],
         ),
     )
-    monkeypatch.setitem(sys.modules, "spedas_mcp.backends.spice.kernel_manager", spice_mod)
+    monkeypatch.setitem(sys.modules, "spedas_agent_kit.backends.spice.kernel_manager", spice_mod)
 
     server = create_server()
     pds_data = json.loads(_call_tool(server, "manage_data_cache", {
@@ -850,14 +850,14 @@ def test_plan_spedas_observation_impossible_date_does_not_crash(goal):
 
 
 def test_extract_time_range_drops_impossible_dates():
-    from spedas_mcp.workflows import _extract_time_range
+    from spedas_agent_kit.workflows import _extract_time_range
 
     for goal in ("2015-13-40", "2015-02-30", "9999-99-99", "2020-00-10"):
         assert _extract_time_range(goal) == (None, None)
 
 
 def test_extract_time_range_valid_date_still_parses():
-    from spedas_mcp.workflows import _extract_time_range
+    from spedas_agent_kit.workflows import _extract_time_range
 
     assert _extract_time_range("event on 2015-10-16") == (
         "2015-10-16T00:00:00Z",
@@ -871,7 +871,7 @@ def test_plan_spedas_observation_is_safe_tool_wrapped(monkeypatch):
     Force a non-ValueError out of the workflow impl to prove the ``@_safe_tool``
     decorator wraps ``plan_spedas_observation`` (not just the helper parse fix).
     """
-    import spedas_mcp.workflows as workflows_mod
+    import spedas_agent_kit.workflows as workflows_mod
 
     def _boom(*args, **kwargs):
         raise OSError("planner exploded at /Users/secret/path")
@@ -904,7 +904,7 @@ def test_plan_spedas_observation_schema_preserved():
     ["solo", "fly solo", "cluster", "a cluster of substorms", "wind speed", "solar-wind", "solar wind", "wind direction"],
 )
 def test_extract_target_no_false_positive(goal):
-    from spedas_mcp.workflows import _extract_target
+    from spedas_agent_kit.workflows import _extract_target
 
     assert _extract_target(goal) is None
 
@@ -922,7 +922,7 @@ def test_extract_target_no_false_positive(goal):
     ],
 )
 def test_extract_target_explicit_spacecraft_still_works(goal, expected):
-    from spedas_mcp.workflows import _extract_target
+    from spedas_agent_kit.workflows import _extract_target
 
     assert _extract_target(goal) == expected
 
@@ -946,7 +946,7 @@ def test_plan_spedas_observation_does_not_infer_target_for_generic_wind():
 # ---------------------------------------------------------------------------
 
 def test_extract_targets_returns_all_named_missions_in_order():
-    from spedas_mcp.workflows import _extract_targets
+    from spedas_agent_kit.workflows import _extract_targets
 
     goal = (
         "Compare ACE, Wind, and OMNI solar-wind magnetic field and plasma "
@@ -956,7 +956,7 @@ def test_extract_targets_returns_all_named_missions_in_order():
 
 
 def test_extract_targets_deduplicates_and_preserves_first_position():
-    from spedas_mcp.workflows import _extract_targets
+    from spedas_agent_kit.workflows import _extract_targets
 
     # Repeated mentions collapse; first appearance order wins.
     goal = "ACE vs Wind upstream; cross-check ACE against OMNI and Wind again"
@@ -964,7 +964,7 @@ def test_extract_targets_deduplicates_and_preserves_first_position():
 
 
 def test_extract_targets_single_mission_matches_extract_target():
-    from spedas_mcp.workflows import _extract_target, _extract_targets
+    from spedas_agent_kit.workflows import _extract_target, _extract_targets
 
     goal = "Parker Solar Probe perihelion magnetic field on 2021-04-29"
     assert _extract_targets(goal) == ["Parker Solar Probe"]
@@ -972,14 +972,14 @@ def test_extract_targets_single_mission_matches_extract_target():
 
 
 def test_extract_targets_no_false_positive_for_generic_wind():
-    from spedas_mcp.workflows import _extract_targets
+    from spedas_agent_kit.workflows import _extract_targets
 
     assert _extract_targets("characterise solar-wind speed near the bow shock") == []
 
 
 def test_extract_target_unchanged_returns_first_for_multimission():
     # Back-compat: the scalar helper still returns the first match only.
-    from spedas_mcp.workflows import _extract_target
+    from spedas_agent_kit.workflows import _extract_target
 
     goal = "Compare ACE, Wind, and OMNI upstream solar wind on 2015-10-16"
     assert _extract_target(goal) == "ACE"
@@ -1054,7 +1054,7 @@ def test_plan_spedas_observation_single_target_has_singleton_targets_list():
     ],
 )
 def test_extract_target_cluster_multispacecraft_phrasing(goal):
-    from spedas_mcp.workflows import _extract_target
+    from spedas_agent_kit.workflows import _extract_target
 
     assert _extract_target(goal) == "Cluster"
 
@@ -1069,7 +1069,7 @@ def test_extract_target_cluster_multispacecraft_phrasing(goal):
     ],
 )
 def test_extract_target_cluster_no_false_positive(goal):
-    from spedas_mcp.workflows import _extract_target
+    from spedas_agent_kit.workflows import _extract_target
 
     assert _extract_target(goal) is None
 
@@ -1358,7 +1358,7 @@ def test_load_data_source_cdaweb_datasets_round_trip_to_browse_parameters():
 # (issues #25, #27, #28)
 # ---------------------------------------------------------------------------
 
-from spedas_mcp.server import (  # noqa: E402
+from spedas_agent_kit.server import (  # noqa: E402
     _MAX_RESPONSE_BYTES,
     _error_response,
     _sanitize_message,
@@ -1519,7 +1519,7 @@ def test_wrapped_tool_responses_stay_within_size_limit():
 
 import inspect  # noqa: E402
 
-from spedas_mcp.server import _classify_exception  # noqa: E402
+from spedas_agent_kit.server import _classify_exception  # noqa: E402
 
 
 def _assert_uniform_error(payload: dict) -> None:
@@ -1579,8 +1579,8 @@ def test_no_legacy_status_error_returns_on_data_layer_and_analysis_surfaces():
     three analysis tools for the legacy duplicate-``error``-key shape so the
     uniform contract (issue #27) cannot silently regress.
     """
-    from spedas_mcp import server as server_mod
-    from spedas_mcp.analysis import coords as coords_mod
+    from spedas_agent_kit import server as server_mod
+    from spedas_agent_kit.analysis import coords as coords_mod
 
     # The legacy shape always pairs a status="error" dict with a bare "error":
     # key. The uniform envelope uses code=/message= instead. Assert the literal
@@ -1657,7 +1657,7 @@ def test_render_tplot_missing_file_is_structured(tmp_path: Path):
 
 def test_render_tplot_wrapped_in_safe_tool(monkeypatch):
     server = create_server(include_analysis_tools=True)
-    import spedas_mcp.analysis.plotting as plotting_mod
+    import spedas_agent_kit.analysis.plotting as plotting_mod
 
     def _boom(*args, **kwargs):
         raise OSError("disk write failed at /Users/secret/path")
@@ -1676,7 +1676,7 @@ def test_analysis_safe_tool_converts_unexpected_exception(monkeypatch):
     server = create_server(include_analysis_tools=True)
     # Force an unexpected (non-ValueError) exception out of the impl to prove the
     # @_safe_tool decorator — not just the impl's own try/except — wraps it.
-    import spedas_mcp.analysis.coords as coords_mod
+    import spedas_agent_kit.analysis.coords as coords_mod
 
     def _boom(*args, **kwargs):
         raise OSError("disk write failed at /Users/secret/path")
@@ -1750,13 +1750,13 @@ def test_error_response_sanitizes_string_extras():
 # These tests must NEVER trigger a real kernel download. They:
 #   * isolate the kernel cache to an empty tmp dir via XHELIO_SPICE_KERNEL_DIR
 #     and reset the KernelManager singleton, so "missing kernels" is deterministic;
-#   * monkeypatch spedas_mcp.backends.spice get_state/get_trajectory/transform_vector to raise
+#   * monkeypatch spedas_agent_kit.backends.spice get_state/get_trajectory/transform_vector to raise
 #     if ever called, proving the preflight short-circuits before the backend.
 # ---------------------------------------------------------------------------
 
 import pytest  # noqa: E402
 
-from spedas_mcp.server import (  # noqa: E402
+from spedas_agent_kit.server import (  # noqa: E402
     _spice_missing_kernels,
     _spice_resolve_target,
     _spice_supported_frames,
@@ -1771,7 +1771,7 @@ def empty_kernel_cache(tmp_path, monkeypatch):
     kernels are "missing", so the #29 confirmation gate fires deterministically
     regardless of the developer's real ~/.xhelio_spice cache.
     """
-    import spedas_mcp.backends.spice.kernel_manager as km_mod
+    import spedas_agent_kit.backends.spice.kernel_manager as km_mod
 
     cache_dir = tmp_path / "kernels"
     cache_dir.mkdir()
@@ -1789,7 +1789,7 @@ def no_backend_downloads(monkeypatch):
     The preflight is supposed to return before these run; if it does not, the
     test fails with a clear marker instead of attempting a network download.
     """
-    import spedas_mcp.backends.spice as spice_backend
+    import spedas_agent_kit.backends.spice as spice_backend
 
     def _boom(*args, **kwargs):  # pragma: no cover - only hit on regression
         raise AssertionError("backend geometry call reached — preflight did not gate it")
@@ -1986,8 +1986,8 @@ def test_get_ephemeris_cached_target_proceeds_to_backend(empty_kernel_cache, mon
     # When all required kernels are present on disk, the gate must NOT fire and
     # the real geometry path runs. We fake-cache the generic + PSP files and stub
     # get_state so no download or SPICE call is needed.
-    import spedas_mcp.backends.spice as spice_backend
-    from spedas_mcp.backends.spice.missions import GENERIC_KERNELS, MISSION_KERNELS
+    import spedas_agent_kit.backends.spice as spice_backend
+    from spedas_agent_kit.backends.spice.missions import GENERIC_KERNELS, MISSION_KERNELS
 
     for fname in list(GENERIC_KERNELS) + list(MISSION_KERNELS["PSP"]):
         (empty_kernel_cache / fname).write_bytes(b"x")  # non-zero size = "cached"
@@ -2011,7 +2011,7 @@ def test_get_ephemeris_cached_target_proceeds_to_backend(empty_kernel_cache, mon
 def test_get_ephemeris_allow_kernel_download_bypasses_gate(empty_kernel_cache, monkeypatch):
     # allow_kernel_download=True is the explicit opt-in: the gate is skipped even
     # though the cache is empty, and the (stubbed) backend runs.
-    import spedas_mcp.backends.spice as spice_backend
+    import spedas_agent_kit.backends.spice as spice_backend
 
     def _fake_get_state(target, observer, time, frame):
         return {"x_km": 9.0, "target": target, "observer": observer,
@@ -2032,7 +2032,7 @@ def test_get_ephemeris_allow_kernel_download_bypasses_gate(empty_kernel_cache, m
 
 def test_transform_coordinates_output_vector_is_json_array(empty_kernel_cache, monkeypatch):
     import numpy as np
-    import spedas_mcp.backends.spice as spice_backend
+    import spedas_agent_kit.backends.spice as spice_backend
 
     def _fake_transform_vector(vector, time, from_frame, to_frame, spacecraft=None):
         return np.array([1.0, 2.5, 3.0])
@@ -2283,7 +2283,7 @@ def test_browse_fdsn_datasets_bad_trange_validates_before_backend():
     ],
 )
 def test_extract_target_numbered_spacecraft(goal, expected):
-    from spedas_mcp.workflows import _extract_target
+    from spedas_agent_kit.workflows import _extract_target
 
     assert _extract_target(goal) == expected
 
@@ -2295,13 +2295,13 @@ def test_extract_target_numbered_spacecraft(goal, expected):
     ["surface waves", "spacelike", "acexyz", "windy day", "soloist", "clustered"],
 )
 def test_extract_target_numbered_suffix_no_false_positive(goal):
-    from spedas_mcp.workflows import _extract_target
+    from spedas_agent_kit.workflows import _extract_target
 
     assert _extract_target(goal) is None
 
 
 def test_extract_targets_preserves_mixed_mission_ordering():
-    from spedas_mcp.workflows import _extract_targets
+    from spedas_agent_kit.workflows import _extract_targets
 
     assert _extract_targets(
         "Compare ACE then the Cluster multi-spacecraft constellation and finally Wind"
@@ -2389,7 +2389,7 @@ def test_van_allen_probes_observation_plan_leads_with_cdaweb():
 #   T013 - Ulysses high-latitude solar wind -> CDAWeb (not PDS)
 #   T014 - Parker Solar Probe switchback -> CDAWeb (FIELDS/SWEAP)
 #   T015 - MAVEN Mars bow-shock planetary guard (boundary words not near-Earth)
-# Each fix touches src/spedas_mcp/workflows.py (`_score_sources` /
+# Each fix touches src/spedas_agent_kit/workflows.py (`_score_sources` /
 # `_QUALIFIED_MISSION_KEYWORDS`); these tests guard the combined behavior and the
 # cross-topic regression guards that must all hold simultaneously.
 # ===========================================================================
@@ -2418,7 +2418,7 @@ def test_geotail_plasma_sheet_routes_to_cdaweb_only(goal):
 
 
 def test_score_sources_no_ppi_substring_false_positive():
-    from spedas_mcp.workflows import _score_sources
+    from spedas_agent_kit.workflows import _score_sources
 
     # "flapping"/"mapping" contain "ppi"; "return" contains "urn"; "marshalling"
     # contains "mars" -- none of these should add to the PDS score.
@@ -2430,7 +2430,7 @@ def test_score_sources_no_ppi_substring_false_positive():
 
 
 def test_score_sources_real_pds_tokens_still_match():
-    from spedas_mcp.workflows import _score_sources
+    from spedas_agent_kit.workflows import _score_sources
 
     # Genuine whole-word PDS vocabulary must still score after the word-boundary
     # hardening (T011 must not break real matches).
@@ -2454,7 +2454,7 @@ def test_score_sources_real_pds_tokens_still_match():
     ],
 )
 def test_extract_target_solo_instrument_and_science_phrasing(goal):
-    from spedas_mcp.workflows import _extract_target, _extract_targets
+    from spedas_agent_kit.workflows import _extract_target, _extract_targets
 
     assert _extract_target(goal) == "Solar Orbiter"
     assert "Solar Orbiter" in _extract_targets(goal)
@@ -2462,7 +2462,7 @@ def test_extract_target_solo_instrument_and_science_phrasing(goal):
 
 @pytest.mark.parametrize("goal", ["solo", "fly solo", "soloist performance", "a solo run"])
 def test_solo_instrument_alias_preserves_false_positive_guard(goal):
-    from spedas_mcp.workflows import _extract_target
+    from spedas_agent_kit.workflows import _extract_target
 
     assert _extract_target(goal) is None
 
@@ -2593,7 +2593,7 @@ def test_maven_mars_bow_shock_routes_to_pds_not_cdaweb():
 
 
 def test_maven_mars_bow_shock_does_not_boost_cdaweb_via_boundary_nudge():
-    from spedas_mcp.workflows import _score_sources
+    from spedas_agent_kit.workflows import _score_sources
 
     plain = _score_sources("maven mars induced magnetosphere study")
     boundary = _score_sources("maven mars bow shock magnetopause induced magnetosphere study")
@@ -2676,7 +2676,7 @@ def test_cassini_plan_observation_leads_with_pds_no_cdaweb():
 def test_planetary_magnetosphere_keywords_do_not_boost_cdaweb():
     """The generic magnetosphere/magnetic keywords must not raise CDAWeb for a
     planetary (Saturn) goal, mirroring the T015 boundary-nudge guard."""
-    from spedas_mcp.workflows import _score_sources
+    from spedas_agent_kit.workflows import _score_sources
 
     physics = _score_sources("cassini saturn magnetosphere magnetic field survey")
     # The generic magnetosphere/field keyword matches are subtracted, so CDAWeb
@@ -2737,7 +2737,7 @@ def test_voyager_outer_heliosphere_bfield_routes_to_cdaweb():
 def test_voyager_heliopause_goal_with_no_measurement_word_still_includes_cdaweb():
     """The starkest baseline failure: a heliopause goal with no generic
     measurement word scored CDAWeb=0 and routed to PDS alone."""
-    from spedas_mcp.workflows import _score_sources
+    from spedas_agent_kit.workflows import _score_sources
 
     scores = _score_sources("voyager outer heliosphere termination shock heliopause")
     assert scores["cdaweb"] >= scores["pds"]
@@ -2775,7 +2775,7 @@ def test_voyager_planetary_flyby_still_routes_to_pds():
 def test_heliospheric_nudge_needs_heliospheric_terms():
     """The nudge is specific: a bare planetary goal with no heliospheric term
     must not gain a CDAWeb boost from this rule (no generic false positives)."""
-    from spedas_mcp.workflows import _score_sources
+    from spedas_agent_kit.workflows import _score_sources
 
     plain = _score_sources("cassini saturn magnetosphere magnetic field")
     assert plain["pds"] > plain["cdaweb"]
@@ -2784,7 +2784,7 @@ def test_heliospheric_nudge_needs_heliospheric_terms():
 def test_heliopause_term_does_not_boost_planetary_flyby_context():
     """If both a heliospheric term and a specific planet/flyby body are named,
     the planetary-flyby body context wins so PDS still leads (guarded nudge)."""
-    from spedas_mcp.workflows import _score_sources
+    from spedas_agent_kit.workflows import _score_sources
 
     # "heliopause" mentioned in passing while the goal is a Jupiter flyby.
     scores = _score_sources("voyager jupiter flyby on the way to the heliopause")
@@ -2886,7 +2886,7 @@ def test_solar_wind_planetary_guard_does_not_regress_near_earth_goals():
 
 
 def test_solar_wind_nudge_suppressed_in_planetary_context():
-    from spedas_mcp.workflows import _score_sources
+    from spedas_agent_kit.workflows import _score_sources
 
     # The +2 "solar wind" near-Earth nudge must fire for a non-planetary goal but
     # be suppressed when a planetary body/mission is named (mirrors the T015
@@ -2902,7 +2902,7 @@ def test_solar_wind_nudge_suppressed_in_planetary_context():
 
 
 def test_swap_pepssi_are_pds_vocabulary():
-    from spedas_mcp.workflows import _score_sources
+    from spedas_agent_kit.workflows import _score_sources
 
     # The New Horizons instrument acronyms must score for PDS (they name PDS PPI
     # products), and must not fire inside unrelated words via substring matching.
@@ -2963,7 +2963,7 @@ def test_stereo_sep_solar_wind_routes_to_cdaweb(goal):
     ],
 )
 def test_stereo_alias_target_inference(goal, expected):
-    from spedas_mcp.workflows import _extract_target
+    from spedas_agent_kit.workflows import _extract_target
 
     assert _extract_target(goal) == expected
 
@@ -2986,7 +2986,7 @@ def test_stereo_observation_plan_leads_with_cdaweb():
 def test_sept_keyword_does_not_match_september():
     """The unambiguous SEPT acronym is word-boundary-anchored, so the month name
     'September' (trailing letters) must not add to the CDAWeb score (T020)."""
-    from spedas_mcp.workflows import _score_sources
+    from spedas_agent_kit.workflows import _score_sources
 
     plain = _score_sources("monthly data review")
     month = _score_sources("September monthly data review")
@@ -3090,7 +3090,7 @@ def test_summarize_pydantic_validation_is_url_free():
     URL-free, input-free one-liner."""
     from pydantic import BaseModel, ValidationError
 
-    from spedas_mcp.server import _summarize_pydantic_validation
+    from spedas_agent_kit.server import _summarize_pydantic_validation
 
     class _M(BaseModel):
         output_dir: str

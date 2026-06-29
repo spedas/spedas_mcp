@@ -1,4 +1,4 @@
-# /spedas-mcp:pds
+# /spedas-agent-kit:pds
 
 Use the `spedas` MCP server for a NASA PDS Planetary Plasma Interactions workflow via the **unified data layer**.
 

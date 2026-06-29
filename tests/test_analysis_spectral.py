@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from spedas_mcp.analysis import spectral
+from spedas_agent_kit.analysis import spectral
 
 
 # --------------------------------------------------------------------------
@@ -184,7 +184,7 @@ def test_dpwrspc_missing_pyspedas(channel_csv, tmp_path, monkeypatch):
     )
     assert out["status"] == "error"
     assert out["code"] == "dependency_missing"
-    assert "spedas-mcp[analysis]" in out["message"]
+    assert "spedas-agent-kit[analysis]" in out["message"]
 
 
 def test_wavelet_missing_pywt(channel_csv, tmp_path, monkeypatch):
@@ -583,7 +583,7 @@ def _have_backends() -> bool:
     return True
 
 
-@pytest.mark.skipif(not _have_backends(), reason="requires spedas-mcp[analysis] (pyspedas + pywt)")
+@pytest.mark.skipif(not _have_backends(), reason="requires spedas-agent-kit[analysis] (pyspedas + pywt)")
 def test_real_dpwrspc_roundtrip(tmp_path):
     n = 2048
     t = np.arange(n, dtype="float64")
@@ -600,7 +600,7 @@ def test_real_dpwrspc_roundtrip(tmp_path):
     assert npz["power"].ndim == 2
 
 
-@pytest.mark.skipif(not _have_backends(), reason="requires spedas-mcp[analysis] (pyspedas + pywt)")
+@pytest.mark.skipif(not _have_backends(), reason="requires spedas-agent-kit[analysis] (pyspedas + pywt)")
 def test_real_wavelet_roundtrip(tmp_path):
     n = 1024
     t = np.arange(n, dtype="float64")

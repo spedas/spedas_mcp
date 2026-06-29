@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Smoke-test the unified SPEDAS MCP stdio server by listing tools only.
+"""Smoke-test the unified SPEDAS Agent Kit stdio server by listing tools only.
 
 This is intentionally a no-fetch/no-download smoke: it starts the server with
 isolated CDAWeb and SPICE cache directories (unless the environment already sets
@@ -115,25 +115,25 @@ def main() -> int:
     parser.add_argument("--json", action="store_true", help="Print machine-readable JSON output")
     parser.add_argument(
         "--module",
-        default="spedas_mcp",
-        help="Python module to run as the MCP server (default: spedas_mcp)",
+        default="spedas_agent_kit",
+        help="Python module to run as the MCP server (default: spedas_agent_kit)",
     )
     parser.add_argument(
         "--compat-tools",
         action="store_true",
-        help="Set SPEDAS_MCP_COMPAT_TOOLS=1 and expect legacy CDAWeb/PDS tools",
+        help="Set SPEDAS_AGENT_KIT_COMPAT_TOOLS=1 and expect legacy CDAWeb/PDS tools",
     )
     args = parser.parse_args()
 
-    with tempfile.TemporaryDirectory(prefix="spedas-mcp-smoke-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="spedas-agent-kit-smoke-") as tmp:
         env = os.environ.copy()
         env.setdefault("XHELIO_CDAWEB_CACHE_DIR", str(Path(tmp) / "cdaweb"))
         env.setdefault("XHELIO_SPICE_KERNEL_DIR", str(Path(tmp) / "spice"))
         env.setdefault("PDSMCP_CACHE_DIR", str(Path(tmp) / "pds"))
         if args.compat_tools:
-            env["SPEDAS_MCP_COMPAT_TOOLS"] = "1"
+            env["SPEDAS_AGENT_KIT_COMPAT_TOOLS"] = "1"
         else:
-            env.pop("SPEDAS_MCP_COMPAT_TOOLS", None)
+            env.pop("SPEDAS_AGENT_KIT_COMPAT_TOOLS", None)
         tools = anyio.run(_list_tools, args.module, env)
 
     expected_tools = list(BASE_EXPECTED_TOOLS)
@@ -153,7 +153,7 @@ def main() -> int:
         "expected_tools": expected_tools,
         "analysis_extra_detected": analysis_available,
         "compat_tools_enabled": args.compat_tools,
-        "compat_env_flag": "SPEDAS_MCP_COMPAT_TOOLS=1",
+        "compat_env_flag": "SPEDAS_AGENT_KIT_COMPAT_TOOLS=1",
         "missing": missing,
         "unexpected": unexpected,
         "note": "list_tools only; no CDAWeb/PDS data fetch or SPICE kernel download requested",
@@ -162,7 +162,7 @@ def main() -> int:
     if args.json:
         print(json.dumps(payload, indent=2))
     else:
-        print(f"SPEDAS MCP list-tools smoke: {'OK' if ok else 'FAIL'}")
+        print(f"SPEDAS Agent Kit list-tools smoke: {'OK' if ok else 'FAIL'}")
         print("tools:", ", ".join(tools))
         if missing:
             print("missing:", ", ".join(missing), file=sys.stderr)

@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "spedas-mcp"
+name = "spedas-agent-kit"
 version = "0.1.0"
 description = "Unified SPEDAS-oriented MCP server for CDAWeb, PDS PPI, and SPICE workflows"
 readme = "README.md"
@@ -33,22 +33,23 @@ dependencies = [
     "numpy>=1.24",
     "pandas>=2.0",
     "requests>=2.28",
+    "mcp>=1.26.0,<2",
 
 ]
 
 [project.optional-dependencies]
-mcp = ["mcp>=1.26.0"]
+mcp = ["mcp>=1.26.0,<2"]
 # Optional pyspedas-backed analysis layer (coordinate transforms, spectral/field/
 # particle analysis, and PNG rendering). Not part of the base install; analysis
 # tools import their backends lazily and return a clear "install
-# spedas-mcp[analysis]" error when this extra is absent. matplotlib and
+# spedas-agent-kit[analysis]" error when this extra is absent. matplotlib and
 # PyWavelets are declared explicitly because render_tplot (#20) and
 # wavelet_transform (#15) import them directly rather than relying on transitive
 # pyspedas dependencies.
 analysis = ["pyspedas>=2.0", "matplotlib>=3.5", "PyWavelets>=1.4"]
 # Optional HAPI data-source backend (issue #21). browse_hapi_catalog /
 # fetch_hapi_data reach any HAPI-compliant server through hapiclient; it is
-# imported lazily and the tools return a clear "install spedas-mcp[hapi]" error
+# imported lazily and the tools return a clear "install spedas-agent-kit[hapi]" error
 # when absent. hapiclient is lightweight and kept separate from the heavier
 # analysis/pyspedas extra so HAPI access does not require all of pyspedas.
 hapi = ["hapiclient>=0.2.5"]
@@ -56,23 +57,23 @@ hapi = ["hapiclient>=0.2.5"]
 # fetch_fdsn_data wrap pyspedas.mth5, which needs mth5 + obspy. These are heavy,
 # ground-magnetometer-specific dependencies, so they are an opt-in extra rather
 # than part of the base or analysis installs; the tools import them lazily and
-# return a clear "install spedas-mcp[fdsn]" error when absent.
+# return a clear "install spedas-agent-kit[fdsn]" error when absent.
 fdsn = ["pyspedas>=2.0", "mth5>=0.4.0", "obspy>=1.4"]
 dev = [
     "pytest>=7.0",
-    "mcp>=1.26.0",
+    "mcp>=1.26.0,<2",
 ]
 
 [project.urls]
-Homepage = "https://github.com/spedas/spedas_mcp"
-Repository = "https://github.com/spedas/spedas_mcp"
-Issues = "https://github.com/spedas/spedas_mcp/issues"
+Homepage = "https://github.com/spedas/spedas_agent_kit"
+Repository = "https://github.com/spedas/spedas_agent_kit"
+Issues = "https://github.com/spedas/spedas_agent_kit/issues"
 
 [project.scripts]
-spedas-mcp = "spedas_mcp:main"
+spedas-agent-kit = "spedas_agent_kit:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/spedas_mcp"]
+packages = ["src/spedas_agent_kit"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

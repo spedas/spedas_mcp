@@ -1,12 +1,12 @@
 {
   "name": "spedas-codex",
   "version": "0.1.0",
-  "description": "Codex plugin for SPEDAS heliophysics workflows, backed by the spedas-mcp MCP server for CDAWeb, PDS PPI, and SPICE tools.",
+  "description": "Codex plugin for SPEDAS heliophysics workflows, backed by the spedas-agent-kit MCP server for CDAWeb, PDS PPI, and SPICE tools.",
   "author": {
     "name": "Zesen Huang"
   },
-  "homepage": "https://github.com/spedas/spedas_mcp",
-  "repository": "https://github.com/spedas/spedas_mcp",
+  "homepage": "https://github.com/spedas/spedas_agent_kit",
+  "repository": "https://github.com/spedas/spedas_agent_kit",
   "license": "MIT",
   "keywords": [
     "spedas",
@@ -21,7 +21,7 @@
   "interface": {
     "displayName": "SPEDAS Codex",
     "shortDescription": "Codex workflows for SPEDAS CDAWeb, PDS PPI, and SPICE work.",
-    "longDescription": "Use the spedas-mcp MCP server from Codex to discover heliophysics datasets, inspect parameters, fetch small file-backed time series, and compute SPICE ephemeris/coordinate products.",
+    "longDescription": "Use the spedas-agent-kit MCP server from Codex to discover heliophysics datasets, inspect parameters, fetch small file-backed time series, and compute SPICE ephemeris/coordinate products.",
     "developerName": "Zesen Huang",
     "category": "Science",
     "capabilities": [
@@ -30,6 +30,6 @@
       "Data access",
       "Scientific workflow"
     ],
-    "websiteURL": "https://github.com/spedas/spedas_mcp"
+    "websiteURL": "https://github.com/spedas/spedas_agent_kit"
   }
 }

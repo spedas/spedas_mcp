@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.spedas/spedas-mcp",
-  "title": "SPEDAS MCP",
+  "name": "io.github.spedas/spedas-agent-kit",
+  "title": "SPEDAS Agent Kit",
   "description": "Unified SPEDAS-oriented MCP server combining vendored CDAWeb, PDS PPI, and SPICE capabilities",
   "repository": {
-    "url": "https://github.com/spedas/spedas_mcp",
+    "url": "https://github.com/spedas/spedas_agent_kit",
     "source": "github"
   },
   "version": "0.1.0",
   "packages": [
     {
       "registryType": "pypi",
-      "identifier": "spedas-mcp",
+      "identifier": "spedas-agent-kit",
       "version": "0.1.0",
       "transport": {
         "type": "stdio"
@@ -33,7 +33,7 @@
           "required": false
         },
         {
-          "name": "SPEDAS_MCP_COMPAT_TOOLS",
+          "name": "SPEDAS_AGENT_KIT_COMPAT_TOOLS",
           "description": "Set to 1 to advertise legacy CDAWeb/PDS compatibility browse/load/parameter/fetch tools; unset by default for the compact unified tool surface.",
           "required": false
         }

@@ -26,7 +26,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from spedas_mcp.analysis import plotting
+from spedas_agent_kit.analysis import plotting
 
 
 # --------------------------------------------------------------------------
@@ -331,7 +331,7 @@ def test_missing_matplotlib(tmp_path, spectrogram_npz, monkeypatch):
     )
     assert out["status"] == "error"
     assert out["code"] == "dependency_missing"
-    assert "spedas-mcp[analysis]" in out["message"]
+    assert "spedas-agent-kit[analysis]" in out["message"]
 
 
 # --------------------------------------------------------------------------
@@ -650,7 +650,7 @@ def _have_matplotlib() -> bool:
         return False
 
 
-@pytest.mark.skipif(not _have_matplotlib(), reason="requires spedas-mcp[analysis] (matplotlib)")
+@pytest.mark.skipif(not _have_matplotlib(), reason="requires spedas-agent-kit[analysis] (matplotlib)")
 def test_real_render_roundtrip(tmp_path):
     # spectrogram + line, rendered by the real matplotlib Agg backend.
     n_time, n_freq = 32, 12

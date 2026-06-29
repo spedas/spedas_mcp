@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from spedas_mcp.analysis import coords
+from spedas_agent_kit.analysis import coords
 
 
 # --------------------------------------------------------------------------
@@ -282,7 +282,7 @@ def test_missing_analysis_extra_returns_clean_error(vector_csv, tmp_path, monkey
     )
     assert out["status"] == "error"
     assert out["code"] == "dependency_missing"
-    assert "spedas-mcp[analysis]" in out["message"]
+    assert "spedas-agent-kit[analysis]" in out["message"]
 
 
 # --------------------------------------------------------------------------
@@ -601,7 +601,7 @@ def _have_pyspedas() -> bool:
         return False
 
 
-@pytest.mark.skipif(not _have_pyspedas(), reason="requires spedas-mcp[analysis] (pyspedas)")
+@pytest.mark.skipif(not _have_pyspedas(), reason="requires spedas-agent-kit[analysis] (pyspedas)")
 def test_real_minvar_eigenvalue_ordering(tmp_path):
     """Real backend: a planar discontinuity yields descending eigenvalues and a
     well-defined minimum-variance normal."""

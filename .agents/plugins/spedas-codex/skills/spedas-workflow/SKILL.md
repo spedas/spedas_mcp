@@ -1,9 +1,9 @@
 ---
 name: spedas-workflow
-description: Use the spedas-mcp MCP server through the unified SPEDAS data layer and science workflow layer.
+description: Use the spedas-agent-kit MCP server through the unified SPEDAS data layer and science workflow layer.
 ---
 
-# SPEDAS MCP workflow
+# SPEDAS Agent Kit workflow
 
 The plugin exposes one MCP server named `spedas`. Start with `spedas_overview()` when uncertain.
 

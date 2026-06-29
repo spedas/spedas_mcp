@@ -22,7 +22,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from spedas_mcp.datasources import fdsn
+from spedas_agent_kit.datasources import fdsn
 
 
 # --------------------------------------------------------------------------
@@ -142,7 +142,7 @@ def test_browse_missing_dependency(monkeypatch):
     out = fdsn.browse_fdsn_datasets(["2015-06-22", "2015-06-23"])
     assert out["code"] == "missing_dependency"
     assert out["extra"] == "fdsn"
-    assert "spedas-mcp[fdsn]" in out["hint"]
+    assert "spedas-agent-kit[fdsn]" in out["hint"]
     assert "Original import failed with ImportError" in out["message"]
     assert "import error:" not in out["message"]
 

@@ -1,4 +1,4 @@
-# /spedas-mcp:spice
+# /spedas-agent-kit:spice
 
 Use the `spedas` MCP server for SPICE ephemeris, distance, or coordinate-frame work.
 

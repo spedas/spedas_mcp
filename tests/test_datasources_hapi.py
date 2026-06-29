@@ -21,7 +21,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from spedas_mcp.datasources import hapi
+from spedas_agent_kit.datasources import hapi
 
 
 # --------------------------------------------------------------------------
@@ -132,7 +132,7 @@ def test_browse_missing_dependency(monkeypatch):
     assert out["status"] == "error"
     assert out["code"] == "missing_dependency"
     assert out["extra"] == "hapi"
-    assert "spedas-mcp[hapi]" in out["hint"]
+    assert "spedas-agent-kit[hapi]" in out["hint"]
 
 
 # --------------------------------------------------------------------------

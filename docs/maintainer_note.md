@@ -1,12 +1,12 @@
-# Maintainer note: SPEDAS MCP data layer
+# Maintainer note: SPEDAS Agent Kit data layer
 
-`spedas_mcp` is the SPEDAS-facing MCP endpoint for agentic heliophysics workflows. Its outward-facing model is **one SPEDAS data layer**, not a pile of backend-specific MCPs.
+`spedas_agent_kit` is the SPEDAS-facing MCP endpoint for agentic heliophysics workflows. Its outward-facing model is **one SPEDAS data layer**, not a pile of backend-specific MCPs.
 
 It does **not** replace SPEDAS, PySPEDAS, CDAWeb, PDS, or SPICE. It gives MCP-capable coding/research agents one interface for planning and executing SPEDAS-related work with clearer data-source boundaries and provenance expectations.
 
 ## Core framing
 
-Jason's latest direction is that the public interface should not preserve names like `xhelio_cdaweb` or `xhelio_pds` as the main user model. Those packages can remain internal backends. The SPEDAS MCP should expose:
+Jason's latest direction is that the public interface should not preserve names like `xhelio_cdaweb` or `xhelio_pds` as the main user model. Those packages can remain internal backends. The SPEDAS Agent Kit should expose:
 
 - one `data` layer;
 - data source categories under that layer;
@@ -48,11 +48,11 @@ SPICE is a special case: it is part of the SPEDAS data context, but most useful 
 
 Good fits for backend packages:
 
-- CDAWeb catalog/fetch semantics → vendored `spedas_mcp.backends.cdaweb` backend (formerly `xhelio-cdaweb`).
-- PDS archive resolution and dataset metadata → vendored `spedas_mcp.backends.pds` backend (formerly `xhelio-pds`).
-- SPICE kernel registry and geometry computation → vendored `spedas_mcp.backends.spice` backend (formerly `xhelio-spice`).
+- CDAWeb catalog/fetch semantics → vendored `spedas_agent_kit.backends.cdaweb` backend (formerly `xhelio-cdaweb`).
+- PDS archive resolution and dataset metadata → vendored `spedas_agent_kit.backends.pds` backend (formerly `xhelio-pds`).
+- SPICE kernel registry and geometry computation → vendored `spedas_agent_kit.backends.spice` backend (formerly `xhelio-spice`).
 
-Good fits for `spedas_mcp`:
+Good fits for `spedas_agent_kit`:
 
 - unified tool names and schemas;
 - data-source taxonomy;

@@ -1,11 +1,11 @@
 # Public API strategy
 
-SPEDAS MCP's public surface is intentionally layered so agents can start from a
+SPEDAS Agent Kit's public surface is intentionally layered so agents can start from a
 science question instead of choosing backend packages first.
 
 ## Preferred mental model
 
-1. **SPEDAS MCP** is the single user-facing server.
+1. **SPEDAS Agent Kit** is the single user-facing server.
 2. **Science workflow layer** helps scope the request, choose source families,
    and preserve provenance before bulk fetches.
 3. **Data layer** provides one set of browse/load/parameter/fetch/cache verbs.
@@ -26,7 +26,7 @@ spedas_overview
 
 The server keeps source-specific CDAWeb/PDS functions available internally for
 the unified data layer and can advertise the legacy CDAWeb/PDS names for existing
-clients via `SPEDAS_MCP_COMPAT_TOOLS=1`. These are **supported compatibility
+clients via `SPEDAS_AGENT_KIT_COMPAT_TOOLS=1`. These are **supported compatibility
 paths**, not the preferred starting point for new workflows.
 
 | Compatibility surface | Preferred new entry point |

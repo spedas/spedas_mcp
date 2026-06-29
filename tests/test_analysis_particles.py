@@ -27,7 +27,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from spedas_mcp.analysis import particles
+from spedas_agent_kit.analysis import particles
 
 
 # --------------------------------------------------------------------------
@@ -287,7 +287,7 @@ def test_moments_missing_pyspedas(dist_npz, tmp_path, monkeypatch):
     out = particles.compute_particle_moments(str(dist_npz), str(tmp_path / "mom"))
     assert out["status"] == "error"
     assert out["code"] == "dependency_missing"
-    assert "spedas-mcp[analysis]" in out["message"]
+    assert "spedas-agent-kit[analysis]" in out["message"]
 
 
 def test_moments_backend_function_absent(dist_npz, tmp_path, monkeypatch):

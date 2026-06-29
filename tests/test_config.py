@@ -1,7 +1,7 @@
 """Tests for server runtime cache configuration."""
 from pathlib import Path
 
-from spedas_mcp.server import create_server
+from spedas_agent_kit.server import create_server
 
 
 def test_create_server_does_not_require_runtime_downloads():

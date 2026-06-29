@@ -1,6 +1,6 @@
 # MMS magnetopause interval workflow (agent black-box MCP example)
 
-This example records a short, realistic MMS near-Earth boundary-layer workflow that an autonomous agent can run through the SPEDAS MCP stdio server. It is intentionally small, but it is not a no-op: the data fetches below exercised CDAWeb-backed MMS FGM and FPI products for a two-minute interval around the published 2015-10-16 MMS magnetopause/reconnection event.
+This example records a short, realistic MMS near-Earth boundary-layer workflow that an autonomous agent can run through the SPEDAS Agent Kit stdio server. It is intentionally small, but it is not a no-op: the data fetches below exercised CDAWeb-backed MMS FGM and FPI products for a two-minute interval around the published 2015-10-16 MMS magnetopause/reconnection event.
 
 ## Science question
 
@@ -19,7 +19,7 @@ This window is short enough for an agent smoke test, while still being scientifi
 Run from the repository root with MCP dependencies installed:
 
 ```bash
-PYTHONPATH=src python -m spedas_mcp
+PYTHONPATH=src python -m spedas_agent_kit
 ```
 
 The validation used the Python MCP stdio client (`mcp.ClientSession`, `mcp.client.stdio.stdio_client`) and called these tools in order.

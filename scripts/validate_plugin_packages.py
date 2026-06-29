@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-COMPATIBILITY = ROOT / "plugins" / "spedas-mcp-compatibility.json"
+COMPATIBILITY = ROOT / "plugins" / "spedas-agent-kit-compatibility.json"
 
 
 def load_json(path: Path) -> dict:
@@ -26,15 +26,15 @@ def _expected_mcp_args() -> list[str]:
     tools = manifest.get("base_tools", [])
     if manifest.get("base_tool_count") != len(tools):
         raise SystemExit(
-            "plugins/spedas-mcp-compatibility.json: base_tool_count does not "
+            "plugins/spedas-agent-kit-compatibility.json: base_tool_count does not "
             "match base_tools length"
         )
     return [
         "--with",
         manifest["mcp_requirement"],
         "--from",
-        manifest["spedas_mcp_source"],
-        "spedas-mcp",
+        manifest["spedas_agent_kit_source"],
+        "spedas-agent-kit",
     ]
 
 
@@ -44,7 +44,7 @@ def _validate_mcp_server(mcp_path: Path, server: dict) -> None:
     if server.get("args") != expected:
         raise SystemExit(
             f"{mcp_path.relative_to(ROOT)}: spedas MCP args must match "
-            f"plugins/spedas-mcp-compatibility.json; got {server.get('args')!r}"
+            f"plugins/spedas-agent-kit-compatibility.json; got {server.get('args')!r}"
         )
     env = server.get("env", {})
     for name in ["XHELIO_CDAWEB_CACHE_DIR", "PDSMCP_CACHE_DIR", "XHELIO_SPICE_KERNEL_DIR"]:

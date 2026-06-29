@@ -1,6 +1,6 @@
 {
   "name": "spedas-claude",
-  "description": "Claude Code plugin for SPEDAS heliophysics workflows, backed by the spedas-mcp MCP server for CDAWeb, PDS PPI, and SPICE tools.",
+  "description": "Claude Code plugin for SPEDAS heliophysics workflows, backed by the spedas-agent-kit MCP server for CDAWeb, PDS PPI, and SPICE tools.",
   "version": "0.1.0",
   "author": {
     "name": "Zesen Huang"

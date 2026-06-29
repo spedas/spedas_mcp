@@ -1,4 +1,4 @@
-# /spedas-mcp:analyze
+# /spedas-agent-kit:analyze
 
 Run a guided heliophysics **analysis** with the `spedas` MCP server by routing the user's intent to the right **skill** (each skill is an end-to-end procedure composing the unified data + analysis tools, with the scientific reliability checks baked in).
 
@@ -19,6 +19,6 @@ First call `spedas_overview()` if you need to check whether optional `[analysis]
 | Times two spacecraft/bodies are close (conjunction) | `spice-conjunction-finder` |
 | Standard overview/summary plot + geomagnetic indices for a mission+date | `overview-geomagnetic-indices` |
 
-All analysis skills are artifact-first; several plotting/transform/model steps require the optional `spedas-mcp[analysis]` extra, while data/geometry-only steps can still run without it: they bundle the run (`create_spedas_analysis_bundle`), write data/plots to disk, and return paths + compact stats. If no skill matches, fall back to `plan_spedas_observation` then the unified data layer.
+All analysis skills are artifact-first; several plotting/transform/model steps require the optional `spedas-agent-kit[analysis]` extra, while data/geometry-only steps can still run without it: they bundle the run (`create_spedas_analysis_bundle`), write data/plots to disk, and return paths + compact stats. If no skill matches, fall back to `plan_spedas_observation` then the unified data layer.
 
 User goal: $ARGUMENTS

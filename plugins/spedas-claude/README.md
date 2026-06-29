@@ -1,6 +1,6 @@
 # Claude Code plugin: spedas-claude
 
-This directory is the `spedas-claude` Claude Code plugin package for the in-repo `spedas-mcp` server.
+This directory is the `spedas-claude` Claude Code plugin package for the in-repo `spedas-agent-kit` server. The canonical skills are packaged under `src/spedas_agent_kit/resources/skills/`; this fixture is a runtime packaging example.
 
 It contributes:
 
@@ -12,18 +12,18 @@ It contributes:
 
 ## Local development note
 
-The packaged MCP definition still launches the shared `spedas-mcp` server:
+The packaged MCP definition still launches the shared `spedas-agent-kit` server:
 
 ```bash
-uvx --with 'mcp>=1.26.0' --from git+https://github.com/spedas/spedas_mcp.git spedas-mcp
+uvx --with 'mcp>=1.26.0' --from git+https://github.com/spedas/spedas_agent_kit.git spedas-agent-kit
 ```
 
-For local hacking before release, install this repo into the environment you use with Claude Code or edit `.mcp.json` to run `uv run --project /path/to/spedas-mcp --extra mcp spedas-mcp`.
+For local hacking before release, install this repo into the environment you use with Claude Code or edit `.mcp.json` to run `uv run --project /path/to/spedas-agent-kit --extra mcp spedas-agent-kit`.
 
 ## Compatibility pin
 
-This in-repo fixture follows `../spedas-mcp-compatibility.json`: it pins
-`spedas_mcp` to commit `170a8b0c0d058c729d4769f9848754cfb8ec9f8e`, bounds the MCP
+This in-repo fixture follows `../spedas-agent-kit-compatibility.json`: it pins
+`spedas_agent_kit` from the `main` ref, bounds the MCP
 protocol package as `mcp>=1.26.0,<2`, and expects the base `list_tools` surface to
 advertise 17 tools. Refresh the manifest, this `.mcp.json`, and the Codex fixture
 together after any server tool-surface change.

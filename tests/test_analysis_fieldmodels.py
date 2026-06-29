@@ -26,7 +26,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from spedas_mcp.analysis import fieldmodels
+from spedas_agent_kit.analysis import fieldmodels
 
 
 # --------------------------------------------------------------------------
@@ -362,7 +362,7 @@ def test_eval_missing_pyspedas(positions_npz, tmp_path, monkeypatch):
     )
     assert out["status"] == "error"
     assert out["code"] == "dependency_missing"
-    assert "spedas-mcp[analysis]" in out["message"]
+    assert "spedas-agent-kit[analysis]" in out["message"]
 
 
 def test_lshell_missing_pyspedas(positions_npz, tmp_path, monkeypatch):
@@ -766,7 +766,7 @@ def _real_geopack_available() -> bool:
     if importlib.util.find_spec("pyspedas") is None:
         return False
     try:
-        from spedas_mcp.analysis.fieldmodels import _resolve_geopack
+        from spedas_agent_kit.analysis.fieldmodels import _resolve_geopack
 
         _resolve_geopack(["tigrf", "ttrace2endpoint"])
         return True

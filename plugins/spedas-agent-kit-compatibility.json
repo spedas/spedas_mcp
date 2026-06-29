@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "spedas_agent_kit_ref": "main",
+  "spedas_agent_kit_source": "git+https://github.com/spedas/spedas_agent_kit.git@main",
+  "mcp_requirement": "mcp>=1.26.0,<2",
+  "smoke_command": "uv run --extra mcp python scripts/smoke_mcp_list_tools.py --json",
+  "base_tool_count": 17,
+  "base_tools": [
+    "spedas_overview",
+    "search_spedas_data_sources",
+    "plan_spedas_observation",
+    "compare_cdaweb_pds_spice",
+    "create_spedas_analysis_bundle",
+    "get_ephemeris",
+    "compute_distance",
+    "transform_coordinates",
+    "browse_data_sources",
+    "load_data_source",
+    "browse_data_parameters",
+    "fetch_data_product",
+    "manage_data_cache",
+    "browse_hapi_catalog",
+    "fetch_hapi_data",
+    "browse_fdsn_datasets",
+    "fetch_fdsn_data"
+  ],
+  "notes": [
+    "Base list_tools excludes optional analysis tools unless spedas-agent-kit[analysis] dependencies are installed.",
+    "Legacy CDAWeb/PDS compatibility tools are hidden unless SPEDAS_AGENT_KIT_COMPAT_TOOLS=1 is set.",
+    "The in-repo Claude/Codex plugin fixtures pin the server source to this commit; standalone wrapper repos must update their own pins and expected counts separately."
+  ]
+}

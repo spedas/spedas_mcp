@@ -1,4 +1,4 @@
-# Example: agent workflow with SPEDAS MCP data layer
+# Example: agent workflow with SPEDAS Agent Kit data layer
 
 This example is intentionally tool-oriented rather than tied to one agent runtime. Claude Code, Codex, OpenCode, LingTai, or another MCP-capable client can follow the same sequence.
 

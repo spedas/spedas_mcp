@@ -1,6 +1,6 @@
 # Parker Solar Probe perihelion solar-wind workflow
 
-This example is a metadata-first SPEDAS MCP recipe for a Parker Solar Probe (PSP)
+This example is a metadata-first SPEDAS Agent Kit recipe for a Parker Solar Probe (PSP)
 perihelion interval. It combines CDAWeb PSP measurements with SPICE geometry
 planning while avoiding bulk downloads until dataset, parameter, and cadence
 choices are explicit.

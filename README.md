@@ -1,6 +1,6 @@
-# SPEDAS MCP
+# SPEDAS Agent Kit
 
-`spedas_mcp` is the SPEDAS organization MCP server for agentic heliophysics workflows. It presents one SPEDAS-facing **data layer** and organizes capabilities by data source category instead of by the internal backend packages used to implement them.
+`spedas_agent_kit` is the SPEDAS organization MCP server for agentic heliophysics workflows. It presents one SPEDAS-facing **data layer** and organizes capabilities by data source category instead of by the internal backend packages used to implement them.
 
 The current design follows Jason's A+B direction:
 
@@ -11,12 +11,13 @@ Implementation backend packages should stay visible to maintainers, but they sho
 
 ## Repository
 
-- Official repo: <https://github.com/spedas/spedas_mcp>
-- Python package name: `spedas-mcp`
-- Python module / CLI module: `spedas_mcp`
+- Official repo: <https://github.com/spedas/spedas_agent_kit>
+- Python package name: `spedas-agent-kit`
+- Python module / CLI module: `spedas_agent_kit`
+- Canonical shared skills: `src/spedas_agent_kit/resources/skills/` (packaged with the kit; wrappers should stay thin)
 - Default MCP tool count: 17 (compatibility and analysis tools are conditionally registered); advertised tools carry MCP `ToolAnnotations` plus `meta.surface` (`primary`, `advanced`, or `compat`) so launchers can filter by surface and side-effect hints.
 
-## Practical guide: run a SPEDAS MCP study
+## Practical guide: run a SPEDAS Agent Kit study
 
 Use this section as the README-level operating guide for researchers and agents.
 The detailed capability map below is the reference; this guide is the shortest
@@ -27,7 +28,7 @@ safe path from a science question to reproducible artifacts.
 1. **Restate the science question and constraints.** Capture the target, mission,
    instrument or observable, time range, and whether the request is heliophysics,
    planetary, geometry-only, or local-analysis oriented.
-2. **Ask SPEDAS MCP to choose the data-source family before fetching data.** Start
+2. **Ask SPEDAS Agent Kit to choose the data-source family before fetching data.** Start
    with `spedas_overview()`, then call `search_spedas_data_sources(...)` or
    `plan_spedas_observation(...)`. Do not jump directly to a low-level archive
    tool just because a mission name matched a backend.
@@ -55,7 +56,7 @@ safe path from a science question to reproducible artifacts.
 | Ephemeris, distance, trajectory, frame transforms, observer-target geometry | `source_type="spice"` | Browse missions/frames with `browse_data_sources` / `load_data_source`; compute with `get_ephemeris`, `compute_distance`, `transform_coordinates` | SPICE is geometry, not measurement data. Pair it with CDAWeb/PDS when you also need fields or particles. |
 | Any HAPI-compliant server outside the bundled categories | `source_type="hapi"` | `browse_hapi_catalog`, `fetch_hapi_data` | Requires the optional `hapi` extra and an explicit HAPI server URL. |
 | Ground magnetotelluric / FDSN station magnetic data | `source_type="fdsn"` | `browse_fdsn_datasets`, `fetch_fdsn_data` | Requires the optional `fdsn` extra and a time range. |
-| Local file analysis after data already exists | Analysis tools | Coordinate transforms, FAC/minvar, spectra, field/L-shell, particle moments/spectra, `render_tplot` | Inputs are files; install `spedas-mcp[analysis]` for the optional backend. |
+| Local file analysis after data already exists | Analysis tools | Coordinate transforms, FAC/minvar, spectra, field/L-shell, particle moments/spectra, `render_tplot` | Inputs are files; install `spedas-agent-kit[analysis]` for the optional backend. |
 
 ### Minimal MCP call sequence
 
@@ -211,11 +212,11 @@ SPICE kernel cache status/load/clean/check/purge actions are exposed through `ma
 
 Phase-1 coordinate transforms and Phase-2 time-frequency analysis over fetched
 artifacts. These tools require the optional `analysis` extra
-(`pip install 'spedas-mcp[analysis]'`, which installs `pyspedas>=2.0` and
+(`pip install 'spedas-agent-kit[analysis]'`, which installs `pyspedas>=2.0` and
 `matplotlib`, and `PyWavelets`). `pyspedas`/`matplotlib`/`PyWavelets` are **not** part of the base install, and
 the analysis tools are registered with MCP only when their optional
 dependencies are importable. In a base install they are absent from `list_tools`;
-install `spedas-mcp[analysis]` before asking an MCP client to call them. They are
+install `spedas-agent-kit[analysis]` before asking an MCP client to call them. They are
 file-in / file-out: inputs are paths to fetched CSV/JSON
 products, bulk outputs are written to disk, and only paths plus compact summaries
 are returned (never raw arrays).
@@ -292,7 +293,7 @@ and particle tools above all write bulk arrays to disk and return only compact s
 and `render_tplot` turns those artifacts into a picture. It uses `matplotlib` (headless
 `Agg` backend, no GUI/display) and never fetches remote data.
 
-- `render_tplot(input_files, output_file, panel_types=None, trange=None, xsize=12, ysize=None, dpi=200, ylog=None, zlog=None, x_component=None, y_component=None)` — render a multi-panel tplot-style **PNG** from local artifacts, one stacked panel per `input_file` (top to bottom). Spectrogram `.npz` matrices (`power`/`spectrogram` keys with `time` + `freq`/`axis` axes, as written by `dynamic_power_spectrum`/`wavelet_transform`/`compute_particle_spectra`) render as `pcolormesh` panels with a colorbar; CSV/JSON tables and 1-D/2-D `.npz`/`.npy` value arrays render as line panels. Explicit `panel_types="scatter"`/`"xy"`/`"hodogram"` renders one 2-D numeric matrix per input artifact as a parametric x-y panel; `x_component` and `y_component` are zero-based column selectors (scalars broadcast to all inputs, or lists matching `input_files`; defaults are 0 vs 1). `panel_types` overrides per-file auto-detection — each of `auto` (default), `line`/`timeseries`, `spectrogram`, or `scatter`/`xy`; pass `None` (all auto), a single token (broadcast), or a list matching `input_files`. `trange` is an optional 2-element window (ISO-8601 strings or Unix seconds) that filters samples when a time axis is present (otherwise sample index is used). `ylog`/`zlog` (per-panel booleans or a scalar broadcast) set a log y-axis / log color scale and are rejected with `invalid_argument` when invalid for the panel/data; scatter panels are linear-only. `xsize`/`ysize` are inches and `dpi` is bounded to avoid absurd canvases. The PNG is written to `output_file` (parent dirs created); the return is `{status, output_file, n_panels, trange: {requested, actual}, size_px, dpi, panels: [{index, type, file, shape, value_range, time_range, axis_range?/n_series?/components?, x_range?, y_range?, ylog?/zlog?}], warnings?}` only — **image bytes are never inlined and no bulk arrays are returned**. Requires `spedas-mcp[analysis]` (matplotlib). Scatter coloring by time is not inlined in the first implementation; temporal ordering is shown by a thin connected path plus points.
+- `render_tplot(input_files, output_file, panel_types=None, trange=None, xsize=12, ysize=None, dpi=200, ylog=None, zlog=None, x_component=None, y_component=None)` — render a multi-panel tplot-style **PNG** from local artifacts, one stacked panel per `input_file` (top to bottom). Spectrogram `.npz` matrices (`power`/`spectrogram` keys with `time` + `freq`/`axis` axes, as written by `dynamic_power_spectrum`/`wavelet_transform`/`compute_particle_spectra`) render as `pcolormesh` panels with a colorbar; CSV/JSON tables and 1-D/2-D `.npz`/`.npy` value arrays render as line panels. Explicit `panel_types="scatter"`/`"xy"`/`"hodogram"` renders one 2-D numeric matrix per input artifact as a parametric x-y panel; `x_component` and `y_component` are zero-based column selectors (scalars broadcast to all inputs, or lists matching `input_files`; defaults are 0 vs 1). `panel_types` overrides per-file auto-detection — each of `auto` (default), `line`/`timeseries`, `spectrogram`, or `scatter`/`xy`; pass `None` (all auto), a single token (broadcast), or a list matching `input_files`. `trange` is an optional 2-element window (ISO-8601 strings or Unix seconds) that filters samples when a time axis is present (otherwise sample index is used). `ylog`/`zlog` (per-panel booleans or a scalar broadcast) set a log y-axis / log color scale and are rejected with `invalid_argument` when invalid for the panel/data; scatter panels are linear-only. `xsize`/`ysize` are inches and `dpi` is bounded to avoid absurd canvases. The PNG is written to `output_file` (parent dirs created); the return is `{status, output_file, n_panels, trange: {requested, actual}, size_px, dpi, panels: [{index, type, file, shape, value_range, time_range, axis_range?/n_series?/components?, x_range?, y_range?, ylog?/zlog?}], warnings?}` only — **image bytes are never inlined and no bulk arrays are returned**. Requires `spedas-agent-kit[analysis]` (matplotlib). Scatter coloring by time is not inlined in the first implementation; temporal ordering is shown by a thin connected path plus points.
 
 ### 5. External data-source tools (optional `hapi` / `fdsn` backends)
 
@@ -304,7 +305,7 @@ install, so the base install and MCP `list_tools` keep working. Bulk data is
 written to `output_dir`; tools return only the file path plus compact metadata
 (artifact-first).
 
-HAPI (issue #21, optional `spedas-mcp[hapi]`, installs `hapiclient`):
+HAPI (issue #21, optional `spedas-agent-kit[hapi]`, installs `hapiclient`):
 
 - `browse_hapi_catalog(server_url, query=None)` — list datasets advertised by any
   HAPI-compliant server (e.g. `https://cdaweb.gsfc.nasa.gov/hapi`,
@@ -313,7 +314,7 @@ HAPI (issue #21, optional `spedas-mcp[hapi]`, installs `hapiclient`):
 - `fetch_hapi_data(server_url, dataset_id, parameters, start, stop, output_dir, format="csv")` —
   fetch a dataset slice over `[start, stop)` (stop exclusive per the HAPI spec) and write a flat CSV/JSON table (time column plus one column per scalar parameter and `name[i]` columns for vector/spectral parameters). Returns `{status, file_path, format, server, dataset_id, time_range, rows, parameters_meta}` with per-parameter `units`/`description`/`type`/`size`/`spectral` only.
 
-FDSN/MTH5 (issue #22, optional `spedas-mcp[fdsn]`, installs `pyspedas` + `mth5` + `obspy`):
+FDSN/MTH5 (issue #22, optional `spedas-agent-kit[fdsn]`, installs `pyspedas` + `mth5` + `obspy`):
 
 - `browse_fdsn_datasets(trange, network=None, station=None, usa_only=False)` — list
   EarthScope FDSN magnetotelluric stations that expose three same-band magnetic channels (e.g. `LFE/LFN/LFZ`) within `trange=['YYYY-MM-DD','YYYY-MM-DD']`. Returns `{status, trange, station_count, stations: [{network, station, time_range, channels}...]}`.
@@ -347,10 +348,10 @@ The former dedicated cache tools (`manage_cdaweb_cache`, `manage_pds_cache`, `ma
 ## Quick start for local development
 
 ```bash
-git clone https://github.com/spedas/spedas_mcp.git
-cd spedas_mcp
+git clone https://github.com/spedas/spedas_agent_kit.git
+cd spedas_agent_kit
 uv sync --extra dev --extra mcp
-uv run --extra mcp python -m spedas_mcp
+uv run --extra mcp python -m spedas_agent_kit
 ```
 
 Run tests and smoke checks:
@@ -383,8 +384,8 @@ Example stdio configuration:
   "mcpServers": {
     "spedas": {
       "command": "uv",
-      "args": ["run", "--extra", "mcp", "python", "-m", "spedas_mcp"],
-      "cwd": "/path/to/spedas_mcp"
+      "args": ["run", "--extra", "mcp", "python", "-m", "spedas_agent_kit"],
+      "cwd": "/path/to/spedas_agent_kit"
     }
   }
 }
@@ -396,13 +397,13 @@ For plugin-style distribution, the canonical standalone wrappers now live in sep
 - <https://github.com/spedas/spedas_codex> — Codex plugin wrapper.
 
 The in-repo `plugins/spedas-claude/` and `.agents/plugins/spedas-codex/` directories remain lightweight development examples and compatibility fixtures; runtime-specific packaging should evolve in the standalone repos while this repository owns the MCP server itself.
-Their shared compatibility contract is recorded in `plugins/spedas-mcp-compatibility.json` and validated by `scripts/validate_plugin_packages.py`: current base `list_tools` count is 17 at `170a8b0c0d058c729d4769f9848754cfb8ec9f8e`; optional analysis and legacy compatibility tools are intentionally outside that base count.
+Their shared compatibility contract is recorded in `plugins/spedas-agent-kit-compatibility.json` and validated by `scripts/validate_plugin_packages.py`: current base `list_tools` count is 17 for the Agent Kit `main` ref used by these development fixtures; optional analysis and legacy compatibility tools are intentionally outside that base count.
 
 ## Maintainer-facing positioning
 
-`spedas_mcp` should be thick at the SPEDAS data/workflow layer and thin at the backend implementation layer:
+`spedas_agent_kit` should be thick at the SPEDAS data/workflow layer and thin at the backend implementation layer:
 
-- Users see one SPEDAS MCP and one `data` layer.
+- Users see one SPEDAS Agent Kit and one `data` layer.
 - Data source categories are scientific concepts: CDAWeb, PDS, SPICE/geometry.
 - Backend packages remain maintainable internal implementation surfaces.
 - Higher-level tools should encode reusable SPEDAS scientific method: source selection, planning, provenance, and artifact discipline.
