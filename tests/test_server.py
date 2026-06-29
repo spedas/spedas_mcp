@@ -469,6 +469,7 @@ def test_load_data_source_cdaweb_translates_backend_guidance_to_facade(monkeypat
     data = json.loads(_call_tool(server, "load_data_source", {
         "source_type": "cdaweb",
         "source_id": "ace",
+        "mode": "full",
     }))
     payload = data["payload"]
     assert data["status"] == "success"
@@ -1222,25 +1223,67 @@ def test_load_data_source_cdaweb_dataset_response_is_size_safe():
         "source_type": "cdaweb",
         "source_id": "mms",
     })
-    # Keep comfortably within the MCP stdio response-size safety expectation
-    # (<64KB) even for a large observatory such as MMS (~268 datasets).
-    assert len(raw.encode("utf-8")) < 64 * 1024
+    # Issue #113: default MMS catalog response should be compact enough for
+    # agents (<12 KB) while preserving concrete candidates to proceed.
+    assert len(raw.encode("utf-8")) < 12 * 1024
     loaded = json.loads(raw)
-    # A large observatory truncates the structured list but still reports the
-    # true total so discovery is not silently incomplete.
-    if loaded["datasets_truncated"]:
-        assert loaded["dataset_count"] > len(loaded["datasets"])
-        assert "datasets_note" in loaded
+    assert loaded["mode"] == "compact"
+    assert isinstance(loaded["payload"], dict)
+    assert loaded["payload"]["catalog_mode"] == "compact"
+    assert loaded["dataset_count"] > len(loaded["datasets"])
+    assert loaded["filtered_dataset_count"] == loaded["dataset_count"]
+    assert loaded["datasets_truncated"] is True
+    assert loaded["datasets_limit"] == 10
+    assert loaded["datasets_offset"] == 0
+    assert loaded["datasets_next_offset"] == 10
+    assert "dataset_candidates_by_instrument" in loaded
+    assert loaded["datasets"], "expected MMS default page to include candidate datasets"
+    first = loaded["datasets"][0]
+    assert "browse_data_parameters(source_type='cdaweb'" in first["next_tools"][0]
 
-    enum_payload = {
-        "dataset_count": loaded["dataset_count"],
-        "datasets": loaded["datasets"],
-        "datasets_truncated": loaded["datasets_truncated"],
-        "instruments": loaded["instruments"],
-    }
-    if "datasets_note" in loaded:
-        enum_payload["datasets_note"] = loaded["datasets_note"]
-    assert len(json.dumps(enum_payload, indent=2).encode("utf-8")) <= 16_000
+
+def test_load_data_source_cdaweb_paginates_and_filters_mms_catalog():
+    server = create_server()
+    first = json.loads(_call_tool(server, "load_data_source", {
+        "source_type": "cdaweb",
+        "source_id": "mms",
+        "limit": 5,
+        "instrument": "fgm",
+        "dataset_query": "srvy",
+    }))
+    assert first["status"] == "success"
+    assert first["datasets_limit"] == 5
+    assert first["datasets_offset"] == 0
+    assert len(first["datasets"]) <= 5
+    assert first["filtered_dataset_count"] >= len(first["datasets"])
+    assert first["datasets"], "expected FGM survey filter to return concrete candidates"
+    assert all("fgm" in entry["dataset_id"].casefold() for entry in first["datasets"])
+    assert all("srvy" in entry["dataset_id"].casefold() for entry in first["datasets"])
+    if first["datasets_next_offset"] is not None:
+        second = json.loads(_call_tool(server, "load_data_source", {
+            "source_type": "cdaweb",
+            "source_id": "mms",
+            "limit": 5,
+            "offset": first["datasets_next_offset"],
+            "instrument": "fgm",
+            "dataset_query": "srvy",
+        }))
+        assert second["datasets_offset"] == first["datasets_next_offset"]
+        assert {d["dataset_id"] for d in first["datasets"]}.isdisjoint({d["dataset_id"] for d in second["datasets"]})
+
+
+def test_load_data_source_cdaweb_full_mode_preserves_legacy_prompt_payload():
+    server = create_server()
+    loaded = json.loads(_call_tool(server, "load_data_source", {
+        "source_type": "cdaweb",
+        "source_id": "mms",
+        "mode": "full",
+        "limit": 5,
+    }))
+    assert loaded["status"] == "success"
+    assert loaded["mode"] == "full"
+    assert isinstance(loaded["payload"], str)
+    assert len(loaded["datasets"]) == 5
 
 
 def test_load_data_source_cdaweb_small_observatory_not_truncated():

@@ -154,7 +154,7 @@ When reporting results, include at least:
 Start here when the user asks for data, datasets, parameters, products, archives, or cache status.
 
 - `browse_data_sources(source_type="all", query=None)` — browse SPEDAS data source categories, or drill into one category.
-- `load_data_source(source_type, source_id)` — load source context, e.g. a CDAWeb observatory, PDS mission, or SPICE mission/frame context.
+- `load_data_source(source_type, source_id, mode="compact", limit=None, offset=0, instrument=None, dataset_query=None, include_full_prompt=False)` — load source context. CDAWeb observatories default to a compact structured dataset page (dataset IDs, instruments, coverage, next calls); use `limit`/`offset` and filters for large catalogs, or `mode="full"` / `include_full_prompt=True` for the legacy full prompt.
 - `browse_data_parameters(source_type, dataset_id, dataset_ids=None)` — browse parameters/metadata for CDAWeb or PDS datasets; for SPICE, returns geometry/frame context.
 - `fetch_data_product(source_type, dataset_id, parameters, start=None, stop=None, output_dir=None, format="csv", limit=None)` — unified measurement/archive data fetch for CDAWeb/PDS. SPICE requests are routed to geometry tools instead. `limit` is currently a CDAWeb-oriented safety control; PDS fetches should be narrowed by time/parameters.
 - `manage_data_cache(source_type="all", action="status", cache_dir=None, mission=None, ...)` — unified cache status/maintenance for the source categories. It passes source-specific cache options through one advertised tool: CDAWeb (`category`, `observatory`, `dataset_ids`, `older_than_days`, `dry_run`, `detail`), PDS (`category`, `mission`, `dataset_ids`, `older_than_days`, `dry_run`, `detail`, `force`), and SPICE (`mission`, `filenames`). Per-call `cache_dir` is reported as guidance only; backend cache roots are configured by the MCP server environment.
@@ -170,6 +170,20 @@ Supported `source_type` values:
 | `fdsn` | FDSN/MTH5 ground magnetotelluric (MT) magnetic stations from EarthScope | `browse_data_sources(source_type="fdsn")` → `browse_fdsn_datasets` → `fetch_fdsn_data` |
 
 `hapi` and `fdsn` are server/time-range addressed (HAPI needs a `server_url`, FDSN needs a `trange`), so the unified `load_data_source`/`browse_data_parameters`/`fetch_data_product` tools recognize these `source_type` values but route you to the dedicated `browse_hapi_catalog`/`fetch_hapi_data` and `browse_fdsn_datasets`/`fetch_fdsn_data` tools (see section 6). Both require optional extras and degrade to a clear `missing_dependency` error when those are not installed.
+
+Compact CDAWeb catalog discovery examples:
+
+```python
+# Default MMS page is compact (<12 KB) and includes exact next calls per dataset.
+load_data_source(source_type="cdaweb", source_id="mms")
+
+# Page through or narrow large observatories.
+load_data_source(source_type="cdaweb", source_id="mms", limit=10, offset=10)
+load_data_source(source_type="cdaweb", source_id="mms", instrument="fgm", dataset_query="srvy")
+
+# Opt into the legacy human prompt only when needed.
+load_data_source(source_type="cdaweb", source_id="mms", mode="full")
+```
 
 ### 2. Science workflow tools
 

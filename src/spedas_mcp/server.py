@@ -2354,26 +2354,66 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             valid_ids_sample=sorted(valid_ids)[:8],
         )
 
-    # Byte budget for the structured dataset catalog added to a load_data_source
-    # response. The observatory prompt payload itself is ~38KB for large
-    # observatories (e.g. MMS); capping the structured list keeps the total
-    # response within the MCP stdio response-size safety expectation (<64KB).
-    _DATASET_ENUM_BYTE_BUDGET = 16000
+    # Default page size for compact CDAWeb dataset catalogs. Keep the complete
+    # load_data_source(cdaweb, source_id="mms") response under ~12 KB by default
+    # while still returning enough concrete dataset IDs for agents to proceed.
+    _DATASET_ENUM_DEFAULT_LIMIT = 10
+    _DATASET_ENUM_MAX_LIMIT = 100
 
-    def _enumerate_cdaweb_datasets(source_id: str) -> dict[str, Any] | None:
-        """Return a compact, JSON-serializable dataset catalog for a CDAWeb observatory.
+    def _bounded_int(value: int | None, *, default: int, minimum: int, maximum: int) -> int:
+        try:
+            parsed = int(value) if value is not None else default
+        except (TypeError, ValueError):
+            parsed = default
+        return max(minimum, min(maximum, parsed))
+
+    def _dataset_matches_query(entry: dict[str, Any], query: str | None) -> bool:
+        if not query:
+            return True
+        haystack = json.dumps(entry, default=str).casefold()
+        raw_terms = re.findall(r"[A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*", query.casefold()) or [query.casefold()]
+        for term in raw_terms:
+            variants = [term, term.replace("-", "_"), term.replace("_", "-")]
+            variants.extend(_CDAWEB_PRODUCT_ALIASES.get(term, ()))
+            if not any(_text_matches(haystack, variant) for variant in variants if variant):
+                return False
+        return True
+
+    def _dataset_matches_instrument(entry: dict[str, Any], instrument: str | None) -> bool:
+        if not instrument:
+            return True
+        # CDAWeb observatory JSON sometimes groups product-specific datasets under
+        # a broader instrument bucket (for example MMS FGM datasets live under the
+        # ``mag`` / Magnetic Fields bucket). Match the user's raw instrument terms
+        # against both the bucket metadata and dataset id, but do not expand broad
+        # aliases such as fgm -> magnetic field here or FGM would accidentally
+        # include SCM/DSP magnetic-field products from the same bucket.
+        haystack = " ".join(
+            str(entry.get(key) or "")
+            for key in ("dataset_id", "instrument", "instrument_name")
+        ).casefold()
+        raw_terms = re.findall(r"[A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*", instrument.casefold()) or [instrument.casefold()]
+        for term in raw_terms:
+            variants = [term, term.replace("-", "_"), term.replace("_", "-")]
+            if not any(_text_matches(haystack, variant) for variant in variants if variant):
+                return False
+        return True
+
+    def _enumerate_cdaweb_datasets(
+        source_id: str,
+        *,
+        limit: int | None = None,
+        offset: int = 0,
+        instrument: str | None = None,
+        dataset_query: str | None = None,
+    ) -> dict[str, Any] | None:
+        """Return a paginated, JSON-serializable CDAWeb dataset catalog.
 
         Reads the observatory JSON directly so agents can move from
         ``load_data_source`` to ``browse_data_parameters`` without guessing
-        dataset IDs (issue #31). Entries carry the dataset id, instrument key,
-        and coverage dates — enough to plan a fetch — while human-readable
-        descriptions remain in the prompt payload. The list is bounded by the
-        actual serialized size of the structured enumeration payload and reports
-        ``datasets_truncated``/``dataset_count`` so very large observatories stay
-        size-safe without hiding the true total.
-
-        Returns ``None`` if enumeration is unavailable so the existing
-        observatory prompt payload is preserved unchanged.
+        dataset IDs. The default compact page intentionally omits the large human
+        prompt and returns pagination/filter metadata so large observatories such
+        as MMS stay small and agent-friendly (issue #113).
         """
         try:
             from spedas_mcp.backends.cdaweb.catalog import load_observatory_json
@@ -2383,60 +2423,78 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         try:
             observatory = load_observatory_json(stem)
         except Exception:
-            # Unknown/invalid observatory stem: leave discovery to the prompt payload.
             return None
 
         instruments = observatory.get("instruments", {})
         if not isinstance(instruments, dict):
             return None
 
+        instrument_names = sorted(instruments.keys())
+        instrument_filter = instrument.strip().casefold() if isinstance(instrument, str) and instrument.strip() else None
         all_entries: list[dict[str, Any]] = []
         for inst_key, inst_data in sorted(instruments.items()):
             if not isinstance(inst_data, dict):
                 continue
+            inst_name = str(inst_data.get("name") or inst_key)
             for ds_id, ds_info in sorted(inst_data.get("datasets", {}).items()):
                 ds_info = ds_info if isinstance(ds_info, dict) else {}
-                all_entries.append({
+                entry = {
                     "dataset_id": ds_id,
                     "instrument": inst_key,
+                    "instrument_name": inst_name,
                     "start_date": ds_info.get("start_date"),
                     "stop_date": ds_info.get("stop_date"),
-                })
+                    "next_tools": [
+                        f"browse_data_parameters(source_type='cdaweb', dataset_id='{ds_id}')",
+                        f"fetch_data_product(source_type='cdaweb', dataset_id='{ds_id}', parameters=..., start=..., stop=..., output_dir=...)",
+                    ],
+                }
+                if _dataset_matches_instrument(entry, instrument_filter) and _dataset_matches_query(entry, dataset_query):
+                    all_entries.append(entry)
 
-        total = len(all_entries)
-        instrument_names = sorted(instruments.keys())
+        filtered_count = len(all_entries)
+        page_limit = _bounded_int(limit, default=_DATASET_ENUM_DEFAULT_LIMIT, minimum=1, maximum=_DATASET_ENUM_MAX_LIMIT)
+        page_offset = _bounded_int(offset, default=0, minimum=0, maximum=max(filtered_count, 0))
+        page_entries = all_entries[page_offset:page_offset + page_limit]
+        next_offset = page_offset + len(page_entries) if page_offset + len(page_entries) < filtered_count else None
 
-        def _dataset_note(shown: int) -> str:
-            return (
-                f"Showing {shown} of {total} datasets to stay within the "
-                "response-size limit. Use browse_data_sources(source_type='cdaweb', "
-                "query=...) to filter, or the compatibility load_observatory tool for "
-                "the full per-instrument catalog."
+        grouped: dict[str, list[dict[str, Any]]] = {}
+        for entry in page_entries:
+            compact_entry = {k: entry[k] for k in ("dataset_id", "start_date", "stop_date", "next_tools")}
+            grouped.setdefault(str(entry["instrument"]), []).append(compact_entry)
+
+        payload: dict[str, Any] = {
+            "dataset_count": sum(
+                len(inst_data.get("datasets", {}))
+                for inst_data in instruments.values()
+                if isinstance(inst_data, dict) and isinstance(inst_data.get("datasets", {}), dict)
+            ),
+            "filtered_dataset_count": filtered_count,
+            "datasets": page_entries,
+            "datasets_truncated": next_offset is not None,
+            "datasets_limit": page_limit,
+            "datasets_offset": page_offset,
+            "datasets_next_offset": next_offset,
+            "instruments": instrument_names,
+            "dataset_candidates_by_instrument": grouped,
+        }
+        if instrument_filter:
+            payload["instrument_filter"] = instrument
+        if dataset_query:
+            payload["dataset_query"] = dataset_query
+        if next_offset is not None:
+            payload["datasets_note"] = (
+                f"Showing datasets {page_offset + 1}-{page_offset + len(page_entries)} of {filtered_count} "
+                f"matching datasets. Continue with load_data_source(source_type='cdaweb', "
+                f"source_id='{source_id}', limit={page_limit}, offset={next_offset}) or narrow with "
+                "instrument=... / dataset_query=...."
             )
-
-        def _dataset_payload(entries: list[dict[str, Any]]) -> dict[str, Any]:
-            truncated = len(entries) < total
-            payload: dict[str, Any] = {
-                "dataset_count": total,
-                "datasets": entries,
-                "datasets_truncated": truncated,
-                "instruments": instrument_names,
-            }
-            if truncated:
-                payload["datasets_note"] = _dataset_note(len(entries))
-            return payload
-
-        def _serialized_dataset_bytes(entries: list[dict[str, Any]]) -> int:
-            return len(json.dumps(_dataset_payload(entries), default=str, indent=2).encode("utf-8"))
-
-        datasets: list[dict[str, Any]] = []
-        for entry in all_entries:
-            candidate = [*datasets, entry]
-            if _serialized_dataset_bytes(candidate) > _DATASET_ENUM_BYTE_BUDGET and datasets:
-                break
-            datasets.append(entry)
-
-        return _dataset_payload(datasets)
+        elif page_offset:
+            payload["datasets_note"] = (
+                f"Showing final page starting at offset {page_offset} for {filtered_count} "
+                "matching datasets. Reduce offset or narrow with instrument=... / dataset_query=...."
+            )
+        return payload
 
     @mcp.tool()
     def browse_data_sources(source_type: str = "all", query: str | None = None) -> str:
@@ -2589,13 +2647,23 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         return _unknown_source_type_error(source_type, ["all", "cdaweb", "pds", "spice", "hapi", "fdsn"])
 
     @mcp.tool()
-    def load_data_source(source_type: str, source_id: str) -> str:
+    def load_data_source(
+        source_type: str,
+        source_id: str,
+        mode: Literal["compact", "full"] = "compact",
+        limit: int | None = None,
+        offset: int = 0,
+        instrument: str | None = None,
+        dataset_query: str | None = None,
+        include_full_prompt: bool = False,
+    ) -> str:
         """Primary data layer: load source context for a CDAWeb observatory, PDS mission, or SPICE mission/frame.
 
-        For CDAWeb observatories the response also includes an enumerated
-        ``datasets`` list (``dataset_id``, ``instrument``, coverage dates) plus
-        ``dataset_count``/``datasets_truncated``, so agents can pass a concrete
-        ``dataset_id`` straight to ``browse_data_parameters`` without guessing.
+        CDAWeb defaults to a compact, paginated structured catalog so agents can
+        pick concrete ``dataset_id`` values without receiving the large legacy
+        human prompt. Pass ``mode="full"`` or ``include_full_prompt=True`` to
+        opt into the previous full prompt payload. Use ``limit``/``offset`` plus
+        ``instrument`` or ``dataset_query`` to page/filter large observatories.
         """
         source = _normalize_source_type(source_type)
         if source == "cdaweb":
@@ -2633,13 +2701,46 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                         "through browse_data_parameters/fetch_data_product."
                     ),
                 )
-            enumeration = _enumerate_cdaweb_datasets(source_id)
-            extra: dict[str, Any] = {"source_id": source_id}
+            enumeration = _enumerate_cdaweb_datasets(
+                source_id,
+                limit=limit,
+                offset=offset,
+                instrument=instrument,
+                dataset_query=dataset_query,
+            )
+            extra: dict[str, Any] = {
+                "source_id": source_id,
+                "mode": "full" if mode == "full" or include_full_prompt else "compact",
+            }
             if enumeration is not None:
-                # Additive discovery fields (issue #31): agents can read dataset_ids
-                # here and pass them straight to browse_data_parameters.
                 extra.update(enumeration)
-            return _wrap_data_payload(source, _translate_cdaweb_facade_guidance(load_observatory(source_id)), **extra)
+            if mode == "full" or include_full_prompt:
+                return _wrap_data_payload(source, _translate_cdaweb_facade_guidance(load_observatory(source_id)), **extra)
+            if enumeration is None:
+                # If direct structured enumeration is unavailable, fall back to the
+                # legacy backend prompt rather than returning an empty success.
+                return _wrap_data_payload(source, _translate_cdaweb_facade_guidance(load_observatory(source_id)), **extra)
+            return _size_guarded(
+                _json({
+                    "status": "success",
+                    "source_type": source,
+                    **extra,
+                    "payload": {
+                        "source_id": source_id,
+                        "catalog_mode": "compact",
+                        "summary": (
+                            "Compact CDAWeb dataset catalog. Use datasets[*].dataset_id with "
+                            "browse_data_parameters, paginate with limit/offset, or pass "
+                            "mode='full' / include_full_prompt=True for the legacy full prompt."
+                        ),
+                    },
+                    "next_tools": [
+                        "browse_data_parameters(source_type='cdaweb', dataset_id=...)",
+                        "fetch_data_product(source_type='cdaweb', dataset_id=..., parameters=..., start=..., stop=..., output_dir=...)",
+                    ],
+                }),
+                source_type=source,
+            )
         if source == "pds":
             normalized_source_id = _normalize_pds_source_id(source_id)
             invalid = _validate_source_id(
