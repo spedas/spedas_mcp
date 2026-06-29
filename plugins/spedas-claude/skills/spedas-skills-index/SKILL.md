@@ -1,6 +1,6 @@
 ---
 name: spedas-skills-index
-description: Start here. Routes a heliophysics intent to the right spedas skill and the first tool to call, so an agent needs to know one thing up front instead of memorizing ~40 MCP tools. Read this, then load one focused skill.
+description: Start here. Routes a heliophysics intent to the right spedas skill and the first tool to call, so an agent needs to know one thing up front instead of memorizing the runtime MCP tool list. Read this, then load one focused skill.
 ---
 
 # SPEDAS skills index
@@ -28,7 +28,11 @@ Low-level / source-specific compat tools exist for maintenance only — skills d
 | Apply a FAC/LMN/rotation matrix to a vector series | `apply-rotation-matrix` | (matrix from generate_fac_matrix / MVA) |
 | Four-spacecraft curlometer J, linear B gradients/curvature, or magnetic nulls | `multi-spacecraft-gradients` | `create_spedas_analysis_bundle` |
 | A full magnetopause/bow-shock crossing study (B + plasma + position) | `magnetopause-lmn-analysis` | `search_spedas_data_sources` |
-| Times two spacecraft/bodies are close | `spice-conjunction-finder` | `list_spice_missions` |
+| Times two spacecraft/bodies are close | `spice-conjunction-finder` | `spedas_overview` then `manage_data_cache(source_type="spice", action="status")` |
+| Distance from a spacecraft to the magnetotail neutral sheet | `neutral-sheet-distance` | `create_spedas_analysis_bundle` |
+| Model (Shue) LMN boundary-normal frame for a magnetopause crossing | `model-lmn-boundary` | `create_spedas_analysis_bundle` |
+| Clean/condition a messy time-series before analysis (despike, deflag, smooth, gap-fill) | `timeseries-cleaning` | `create_spedas_analysis_bundle` |
+| 2D velocity-space slice of a particle distribution (beams/crescents) | `particle-velocity-slice` | `create_spedas_analysis_bundle` |
 | Just fetch & plot a time series | `spedas-workflow` | `plan_spedas_observation` |
 | Standard mission overview plot or Dst/AE/Kp/SYM-H context | `overview-geomagnetic-indices` | `spedas_overview` |
 | To know what data/sources exist at all | `spedas-workflow` | `spedas_overview` |

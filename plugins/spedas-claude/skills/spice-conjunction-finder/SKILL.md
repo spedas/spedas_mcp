@@ -17,8 +17,8 @@ and judgment between steps.
 - "Is spacecraft X near planet Y during this interval?"
 
 ## Tool chain (all already exist)
-`list_spice_missions` → `list_coordinate_frames` → `manage_data_cache(source_type="spice", action="status")` (availability)
-→ `get_ephemeris(..., output_file=...)` for both objects → local separation CSV
+`spedas_overview()` → `manage_data_cache(source_type="spice", action="status")` (availability)
+→ `get_ephemeris(target=..., time=..., time_end=..., output_file=...)` for both objects → local separation CSV
 (coarse, then refined) → optional `render_tplot` (requires `spedas-mcp[analysis]`),
 wrapped in `create_spedas_analysis_bundle`.
 
@@ -30,15 +30,15 @@ the minimum or a sampled series. Do not use it as the source of candidate-minimu
 
 1. **Bundle.** `create_spedas_analysis_bundle(study_name, output_dir, science_goal, start, stop)`.
 
-2. **Confirm both objects are supported.** `list_spice_missions()` — verify both targets resolve to SPICE bodies (unsupported names return a structured error with alternatives). Pick a common observer/frame from `list_coordinate_frames()` (e.g. `ECLIPJ2000` heliocentric, or `SUN`-centered).
+2. **Confirm the SPICE surface and target names.** Start with `spedas_overview()` and `manage_data_cache(source_type="spice", action="status")` to confirm the current unified geometry/data surface. The older separate mission/frame listing tools are not part of the current advertised surface. Use supported target/frame names accepted by `get_ephemeris`/`compute_distance` (unsupported bodies return a structured `unsupported_spice_target` error with alternatives; unsupported frames return a structured frame error). Pick one observer and frame for both trajectories, normally `observer="SUN"` and `frame="ECLIPJ2000"` unless the science case requires otherwise.
 
 3. **Handle kernels deliberately.** Geometry calls gate large kernel downloads. Either pre-load with `manage_data_cache(source_type="spice", action="load", mission=...)`, or pass `allow_kernel_download=true` once you accept the (possibly 100 MB+) download. Do this knowingly — don't let it surprise you mid-scan.
 
-4. **Coarse ephemeris scan.** For each object, call `get_ephemeris(target, time_start, time_end, step="1d", output_file=<bundle>/data/<target>_coarse.csv, ...)` (or `"6h"` for short windows) using the same observer/frame and time grid. If needed, use `compute_distance(...)` only as an aggregate sanity check that the separation range is plausible.
+4. **Coarse ephemeris scan.** For each object, call `get_ephemeris(target=<object>, time=<start>, time_end=<stop>, step="1d", frame=<frame>, observer=<observer>, output_file=<bundle>/data/<target>_coarse.csv, allow_kernel_download=<bool>)` (or `step="6h"` for short windows) using the same observer/frame and time grid. `time` is the start time; `time_end` plus `output_file` requests a trajectory CSV. If needed, use `compute_distance(target1=..., target2=..., time_start=..., time_end=..., step=...)` only as an aggregate sanity check that the separation range is plausible.
 
 5. **Compute a local separation table.** Load the two coarse ephemeris CSVs, align rows by timestamp, compute Euclidean separation from the common-frame position columns, and write `<bundle>/data/separation_coarse.csv` with at least `time` and `separation_km`. The minimum rows in this CSV are the candidate conjunction windows.
 
-6. **Refine around candidates.** Around each coarse local minimum (for example ±1–3 coarse steps), rerun `get_ephemeris(..., step="1h"/"10m", output_file=...)` for both objects on the narrowed window. Recompute `<bundle>/data/separation_refined_<candidate>.csv` and use that refined CSV to pin the closest-approach time and distance. This coarse→fine pattern is the whole point: one fine-step scan over a year is wasteful; the coarse pass tells you where to look.
+6. **Refine around candidates.** Around each coarse local minimum (for example ±1–3 coarse steps), rerun `get_ephemeris(target=..., time=<refined_start>, time_end=<refined_stop>, step="1h"/"10m", frame=<frame>, observer=<observer>, output_file=...)` for both objects on the narrowed window. Recompute `<bundle>/data/separation_refined_<candidate>.csv` and use that refined CSV to pin the closest-approach time and distance. This coarse→fine pattern is the whole point: one fine-step scan over a year is wasteful; the coarse pass tells you where to look.
 
 7. **Apply the threshold & report.** Keep candidates under the user's separation cutoff. For each conjunction report: time of closest approach, min separation (km and AU/Re as appropriate), the two ephemeris rows at closest approach, and each object's heliocentric distance/position context (e.g. "both near 0.3 AU").
 
