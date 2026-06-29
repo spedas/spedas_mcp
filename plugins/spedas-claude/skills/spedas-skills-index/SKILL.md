@@ -37,6 +37,9 @@ Low-level / source-specific compat tools exist for maintenance only — skills d
 | Standard mission overview plot or Dst/AE/Kp/SYM-H context | `overview-geomagnetic-indices` | `spedas_overview` |
 | To know what data/sources exist at all | `spedas-workflow` | `spedas_overview` |
 
+| Trace a spacecraft to its ionospheric footpoint / magnetic-equator (conjugacy, L-shell) | `field-line-footpoint` | `create_spedas_analysis_bundle` |
+| Quick-look 1-D power spectral density (PSD slope/peak) of an interval | `power-spectral-density` | `create_spedas_analysis_bundle` |
+
 ## Load order
 1. (this index) → 2. one focused skill → 3. that skill's tool chain. Don't pre-read every skill.
 
