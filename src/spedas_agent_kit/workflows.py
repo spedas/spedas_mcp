@@ -14,6 +14,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+from .optional_backends import analysis_dependencies_available
+
 
 SOURCE_PROFILES: dict[str, dict[str, Any]] = {
     "cdaweb": {
@@ -867,6 +869,236 @@ def compare_sources(science_goal: str = "") -> dict[str, Any]:
     }
 
 
+# --- Mission-aware canonical dataset / coverage / analysis guidance (issue #135) ---
+#
+# A compact, declarative mapping from a recognized mission (keyed by the same
+# canonical label ``_MISSION_KEYWORDS`` emits) to the canonical CDAWeb dataset
+# IDs a researcher would otherwise have to discover by hand. The shape is
+# deliberately data-only so future missions are added by appending an entry, not
+# by writing code: each instrument carries the dataset-ID *pattern* (with a
+# ``{probe}`` placeholder for multi-spacecraft constellations), the standard
+# coordinate frames the product publishes, and a one-line note. ``science_goals``
+# lists keyword cues that make an instrument relevant; ``core`` instruments are
+# always surfaced once the mission matches. ``coverage`` records the first date
+# the mission's science products exist (``stop=None`` means ongoing) so the
+# planner can validate a requested interval without any network I/O.
+_MISSION_DATASET_PROFILES: dict[str, dict[str, Any]] = {
+    "MMS": {
+        # MMS flies four identical spacecraft (MMS1-4). A single-spacecraft goal
+        # ("MMS1 ...") resolves to that probe; otherwise probe 1 leads and the
+        # pattern documents the constellation so an agent can fan out to 2-4.
+        "probes": ["1", "2", "3", "4"],
+        "default_probe": "1",
+        "coverage": {"start": "2015-09-01", "stop": None},
+        "frame_note": (
+            "MMS FGM and MEC publish both GSE and GSM; keep the field and "
+            "position in the same frame when combining them (e.g. analyze the "
+            "field in GSM if you place the crossing in GSM)."
+        ),
+        "instruments": [
+            {
+                "instrument": "FGM",
+                "role": "magnetic field (survey)",
+                "dataset_id_pattern": "MMS{probe}_FGM_SRVY_L2",
+                "frames": ["GSE", "GSM"],
+                "core": True,
+                "note": "Vector B for the field-rotation signature; GSE and GSM both available.",
+            },
+            {
+                "instrument": "FPI",
+                "role": "ion moments (DIS)",
+                "dataset_id_pattern": "MMS{probe}_FPI_FAST_L2_DIS-MOMS",
+                "frames": ["GSE"],
+                "core": True,
+                "note": "Ion density/velocity/temperature for the plasma jump across the boundary.",
+            },
+            {
+                "instrument": "FPI",
+                "role": "electron moments (DES)",
+                "dataset_id_pattern": "MMS{probe}_FPI_FAST_L2_DES-MOMS",
+                "frames": ["GSE"],
+                "core": True,
+                "note": "Electron density/velocity/temperature; complements the ion moments.",
+            },
+            {
+                "instrument": "MEC",
+                "role": "ephemeris / position",
+                "dataset_id_pattern": "MMS{probe}_MEC_SRVY_L2_EPHT89D",
+                "frames": ["GSE", "GSM"],
+                "core": True,
+                "note": "Spacecraft position (and model field) for boundary context.",
+            },
+        ],
+    },
+}
+
+
+# Downstream analysis steps the planner reasons about when the analysis layer is
+# absent. MVA (minimum-variance analysis) and particle moments are the steps
+# issue #135 calls out for the MMS magnetopause case; each names the in-kit tool
+# and the PySPEDAS fallback an agent can run directly.
+_ANALYSIS_STEP_GUIDANCE: list[dict[str, str]] = [
+    {
+        "analysis": "minimum variance analysis (MVA / LMN boundary normal)",
+        "in_kit_tool": "analyze_minvar_coordinates",
+        "pyspedas_fallback": "pyspedas.cotrans_tools.minvar",
+    },
+    {
+        "analysis": "particle moments (density / velocity / temperature)",
+        "in_kit_tool": "compute_particle_moments",
+        "pyspedas_fallback": "pyspedas.particles.moments.moments_3d",
+    },
+]
+
+
+def _mva_analysis_available() -> bool:
+    """Whether the optional analysis tools are registered by default.
+
+    The planner must not over-promise MVA/moments availability: it uses the
+    same full optional-backend dependency gate as the MCP server instead of
+    probing only the MVA import path. Kept as a workflow-local wrapper so tests
+    can still monkeypatch this planner signal directly.
+    """
+    return analysis_dependencies_available()
+
+
+def _mission_profile_for(targets: list[str]) -> tuple[str, dict[str, Any]] | None:
+    """Return the first ``(label, profile)`` whose mission is named in ``targets``.
+
+    ``targets`` is the planner's resolved target list, which already includes any
+    mission inferred from the goal text (e.g. ``"MMS"`` from "MMS1 ..."), so the
+    lookup reuses that inference rather than re-parsing the goal.
+    """
+    for target in targets:
+        profile = _MISSION_DATASET_PROFILES.get(target)
+        if profile is not None:
+            return target, profile
+    return None
+
+
+def _resolve_probe(targets: list[str], science_goal: str, profile: dict[str, Any]) -> str:
+    """Pick the spacecraft probe token for a numbered constellation.
+
+    Honors an explicit probe in the goal text (``MMS1`` -> ``"1"``) and otherwise
+    falls back to the profile's ``default_probe``. Non-probe missions return an
+    empty string, which leaves a bare ``{probe}``-free pattern unchanged.
+    """
+    probes = profile.get("probes")
+    if not probes:
+        return ""
+    label_lower = next((t for t in targets if t in _MISSION_DATASET_PROFILES), "").lower()
+    text = (science_goal or "").lower()
+    for probe in probes:
+        # Match the mission keyword immediately followed by the probe token, e.g.
+        # "mms1"/"mms 1"; anchored so "mms14" does not read as probe 1.
+        if re.search(rf"(?<![a-z0-9]){re.escape(label_lower)}\s*{re.escape(probe)}(?![a-z0-9])", text):
+            return probe
+    return profile.get("default_probe", probes[0])
+
+
+def _coverage_status(start: str | None, stop: str | None, coverage: dict[str, Any]) -> dict[str, Any]:
+    """Compare the requested interval against a mission's known coverage window.
+
+    Returns a compact dict naming the mission coverage bounds and whether the
+    requested ``[start, stop]`` falls inside them. ``status`` is one of
+    ``ok``/``before_coverage``/``after_coverage``/``unknown`` (the last when the
+    requested bounds are missing or unparseable), so the agent gets a clear signal
+    without the planner having to fetch any dataset metadata.
+    """
+    cov_start, cov_stop = coverage.get("start"), coverage.get("stop")
+    result: dict[str, Any] = {
+        "mission_start": cov_start,
+        "mission_stop": cov_stop,  # None == ongoing
+    }
+    start_dt = _parse_iso8601(start)
+    cov_start_dt = _parse_iso8601(cov_start)
+    cov_stop_dt = _parse_iso8601(cov_stop)
+    if start_dt is None:
+        result["interval_within_coverage"] = None
+        result["status"] = "unknown"
+        return result
+    if cov_start_dt is not None and not _ge_safe(start_dt, cov_start_dt):
+        result["interval_within_coverage"] = False
+        result["status"] = "before_coverage"
+        return result
+    stop_dt = _parse_iso8601(stop) or start_dt
+    if cov_stop_dt is not None and _ge_safe(stop_dt, cov_stop_dt):
+        result["interval_within_coverage"] = False
+        result["status"] = "after_coverage"
+        return result
+    result["interval_within_coverage"] = True
+    result["status"] = "ok"
+    return result
+
+
+def _mission_dataset_candidates(
+    targets: list[str],
+    science_goal: str,
+    start: str | None,
+    stop: str | None,
+) -> tuple[list[dict[str, Any]], str | None]:
+    """Build canonical dataset candidates + frame note for a recognized mission.
+
+    Returns ``([], None)`` when no mapped mission is named, keeping generic
+    planning lean and backward-compatible. Otherwise returns one candidate per
+    relevant instrument (each carrying expanded per-probe dataset IDs, the
+    constellation pattern, coverage status, frames, and a note) plus the
+    mission-level frame-consistency note.
+    """
+    matched = _mission_profile_for(targets)
+    if matched is None:
+        return [], None
+    label, profile = matched
+    probe = _resolve_probe(targets, science_goal, profile)
+    text = (science_goal or "").lower()
+    coverage = profile.get("coverage", {})
+
+    candidates: list[dict[str, Any]] = []
+    for inst in profile["instruments"]:
+        cues = inst.get("science_goals")
+        if not inst.get("core") and cues and not any(cue in text for cue in cues):
+            continue
+        pattern = inst["dataset_id_pattern"]
+        dataset_ids = [pattern.format(probe=probe)] if probe else [pattern]
+        candidates.append({
+            "mission": label,
+            "instrument": inst["instrument"],
+            "role": inst["role"],
+            "dataset_id_pattern": pattern,
+            "dataset_ids": dataset_ids,
+            "frames": list(inst.get("frames", [])),
+            "coverage": _coverage_status(start, stop, coverage),
+            "note": inst.get("note", ""),
+        })
+    return candidates, profile.get("frame_note")
+
+
+def _analysis_availability() -> dict[str, Any]:
+    """Report whether the analysis layer is installed and the fallback if not."""
+    available = _mva_analysis_available()
+    info: dict[str, Any] = {
+        "available": available,
+        "downstream_steps": _ANALYSIS_STEP_GUIDANCE,
+    }
+    if available:
+        info["guidance"] = (
+            "Analysis layer present: MVA/moments steps can run via the in-kit "
+            "analysis tools (e.g. analyze_minvar_coordinates, compute_particle_moments)."
+        )
+        info["fallback"] = None
+    else:
+        info["guidance"] = (
+            "Analysis layer not detected in this install; the MVA/moments steps "
+            "below are unavailable as MCP tools."
+        )
+        info["fallback"] = (
+            "Install the optional analysis backend with "
+            "pip install 'spedas-agent-kit[analysis]' (provides pyspedas), or run the "
+            "listed pyspedas functions directly on the fetched CSV/CDF files."
+        )
+    return info
+
+
 def plan_observation(
     science_goal: str,
     start: str | None = None,
@@ -913,6 +1145,15 @@ def plan_observation(
     else:
         targets = list(inferred_targets)
 
+    # Mission-aware enrichment (issue #135): once the target list is settled,
+    # look up canonical dataset candidates, interval-vs-coverage status, and
+    # frame guidance for any recognized mission. Empty for unmapped goals, so
+    # generic planning is unchanged.
+    mission_candidates, mission_frame_note = _mission_dataset_candidates(
+        targets, science_goal, start, stop
+    )
+    analysis_availability = _analysis_availability()
+
     ranked = _ranked_sources(question=science_goal, target=target, observables=observables)
     requested_sources = [s.lower().replace("-", "_") for s in _as_list(data_sources)]
     invalid_sources = [s for s in requested_sources if s not in SOURCE_PROFILES]
@@ -953,6 +1194,29 @@ def plan_observation(
             "invalid_sources": invalid_sources,
         }
     ]
+    # Surface a mission-guidance phase only when a recognized mission gives us
+    # canonical datasets to suggest; generic plans keep their original shape.
+    if mission_candidates:
+        steps.append({
+            "phase": "mission_guidance",
+            "rationale": (
+                "Canonical dataset candidates for the recognized mission/instruments, "
+                "with interval-vs-coverage status and frame guidance, so discovery can "
+                "start from known IDs instead of an open browse."
+            ),
+            "dataset_candidates": mission_candidates,
+            "frame_guidance": mission_frame_note,
+            "analysis_availability": analysis_availability,
+            "next_unified_calls": [
+                {
+                    "tool": "browse_data_parameters",
+                    "args": {
+                        "source_type": "cdaweb",
+                        "dataset_id": mission_candidates[0]["dataset_ids"][0],
+                    },
+                },
+            ],
+        })
     for source in selected:
         profile = SOURCE_PROFILES[source]
         steps.append({
@@ -1004,6 +1268,9 @@ def plan_observation(
         "inferred_targets": targets,
         "invalid_sources": invalid_sources,
         "time_range_warning": time_range_warning,
+        "mission_dataset_candidates": mission_candidates,
+        "mission_frame_guidance": mission_frame_note,
+        "analysis_availability": analysis_availability,
         "low_level_tools_remain_available": True,
     }
 

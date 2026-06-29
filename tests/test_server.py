@@ -1241,6 +1241,184 @@ def test_plan_spedas_observation_valid_interval_no_warning():
     assert data["time_range_warning"] is None
 
 
+# --- Issue #135: mission-aware canonical dataset / coverage / analysis guidance ---
+
+def _mms_magnetopause_plan(monkeypatch=None, analysis_available=None):
+    """Plan the canonical MMS magnetopause interval from issue #135.
+
+    When ``analysis_available`` is set, the workflow-level analysis probe is
+    monkeypatched so the test does not depend on whether the optional
+    ``[analysis]`` extra is installed in the running environment.
+    """
+    from spedas_agent_kit import workflows as workflows_mod
+
+    if analysis_available is not None:
+        assert monkeypatch is not None
+        monkeypatch.setattr(
+            workflows_mod, "_mva_analysis_available", lambda: analysis_available
+        )
+    server = create_server()
+    return json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": (
+            "Screen MMS1 for a magnetopause current-sheet crossing: check magnetic "
+            "field rotation (FGM), ion and electron moments (FPI), and spacecraft "
+            "position"
+        ),
+        "target": "Earth magnetopause",
+        "start": "2015-10-16T13:00:00Z",
+        "stop": "2015-10-16T13:20:00Z",
+    }))
+
+
+def _candidate_dataset_ids(data):
+    ids = []
+    for candidate in data.get("mission_dataset_candidates", []):
+        ids.extend(candidate.get("dataset_ids", []))
+    return ids
+
+
+def test_mms_magnetopause_plan_suggests_canonical_fgm_dataset():
+    data = _mms_magnetopause_plan()
+    assert data["status"] == "success"
+    assert "MMS1_FGM_SRVY_L2" in _candidate_dataset_ids(data)
+
+
+def test_mms_magnetopause_plan_suggests_fpi_ion_and_electron_moments():
+    data = _mms_magnetopause_plan()
+    ids = _candidate_dataset_ids(data)
+    assert "MMS1_FPI_FAST_L2_DIS-MOMS" in ids  # ion moments
+    assert "MMS1_FPI_FAST_L2_DES-MOMS" in ids  # electron moments
+
+
+def test_mms_magnetopause_plan_suggests_mec_ephemeris_dataset():
+    data = _mms_magnetopause_plan()
+    assert "MMS1_MEC_SRVY_L2_EPHT89D" in _candidate_dataset_ids(data)
+
+
+def test_mms_dataset_candidates_carry_per_probe_ids():
+    """A single-probe goal (MMS1) keeps probe 1, but the constellation pattern
+    is still discoverable so the agent can fan out to MMS2-4."""
+    data = _mms_magnetopause_plan()
+    fgm = next(
+        c for c in data["mission_dataset_candidates"]
+        if c["instrument"] == "FGM"
+    )
+    # The probe inferred from "MMS1" leads; the pattern documents the family.
+    assert "MMS1_FGM_SRVY_L2" in fgm["dataset_ids"]
+    assert fgm["dataset_id_pattern"] == "MMS{probe}_FGM_SRVY_L2"
+
+
+def test_mms_magnetopause_plan_reports_coverage_status_for_interval():
+    data = _mms_magnetopause_plan()
+    fgm = next(
+        c for c in data["mission_dataset_candidates"]
+        if c["instrument"] == "FGM"
+    )
+    coverage = fgm["coverage"]
+    # 2015-10-16 is inside MMS science coverage (starts 2015-09-01).
+    assert coverage["mission_start"] == "2015-09-01"
+    assert coverage["interval_within_coverage"] is True
+    assert coverage["status"] == "ok"
+
+
+def test_mms_plan_flags_interval_before_mission_coverage():
+    from spedas_agent_kit import workflows as workflows_mod
+
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": "MMS1 FGM magnetic field survey near a magnetopause crossing",
+        "target": "Earth magnetopause",
+        "start": "2014-01-01T00:00:00Z",
+        "stop": "2014-01-01T01:00:00Z",
+    }))
+    fgm = next(
+        c for c in data["mission_dataset_candidates"]
+        if c["instrument"] == "FGM"
+    )
+    coverage = fgm["coverage"]
+    assert coverage["interval_within_coverage"] is False
+    assert coverage["status"] == "before_coverage"
+
+
+def test_mms_plan_includes_gse_gsm_frame_guidance():
+    data = _mms_magnetopause_plan()
+    fgm = next(
+        c for c in data["mission_dataset_candidates"]
+        if c["instrument"] == "FGM"
+    )
+    # FGM publishes both GSE and GSM; planning output must name them and warn
+    # about keeping the field and position frames consistent.
+    assert "gse" in [f.lower() for f in fgm["frames"]]
+    assert "gsm" in [f.lower() for f in fgm["frames"]]
+    blob = json.dumps(data).lower()
+    assert "gse" in blob and "gsm" in blob
+    assert "frame" in blob
+
+
+def test_mms_plan_warns_when_analysis_layer_unavailable(monkeypatch):
+    data = _mms_magnetopause_plan(monkeypatch, analysis_available=False)
+    availability = data["analysis_availability"]
+    assert availability["available"] is False
+    # MVA / moments are the downstream steps called out by issue #135.
+    blob = json.dumps(availability).lower()
+    assert "minvar" in blob or "mva" in blob or "minimum variance" in blob
+    # A concrete fallback path must be offered when the layer is missing.
+    assert availability["fallback"]
+    assert "pyspedas" in json.dumps(availability).lower()
+
+
+def test_mms_plan_reports_analysis_layer_available(monkeypatch):
+    data = _mms_magnetopause_plan(monkeypatch, analysis_available=True)
+    assert data["analysis_availability"]["available"] is True
+
+
+def test_mms_plan_analysis_availability_matches_registered_tools(monkeypatch):
+    """Planner analysis guidance must use the same full gate as MCP registration.
+
+    A partial PySPEDAS install may expose ``pyspedas.cotrans_tools.minvar`` while
+    still lacking particle/tplot/wavelet pieces required by the registered
+    analysis tool group. In that case the server hides analysis tools and the
+    planner must not tell the researcher those in-kit tools can run.
+    """
+    from spedas_agent_kit import server as server_mod
+    from spedas_agent_kit import workflows as workflows_mod
+
+    monkeypatch.setattr(server_mod, "_analysis_dependencies_available", lambda: False)
+    monkeypatch.setattr(workflows_mod, "analysis_dependencies_available", lambda: False)
+
+    server = create_server()
+    names = {tool.name for tool in asyncio.run(server.list_tools())}
+    assert "analyze_minvar_coordinates" not in names
+    assert "compute_particle_moments" not in names
+
+    data = _mms_magnetopause_plan()
+    assert data["analysis_availability"]["available"] is False
+    assert "not detected" in data["analysis_availability"]["guidance"]
+
+
+def test_mms_plan_adds_mission_guidance_phase():
+    data = _mms_magnetopause_plan()
+    assert any(step["phase"] == "mission_guidance" for step in data["plan"])
+
+
+def test_generic_plan_has_no_mission_dataset_candidates():
+    """A goal with no recognized mission/instrument mapping stays lean and
+    backward-compatible: the new keys exist but are empty, and the legacy plan
+    shape is untouched."""
+    server = create_server()
+    data = json.loads(_call_tool(server, "plan_spedas_observation", {
+        "science_goal": "Generic solar-wind survey",
+        "start": "2020-01-01T00:00:00Z",
+        "stop": "2020-01-02T00:00:00Z",
+        "data_sources": ["cdaweb"],
+    }))
+    assert data["status"] == "success"
+    assert data["mission_dataset_candidates"] == []
+    # Legacy contract preserved.
+    assert any(step["phase"] == "preserve_provenance" for step in data["plan"])
+    assert data["low_level_tools_remain_available"] is True
+
+
 def test_psp_perihelion_workflow_routes_to_cdaweb_and_spice():
     server = create_server()
     data = json.loads(_call_tool(server, "search_spedas_data_sources", {
