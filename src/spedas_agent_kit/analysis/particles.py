@@ -1135,6 +1135,73 @@ def load_particle_distribution_artifact(
 # Issue #18 - particle moments
 # --------------------------------------------------------------------------
 
+# Per-column units for the moments artifact (pyspedas ``moments_3d`` units, the
+# same ones echoed in the return note). Velocity/temperature/pressure/flux are
+# vector/tensor components that share a unit. Used to write the self-describing
+# sidecar consumed by render_tplot (issue #154).
+_MOMENTS_COLUMN_UNITS: dict[str, str] = {
+    "time": "s",
+    "density": "cm^-3",
+    "vx": "km/s",
+    "vy": "km/s",
+    "vz": "km/s",
+    "avgtemp": "eV",
+    "txx": "eV",
+    "tyy": "eV",
+    "tzz": "eV",
+    "pxx": "eV/cm^3",
+    "pyy": "eV/cm^3",
+    "pzz": "eV/cm^3",
+    "pxy": "eV/cm^3",
+    "pxz": "eV/cm^3",
+    "pyz": "eV/cm^3",
+    "fx": "eV/(cm^2 s sr)",
+    "fy": "eV/(cm^2 s sr)",
+    "fz": "eV/(cm^2 s sr)",
+}
+
+
+def _write_moments_labels_sidecar(
+    moments_path: Path, columns: list[str], *, no_unit_conversion: bool
+) -> Path:
+    """Write a ``<artifact>.labels.json`` sidecar describing moments columns.
+
+    The sidecar carries a per-column ``units`` map plus top-level
+    ``axis_label`` / ``axis_units`` hints. Because the moments artifact mixes
+    physically different quantities (density, velocity, temperature, pressure)
+    on its columns, no single y-axis label is correct; ``axis_label`` therefore
+    names the multi-quantity nature and ``axis_units`` is intentionally omitted
+    so ``render_tplot`` does not stamp a misleading single unit on the axis. The
+    per-column ``units`` map is the recoverable source of truth (issue #154).
+
+    When ``no_unit_conversion`` is set the backend returns raw counts-based
+    units, so the unit strings are flagged as such rather than asserted.
+    """
+    sidecar_path = moments_path.with_name(moments_path.name + ".labels.json")
+    if no_unit_conversion:
+        units = {col: "raw (no_unit_conversion)" for col in columns}
+        axis_label = "particle moments (raw, multiple quantities)"
+    else:
+        units = {col: _MOMENTS_COLUMN_UNITS.get(col, "") for col in columns}
+        axis_label = "particle moments (multiple quantities)"
+    payload = {
+        "axis_label": axis_label,
+        # No single axis_units: the columns carry distinct units (see below).
+        "value_label": "particle moments",
+        "columns": units,
+        "note": (
+            "Per-column units for the moments time series. Density cm^-3, "
+            "velocity km/s, temperature eV, pressure eV/cm^3, flux "
+            "eV/(cm^2 s sr) under pyspedas moments_3d unit conversion. Multiple "
+            "quantities share one artifact, so render_tplot intentionally does "
+            "not stamp a single y-axis unit; use this map to label individual "
+            "channels."
+        ),
+    }
+    sidecar_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    return sidecar_path
+
+
 def compute_particle_moments(
     dist_file: str,
     output_dir: str,
@@ -1257,6 +1324,15 @@ def compute_particle_moments(
             writer.writeheader()
             writer.writerows(rows)
 
+    # Persist a self-describing units/labels sidecar next to the artifact so a
+    # renderer (render_tplot) or a human can recover per-column units instead of
+    # reading multiple physical quantities off one unlabeled axis (issue #154).
+    # The convention is a sibling ``<artifact-name>.labels.json``; moments_3d
+    # uses the units echoed in this tool's return note.
+    sidecar_path = _write_moments_labels_sidecar(
+        moments_path, list(rows[0].keys()), no_unit_conversion=bool(no_unit_conversion)
+    )
+
     density = np.array([r["density"] for r in rows], dtype="float64")
     speed = np.array(
         [float(np.sqrt(r["vx"] ** 2 + r["vy"] ** 2 + r["vz"] ** 2)) for r in rows],
@@ -1269,6 +1345,7 @@ def compute_particle_moments(
         "status": "success",
         "tool": "compute_particle_moments",
         "moments_file": str(moments_path),
+        "labels_file": str(sidecar_path),
         "output_format": fmt,
         "n_time": int(n_time),
         "time_range": _finite_range(times),

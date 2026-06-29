@@ -422,6 +422,141 @@ def test_spectrogram_falls_back_to_stem_for_unlabeled_npz(
     assert fig.colorbar_labels == [None]
 
 
+# --------------------------------------------------------------------------
+# Issue #154: line/scatter panels propagate embedded/sidecar labels
+# --------------------------------------------------------------------------
+
+@pytest.fixture
+def labeled_line_npz(tmp_path: Path) -> Path:
+    """A self-describing single-series line .npz (issue #154).
+
+    Mirrors what a field-model writer could emit: a 1-D value array plus the
+    optional ``axis_label`` / ``axis_units`` / ``value_label`` string keys.
+    """
+    n = 30
+    t = np.arange(n, dtype="float64") + 1_600_000_000.0
+    bmag = np.linspace(5.0, 40.0, n)
+    path = tmp_path / "b_magnitude.npz"
+    np.savez_compressed(
+        path,
+        time=t,
+        bmag=bmag,
+        axis_label="B magnitude",
+        axis_units="nT",
+        value_label="B",
+    )
+    return path
+
+
+def test_line_npz_prefers_embedded_axis_labels(tmp_path, labeled_line_npz, monkeypatch):
+    # A labeled line .npz drives the y-axis label ("B magnitude [nT]") and
+    # surfaces the label/value metadata instead of the filename stem.
+    state = _install_fake_matplotlib(monkeypatch)
+    out = plotting.render_tplot(
+        input_files=[str(labeled_line_npz)], output_file=str(tmp_path / "o.png")
+    )
+    assert out["status"] == "success"
+    panel = out["panels"][0]
+    assert panel["type"] == "line"
+    assert panel["axis_label"] == "B magnitude [nT]"
+    assert panel["axis_label"] != Path(labeled_line_npz).stem
+    assert panel["value_label"] == "B"
+    fig = state["figures"][0]
+    assert fig._axes[0].ylabel == "B magnitude [nT]"
+
+
+def test_line_npz_falls_back_to_stem_when_unlabeled(tmp_path, monkeypatch):
+    # Back-compat: a label-less line .npz keeps the filename-stem y-axis label.
+    state = _install_fake_matplotlib(monkeypatch)
+    t = np.arange(20, dtype="float64") + 1_600_000_000.0
+    lshell = np.linspace(2.0, 6.0, 20)
+    p = tmp_path / "lshell.npz"
+    np.savez_compressed(p, time=t, lshell=lshell)
+    out = plotting.render_tplot(input_files=[str(p)], output_file=str(tmp_path / "o.png"))
+    assert out["status"] == "success"
+    panel = out["panels"][0]
+    assert panel["type"] == "line"
+    stem = Path(p).stem
+    assert panel["axis_label"] == stem
+    assert "value_label" not in panel
+    assert state["figures"][0]._axes[0].ylabel == stem
+
+
+def test_line_csv_consumes_labels_sidecar(tmp_path, monkeypatch):
+    # A CSV table with a sibling <name>.labels.json sidecar labels the y-axis.
+    state = _install_fake_matplotlib(monkeypatch)
+    n = 25
+    t = np.arange(n, dtype="float64") + 1_600_000_000.0
+    df = pd.DataFrame({"time": t, "density": np.linspace(1.0, 9.0, n)})
+    csv_path = tmp_path / "density.csv"
+    df.to_csv(csv_path, index=False)
+    sidecar = tmp_path / "density.csv.labels.json"
+    sidecar.write_text(
+        json.dumps(
+            {"axis_label": "ion density", "axis_units": "cm^-3", "value_label": "n"}
+        ),
+        encoding="utf-8",
+    )
+    out = plotting.render_tplot(
+        input_files=[str(csv_path)], output_file=str(tmp_path / "o.png")
+    )
+    assert out["status"] == "success"
+    panel = out["panels"][0]
+    assert panel["type"] == "line"
+    assert panel["axis_label"] == "ion density [cm^-3]"
+    assert panel["value_label"] == "n"
+    assert state["figures"][0]._axes[0].ylabel == "ion density [cm^-3]"
+
+
+def test_line_csv_without_sidecar_keeps_stem(tmp_path, line_csv, monkeypatch):
+    # No sidecar -> filename-stem fallback, unchanged legacy behavior.
+    state = _install_fake_matplotlib(monkeypatch)
+    out = plotting.render_tplot(
+        input_files=[str(line_csv)], output_file=str(tmp_path / "o.png")
+    )
+    assert out["status"] == "success"
+    panel = out["panels"][0]
+    stem = Path(line_csv).stem
+    assert panel["axis_label"] == stem
+    assert "value_label" not in panel
+    assert state["figures"][0]._axes[0].ylabel == stem
+
+
+def test_line_csv_ignores_malformed_sidecar(tmp_path, line_csv, monkeypatch):
+    # A corrupt / non-object sidecar is ignored rather than failing the render.
+    state = _install_fake_matplotlib(monkeypatch)
+    (Path(str(line_csv) + ".labels.json")).write_text("not json{", encoding="utf-8")
+    out = plotting.render_tplot(
+        input_files=[str(line_csv)], output_file=str(tmp_path / "o.png")
+    )
+    assert out["status"] == "success"
+    assert out["panels"][0]["axis_label"] == Path(line_csv).stem
+
+
+def test_scatter_npz_surfaces_embedded_labels(tmp_path, monkeypatch):
+    # An explicit scatter panel surfaces embedded matrix labels as metadata
+    # without overriding the per-column x/y tick labels.
+    state = _install_fake_matplotlib(monkeypatch)
+    t = np.arange(15, dtype="float64") + 1_600_000_000.0
+    b_gsm = np.column_stack([np.arange(15), np.arange(15) + 5, np.arange(15) + 9])
+    p = tmp_path / "b.npz"
+    np.savez_compressed(
+        p, time=t, b_gsm=b_gsm, axis_label="B field", axis_units="nT", value_label="B"
+    )
+    out = plotting.render_tplot(
+        input_files=[str(p)], output_file=str(tmp_path / "xy.png"), panel_types="xy"
+    )
+    assert out["status"] == "success"
+    panel = out["panels"][0]
+    assert panel["type"] == "scatter"
+    assert panel["axis_label"] == "B field [nT]"
+    assert panel["value_label"] == "B"
+    ax = state["figures"][0]._axes[0]
+    # Per-column axis labels still drive the x/y tick labels.
+    assert ax.xlabel == "b_gsm[0]"
+    assert ax.ylabel == "b_gsm[1]"
+
+
 def test_renders_line_panel_with_two_series(tmp_path, line_csv, monkeypatch):
     state = _install_fake_matplotlib(monkeypatch)
     out = plotting.render_tplot(
@@ -740,3 +875,32 @@ def test_real_render_roundtrip(tmp_path):
     png = Path(out["output_file"])
     assert png.exists() and png.stat().st_size > 0
     assert out["n_panels"] == 2
+
+
+@pytest.mark.skipif(not _have_matplotlib(), reason="requires spedas-agent-kit[analysis] (matplotlib)")
+def test_real_render_roundtrip_line_labels(tmp_path):
+    # Issue #154: labeled line .npz + sidecar-labeled CSV render with the real
+    # backend and surface their resolved labels in the returned metadata.
+    n = 30
+    t = np.arange(n, dtype="float64") + 1_600_000_000.0
+    bmag = np.linspace(5.0, 40.0, n)
+    npz = tmp_path / "b_magnitude.npz"
+    np.savez_compressed(
+        npz, time=t, bmag=bmag, axis_label="B magnitude", axis_units="nT", value_label="B"
+    )
+
+    df = pd.DataFrame({"time": t, "density": np.linspace(1.0, 9.0, n)})
+    csv = tmp_path / "density.csv"
+    df.to_csv(csv, index=False)
+    (tmp_path / "density.csv.labels.json").write_text(
+        json.dumps({"axis_label": "ion density", "axis_units": "cm^-3"}),
+        encoding="utf-8",
+    )
+
+    out = plotting.render_tplot(
+        input_files=[str(npz), str(csv)], output_file=str(tmp_path / "real_labels.png")
+    )
+    assert out["status"] == "success"
+    assert Path(out["output_file"]).stat().st_size > 0
+    assert out["panels"][0]["axis_label"] == "B magnitude [nT]"
+    assert out["panels"][1]["axis_label"] == "ion density [cm^-3]"

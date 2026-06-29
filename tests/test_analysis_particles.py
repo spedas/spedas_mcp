@@ -353,6 +353,70 @@ def test_moments_writes_csv_artifact(dist_npz, tmp_path, monkeypatch):
     assert "density" in text.splitlines()[0]
 
 
+def test_moments_writes_labels_sidecar(dist_npz, tmp_path, monkeypatch):
+    # Issue #154: a self-describing units/labels sidecar is written next to the
+    # moments artifact so a renderer / human can recover per-column units.
+    _install_fake_pyspedas(monkeypatch)
+    out = particles.compute_particle_moments(
+        str(dist_npz), str(tmp_path / "mom"), output_format="csv"
+    )
+    assert out["status"] == "success"
+    sidecar = Path(out["labels_file"])
+    assert sidecar.exists()
+    moments_path = Path(out["moments_file"])
+    # Convention: <artifact-name>.labels.json sibling of the artifact.
+    assert sidecar.name == moments_path.name + ".labels.json"
+    payload = json.loads(sidecar.read_text())
+    cols = payload["columns"]
+    # Known pyspedas moments_3d units are recoverable per column.
+    assert cols["density"] == "cm^-3"
+    assert cols["vx"] == "km/s" and cols["vy"] == "km/s" and cols["vz"] == "km/s"
+    assert cols["avgtemp"] == "eV"
+    assert cols["pxx"] == "eV/cm^3"
+    # Multi-quantity artifact: a single misleading axis unit is intentionally
+    # omitted while the descriptive axis_label is present.
+    assert "axis_units" not in payload
+    assert payload["axis_label"]
+
+
+def test_moments_sidecar_units_flagged_for_no_unit_conversion(
+    dist_npz, tmp_path, monkeypatch
+):
+    # When raw (no_unit_conversion) units are requested, the sidecar flags the
+    # columns as raw instead of asserting physical units.
+    _install_fake_pyspedas(monkeypatch)
+    out = particles.compute_particle_moments(
+        str(dist_npz),
+        str(tmp_path / "mom"),
+        output_format="json",
+        no_unit_conversion=True,
+    )
+    assert out["status"] == "success"
+    payload = json.loads(Path(out["labels_file"]).read_text())
+    assert payload["columns"]["density"].startswith("raw")
+
+
+def test_moments_sidecar_is_consumed_by_render_tplot(dist_npz, tmp_path, monkeypatch):
+    # End-to-end: the sidecar written by compute_particle_moments is the same
+    # convention render_tplot reads, so the moments line panel is self-describing.
+    from spedas_agent_kit.analysis import plotting
+
+    _install_fake_pyspedas(monkeypatch)
+    out = particles.compute_particle_moments(
+        str(dist_npz), str(tmp_path / "mom"), output_format="csv"
+    )
+    assert out["status"] == "success"
+
+    labels = plotting._read_sidecar_labels(Path(out["moments_file"]))
+    # render_tplot resolves a descriptive (non-stem) y-axis label from the
+    # sidecar rather than the bare filename stem.
+    assert labels.get("axis_label")
+    panel = {"file": out["moments_file"], **labels}
+    resolved = plotting._axis_ylabel(panel)
+    assert resolved == labels["axis_label"]
+    assert resolved != Path(out["moments_file"]).stem
+
+
 def test_moments_energy_range_masks_bins(dist_npz, tmp_path, monkeypatch):
     # The fake moments_3d encodes the active-bin count into density, so a
     # narrower energy band must lower the active count and thus the density.

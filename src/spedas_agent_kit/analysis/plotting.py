@@ -161,12 +161,43 @@ def _coerce_label(value: Any) -> str | None:
     return text or None
 
 
-def _spectrogram_ylabel(panel: dict[str, Any]) -> str:
-    """Resolve a spectrogram y-axis label, preferring embedded artifact labels.
+def _read_sidecar_labels(path: Path) -> dict[str, str]:
+    """Read a ``<artifact>.labels.json`` sidecar describing a table artifact.
+
+    Table artifacts (CSV/JSON) cannot embed string label keys the way ``.npz``
+    files can, so the writer convention (issue #154) is a sibling JSON sidecar
+    named ``<artifact-name>.labels.json`` (e.g. ``particle_moments.csv`` ->
+    ``particle_moments.csv.labels.json``). It may carry ``axis_label`` /
+    ``axis_units`` / ``value_label`` strings used the same way as the embedded
+    ``.npz`` keys. Missing/unreadable/blank entries are simply omitted so a
+    sidecar-less artifact keeps the filename-stem fallback. Per-column metadata
+    (e.g. a ``columns`` map) is allowed in the file but ignored here.
+    """
+    sidecar = path.with_name(path.name + ".labels.json")
+    if not sidecar.exists():
+        return {}
+    try:
+        payload = json.loads(sidecar.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(payload, dict):
+        return {}
+    out: dict[str, str] = {}
+    for key in ("axis_label", "axis_units", "value_label"):
+        value = payload.get(key)
+        if isinstance(value, str) and value.strip():
+            out[key] = value.strip()
+    return out
+
+
+def _axis_ylabel(panel: dict[str, Any]) -> str:
+    """Resolve a y-axis label, preferring embedded/sidecar artifact labels.
 
     Uses ``"<axis_label> [<axis_units>]"`` when the artifact carries them
-    (issue #150), ``"<axis_label>"`` if only the label is present, and falls
-    back to the filename stem for older label-less artifacts.
+    (issue #150 for ``.npz``, issue #154 for line/scatter + table sidecars),
+    ``"<axis_label>"`` if only the label is present, and falls back to the
+    filename stem for older label-less artifacts. Shared by spectrogram, line,
+    and scatter panels so every panel type labels its y-axis the same way.
     """
     label = panel.get("axis_label")
     units = panel.get("axis_units")
@@ -175,6 +206,11 @@ def _spectrogram_ylabel(panel: dict[str, Any]) -> str:
     if label:
         return str(label)
     return Path(panel["file"]).stem
+
+
+# Backwards-compatible alias: the spectrogram path historically called this
+# helper by a spectrogram-specific name. Line/scatter share the same logic now.
+_spectrogram_ylabel = _axis_ylabel
 
 
 def _normalize_panel_types(
@@ -371,7 +407,7 @@ def _load_array_artifact(
                 "found in the artifact"
             )
         return _build_scatter_panel(
-            path.name, npz[matrix_key], matrix_key, npz, x_component, y_component
+            path.name, npz[matrix_key], matrix_key, npz, x_component, y_component, labels
         )
 
     if spec_key is not None and not want_line:
@@ -433,6 +469,10 @@ def _load_array_artifact(
         "labels": [value_key] if len(series) == 1 else [f"{value_key}[{i}]" for i in range(len(series))],
         "shape": [int(n_time), len(series)],
         "value_range": _finite_range(np.concatenate([s.ravel() for s in series])),
+        # Optional self-describing labels (issue #154); empty for older npz.
+        "axis_label": labels.get("axis_label"),
+        "axis_units": labels.get("axis_units"),
+        "value_label": labels.get("value_label"),
     }
 
 
@@ -453,6 +493,7 @@ def _build_scatter_panel(
     npz: dict[str, Any],
     x_component: int | None,
     y_component: int | None,
+    artifact_labels: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """Normalize one 2-D matrix into x/y arrays for a hodogram panel."""
     import numpy as np
@@ -484,6 +525,7 @@ def _build_scatter_panel(
 
     x = values[:, x_idx]
     y = values[:, y_idx]
+    artifact_labels = artifact_labels or {}
     return {
         "kind": _PANEL_SCATTER,
         "time": time,
@@ -497,6 +539,12 @@ def _build_scatter_panel(
         "x_range": _finite_range(x),
         "y_range": _finite_range(y),
         "has_time_axis": bool(had_time_axis),
+        # Optional self-describing labels (issue #154); empty for older artifacts.
+        # For scatter panels these describe the matrix as a whole; the per-axis
+        # column labels above remain the x/y tick labels.
+        "axis_label": artifact_labels.get("axis_label"),
+        "axis_units": artifact_labels.get("axis_units"),
+        "value_label": artifact_labels.get("value_label"),
     }
 
 
@@ -525,6 +573,9 @@ def _load_table_artifact(
             f"{path.name}: spectrogram panels require a 2-D matrix artifact "
             "(.npz/.npy), not a CSV/JSON table"
         )
+
+    # Optional self-describing labels via a sibling sidecar (issue #154).
+    sidecar_labels = _read_sidecar_labels(path)
 
     if suffix == ".json":
         payload = json.loads(path.read_text(encoding="utf-8"))
@@ -567,7 +618,9 @@ def _load_table_artifact(
     if panel_type == _PANEL_SCATTER:
         values = df[value_cols].to_numpy(dtype="float64")
         npz = {"values": values, "time": time}
-        panel = _build_scatter_panel(path.name, values, "values", npz, x_component, y_component)
+        panel = _build_scatter_panel(
+            path.name, values, "values", npz, x_component, y_component, sidecar_labels
+        )
         panel["labels"] = [
             str(value_cols[panel["components"][0]]),
             str(value_cols[panel["components"][1]]),
@@ -582,6 +635,11 @@ def _load_table_artifact(
         "labels": list(value_cols),
         "shape": [int(time.shape[0]), len(series)],
         "value_range": _finite_range(np.concatenate([s.ravel() for s in series])),
+        # Optional self-describing labels from a sidecar (issue #154); empty
+        # for tables without one.
+        "axis_label": sidecar_labels.get("axis_label"),
+        "axis_units": sidecar_labels.get("axis_units"),
+        "value_label": sidecar_labels.get("value_label"),
     }
 
 
@@ -863,7 +921,7 @@ def _draw_figure(
                 entry["zlog"] = bool(zlog_flags[idx])
                 # Surface the resolved axis/colorbar labels so callers can see
                 # the artifact was self-describing (issue #150).
-                entry["axis_label"] = _spectrogram_ylabel(panel)
+                entry["axis_label"] = _axis_ylabel(panel)
                 if panel.get("value_label"):
                     entry["value_label"] = panel["value_label"]
             elif panel["kind"] == _PANEL_SCATTER:
@@ -873,15 +931,28 @@ def _draw_figure(
                 entry["x_range"] = panel.get("x_range")
                 entry["y_range"] = panel.get("y_range")
                 entry["has_time_axis"] = bool(panel.get("has_time_axis"))
+                # Surface any embedded/sidecar labels (issue #154). The scatter
+                # axes are labeled by column, so this is descriptive metadata
+                # only and does not override the x/y tick labels.
+                if panel.get("axis_label") or panel.get("axis_units"):
+                    entry["axis_label"] = _axis_ylabel(panel)
+                if panel.get("value_label"):
+                    entry["value_label"] = panel["value_label"]
             else:
                 _draw_line(ax, panel, ylog_flags[idx], mdates)
                 entry["ylog"] = bool(ylog_flags[idx])
                 entry["n_series"] = len(panel.get("series", []))
+                # Surface the resolved y-axis label (embedded/sidecar or stem),
+                # mirroring the spectrogram branch (issue #154).
+                entry["axis_label"] = _axis_ylabel(panel)
+                if panel.get("value_label"):
+                    entry["value_label"] = panel["value_label"]
             if panel["kind"] == _PANEL_SPECTROGRAM:
                 # Prefer the embedded axis label/units; fall back to the stem.
-                ax.set_ylabel(_spectrogram_ylabel(panel), fontsize=8)
+                ax.set_ylabel(_axis_ylabel(panel), fontsize=8)
             elif panel["kind"] != _PANEL_SCATTER:
-                ax.set_ylabel(Path(panel["file"]).stem, fontsize=8)
+                # Line panels: prefer embedded/sidecar labels, else the stem.
+                ax.set_ylabel(_axis_ylabel(panel), fontsize=8)
             meta.append(entry)
 
         if has_scatter:
