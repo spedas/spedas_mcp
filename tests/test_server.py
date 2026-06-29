@@ -330,6 +330,32 @@ def test_unified_spice_load_and_parameter_browse_do_not_pass_mission_kwarg():
     assert params["payload"]
 
 
+def test_unified_spice_frame_catalog_is_programmatic_without_extra_tool():
+    server = create_server()
+    tools = asyncio.run(server.list_tools())
+    assert "list_coordinate_frames" not in {tool.name for tool in tools}
+
+    loaded = json.loads(_call_tool(server, "load_data_source", {"source_type": "spice", "source_id": "frames"}))
+    assert loaded["status"] == "success"
+    assert loaded["source_type"] == "spice"
+    assert loaded["frame_catalog"]["catalog_type"] == "spice_coordinate_frames"
+    assert loaded["frame_catalog"]["frames"] == loaded["payload"]
+    assert loaded["frame_catalog"]["frame_count"] == len(loaded["frame_names"])
+    assert {"J2000", "ECLIPJ2000", "RTN"} <= set(loaded["supported_frame_names"])
+    assert any(frame["frame"] == "RTN" and "spacecraft" in frame["description"].lower() for frame in loaded["payload"])
+    assert any(alias["alias"] == "ECLIPTIC" and alias["frame"] == "ECLIPJ2000" for alias in loaded["frame_catalog"]["aliases"])
+    assert loaded["frame_catalog"]["transform_tool"] == "transform_coordinates"
+
+
+def test_browse_spice_sources_also_advertises_frame_catalog_for_discovery():
+    server = create_server()
+    data = json.loads(_call_tool(server, "browse_data_sources", {"source_type": "spice", "query": "frame"}))
+    assert data["status"] == "success"
+    assert data["frame_catalog"]["frames"]
+    assert "GSE" in data["supported_frame_names"]
+    assert "transform_coordinates" in data["note"]
+
+
 def test_unified_pds_fetch_rejects_unsupported_limit_cleanly(tmp_path: Path):
     server = create_server()
     data = json.loads(_call_tool(server, "fetch_data_product", {
