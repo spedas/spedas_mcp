@@ -1,0 +1,369 @@
+{
+  "id": "goes",
+  "name": "GOES",
+  "profile": {
+    "description": "GOES data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "particles": {
+      "name": "Energetic Particles",
+      "keywords": [
+        "particle",
+        "energetic",
+        "cosmic ray"
+      ],
+      "datasets": {
+        "GOES15_EPEAD-SCIENCE-ELECTRONS-E13EW_1MIN": {
+          "description": "GOES Energetic Proton Electron and Alpha Detector Electron Fluxes reprocessed for scientific use  - NOAA NGDC and SWPC (sem.goes@noaa.gov)",
+          "start_date": "2010-03-26T00:00:00.000Z",
+          "stop_date": "2020-03-04T23:59:00.000Z",
+          "pi_name": "NOAA NGDC and SWPC"
+        },
+        "GOES15_EPS-PITCH-ANGLES_1MIN": {
+          "description": "GOES-15 EPS (Energetic Particle Sensor) MagED (Magnetospheric Electron Detector) 1 minute electron fluxes 40-475 keV - NOAA NGDC and SWPC (sem.goes@noaa.gov)",
+          "start_date": "2010-03-26T00:00:00.000Z",
+          "stop_date": "2020-03-04T23:59:00.000Z",
+          "pi_name": "NOAA NGDC and SWPC"
+        },
+        "GOES15_EPS-MAGED_1MIN": {
+          "description": "GOES-15 EPS (Energetic Particle Sensor) MagED (Magnetospheric Electron Detector) 1 minute electron fluxes 40-475 keV - NOAA NGDC and SWPC (sem.goes@noaa.gov)",
+          "start_date": "2010-03-01T00:00:00.000Z",
+          "stop_date": "2020-03-04T23:59:00.000Z",
+          "pi_name": "NOAA NGDC and SWPC"
+        },
+        "G7_K0_EPS": {
+          "description": "GOES 7 Energetic Particle Sensor, Key Parameters - H. Sauer (NOAA)",
+          "start_date": "1992-12-12T00:02:30.000Z",
+          "stop_date": "1996-02-26T23:57:30.000Z",
+          "pi_name": "H. Sauer"
+        },
+        "GOES14_EPS-PITCH-ANGLES_1MIN": {
+          "description": "GOES-14 EPS (Energetic Particle Sensor) MagED (Magnetospheric Electron Detector) 1 minute electron fluxes 40-475 keV - NOAA NGDC and SWPC (sem.goes@noaa.gov)",
+          "start_date": "2012-10-01T00:00:00.000Z",
+          "stop_date": "2020-03-04T23:59:00.000Z",
+          "pi_name": "NOAA NGDC and SWPC"
+        },
+        "GOES14_EPEAD-SCIENCE-ELECTRONS-E13EW_1MIN": {
+          "description": "GOES Energetic Proton Electron and Alpha Detector Electron Fluxes reprocessed for scientific use  - NOAA NGDC and SWPC (sem.goes@noaa.gov)",
+          "start_date": "2012-10-01T00:00:00.000Z",
+          "stop_date": "2020-03-04T23:59:00.000Z",
+          "pi_name": "NOAA NGDC and SWPC"
+        },
+        "G6_K0_EPS": {
+          "description": "GOES 6 Energetic Particle Sensor, Key Parameters - H. Sauer (NOAA)",
+          "start_date": "1992-12-12T00:02:30.000Z",
+          "stop_date": "1994-11-25T23:57:30.000Z",
+          "pi_name": "H. Sauer"
+        },
+        "G0_K0_EP8": {
+          "description": "GOES 10 Energetic Particle Sensor, Key Parameters - T. Onsager (NOAA SEC)",
+          "start_date": "1999-03-21T00:02:30.000Z",
+          "stop_date": "2006-06-22T23:57:30.000Z",
+          "pi_name": "T. Onsager"
+        },
+        "GOES13_EPEAD-SCIENCE-ELECTRONS-E13EW_1MIN": {
+          "description": "GOES Energetic Proton Electron and Alpha Detector Electron Fluxes reprocessed for scientific use  - NOAA NGDC and SWPC (sem.goes@noaa.gov)",
+          "start_date": "2010-05-01T00:00:00.000Z",
+          "stop_date": "2017-12-14T23:59:00.000Z",
+          "pi_name": "NOAA NGDC and SWPC"
+        },
+        "G9_K0_EP8": {
+          "description": "GOES 9 Energetic Particle Sensor, Key Parameters - T. Onsager (NOAA SEC)",
+          "start_date": "1995-12-01T00:02:30.000Z",
+          "stop_date": "1998-07-27T23:57:30.000Z",
+          "pi_name": "T. Onsager"
+        },
+        "GOES11_K0_EP8": {
+          "description": "GOES 11 Energetic Particle Sensor, Key Parameters - T. Onsager (NOAA SEC)",
+          "start_date": "2006-06-23T00:02:30.000Z",
+          "stop_date": "2010-12-30T23:57:30.000Z",
+          "pi_name": "T. Onsager"
+        },
+        "GOES13_EPS-PITCH-ANGLES_1MIN": {
+          "description": "GOES-13 EPS (Energetic Particle Sensor) MagED (Magnetospheric Electron Detector) 1 minute electron fluxes 40-475 keV - NOAA NGDC and SWPC (sem.goes@noaa.gov)",
+          "start_date": "2010-05-01T00:00:00.000Z",
+          "stop_date": "2017-12-14T23:59:00.000Z",
+          "pi_name": "NOAA NGDC and SWPC"
+        },
+        "G8_K0_EP8": {
+          "description": "GOES 8 Energetic Particle Sensor, Key Parameters - T. Onsager (NOAA SEC)",
+          "start_date": "1995-12-01T00:02:30.000Z",
+          "stop_date": "2003-04-08T23:57:30.000Z",
+          "pi_name": "T. Onsager"
+        },
+        "GOES14_EPS-MAGED_5MIN": {
+          "description": "GOES-14 EPS (Energetic Particle Sensor) MagED (Magnetospheric Electron Detector) 5 minute electron fluxes 40-475 keV - NOAA NGDC and SWPC (sem.goes@noaa.gov)",
+          "start_date": "2010-04-01T00:00:00.000Z",
+          "stop_date": "2020-01-23T23:55:00.000Z",
+          "pi_name": "NOAA NGDC and SWPC"
+        },
+        "GOES13_EPS-MAGED_5MIN": {
+          "description": "GOES-13 EPS (Energetic Particle Sensor) MagED (Magnetospheric Electron Detector) 5 minute electron fluxes 40-475 keV - NOAA NGDC and SWPC (sem.goes@noaa.gov)",
+          "start_date": "2011-01-01T00:00:00.000Z",
+          "stop_date": "2017-12-14T23:55:00.000Z",
+          "pi_name": "NOAA NGDC and SWPC"
+        },
+        "GOES14_EPS-MAGED_1MIN": {
+          "description": "GOES-14 EPS (Energetic Particle Sensor) MagED (Magnetospheric Electron Detector) 1 minute electron fluxes 40-475 keV - NOAA NGDC and SWPC (sem.goes@noaa.gov)",
+          "start_date": "2009-07-01T00:00:00.000Z",
+          "stop_date": "2020-03-04T23:59:00.000Z",
+          "pi_name": "NOAA NGDC and SWPC"
+        },
+        "GOES13_EPS-MAGED_1MIN": {
+          "description": "GOES-13 EPS (Energetic Particle Sensor) MagED (Magnetospheric Electron Detector) 1 minute electron fluxes 40-475 keV - NOAA NGDC and SWPC (sem.goes@noaa.gov)",
+          "start_date": "2006-06-01T00:00:00.000Z",
+          "stop_date": "2017-12-14T23:59:00.000Z",
+          "pi_name": "NOAA NGDC and SWPC"
+        },
+        "GOES15_EPS-MAGED_5MIN": {
+          "description": "GOES-15 EPS (Energetic Particle Sensor) MagED (Magnetospheric Electron Detector) 5 minute electron fluxes 40-475 keV - NOAA NGDC and SWPC (sem.goes@noaa.gov)",
+          "start_date": "2011-02-01T00:00:00.000Z",
+          "stop_date": "2019-10-08T23:55:00.000Z",
+          "pi_name": "NOAA NGDC and SWPC"
+        }
+      }
+    },
+    "mag": {
+      "name": "Magnetic Fields",
+      "keywords": [
+        "magnetic",
+        "field",
+        "mag",
+        "b-field",
+        "imf",
+        "magnetometer"
+      ],
+      "datasets": {
+        "G8_K0_MAG": {
+          "description": "GOES 8 Magnetometer Key Parameters - H. Singer (NOAA SEC)",
+          "start_date": "1995-12-01T00:00:30.000Z",
+          "stop_date": "2003-04-08T23:59:30.000Z",
+          "pi_name": "H. Singer"
+        },
+        "GOES12_K0_MAG": {
+          "description": "GOES 12 Magnetometer Key Parameters - H. Singer (NOAA SEC)",
+          "start_date": "2003-04-08T00:00:30.000Z",
+          "stop_date": "2010-09-23T23:59:30.000Z",
+          "pi_name": "H. Singer"
+        },
+        "G0_K0_GIFWALK": {
+          "description": "Links to GEOSYNC KP pre-generated survey and other plots - Polar-Wind-Geotail Ground System (NASA GSFC)",
+          "start_date": "2004-08-09T00:00:00.000Z",
+          "stop_date": "2004-08-09T01:00:00.000Z",
+          "pi_name": "Polar-Wind-Geotail Ground System"
+        },
+        "G7_K0_MAG": {
+          "description": "GOES-7 Magnetometer Key Parameters - R. Zwickl (NOAA SEL)",
+          "start_date": "1992-12-12T00:00:30.000Z",
+          "stop_date": "1996-02-26T23:59:30.000Z",
+          "pi_name": "R. Zwickl"
+        },
+        "G10_L2_MAG": {
+          "description": "GOES-10 High Resolution Magnetometer data vectors (at 512 ms, ephem at 60 sec) - Howard J. Singer (NOAA Space Weather Prediction Center)",
+          "start_date": "2007-01-01T00:00:00.000Z",
+          "stop_date": "2008-12-31T23:59:59.000Z",
+          "pi_name": "Howard J. Singer"
+        },
+        "G6_K0_MAG": {
+          "description": "GOES-6 Magnetometer Key Parameters - R. Zwickl (NOAA SEL)",
+          "start_date": "1992-12-12T00:00:30.000Z",
+          "stop_date": "1994-11-25T23:59:30.000Z",
+          "pi_name": "R. Zwickl"
+        },
+        "GOES11_K0_MAG": {
+          "description": "GOES 11 Magnetometer Key Parameters - H. Singer (NOAA SEC)",
+          "start_date": "2006-06-23T00:00:30.000Z",
+          "stop_date": "2010-12-30T23:59:30.000Z",
+          "pi_name": "H. Singer"
+        },
+        "G11_L2_MAG": {
+          "description": "GOES-11 High Resolution Magnetometer data vectors (at 512 ms, ephem at 60 sec) - Howard J. Singer (NOAA Space Weather Prediction Center)",
+          "start_date": "2007-01-01T00:00:00.000Z",
+          "stop_date": "2008-12-31T23:59:59.000Z",
+          "pi_name": "Howard J. Singer"
+        },
+        "G0_K0_MAG": {
+          "description": "GOES 10 Magnetometer Key Parameters - H. Singer (NOAA SEC)",
+          "start_date": "1999-03-21T00:00:30.000Z",
+          "stop_date": "2006-06-22T23:59:30.000Z",
+          "pi_name": "H. Singer"
+        },
+        "DN_MAGN-L2-HIRES_G08": {
+          "description": "GOES-08 Magnetometer L2 - Rob Redmon, Paul Loto'aniu, Howard Singer (DOC/NOAA/NCEI and DOC/NOAA/NWS/SWPC respectively)",
+          "start_date": "1995-07-01T00:00:00.000Z",
+          "stop_date": "2001-12-09T23:59:59.000Z",
+          "pi_name": "Rob Redmon, Paul Loto'aniu, Howard Singer"
+        },
+        "DN_MAGN-L2-HIRES_G09": {
+          "description": "GOES-09 Magnetometer L2 - Rob Redmon, Paul Loto'aniu, Howard Singer (DOC/NOAA/NCEI and DOC/NOAA/NWS/SWPC respectively)",
+          "start_date": "1995-06-16T00:00:00.000Z",
+          "stop_date": "2001-12-24T23:59:59.000Z",
+          "pi_name": "Rob Redmon, Paul Loto'aniu, Howard Singer"
+        },
+        "DN_MAGN-L2-HIRES_G11": {
+          "description": "GOES-11 Magnetometer L2 - Rob Redmon, Paul Loto'aniu, Howard Singer (DOC/NOAA/NCEI and DOC/NOAA/NWS/SWPC respectively)",
+          "start_date": "2000-01-01T12:00:00.000Z",
+          "stop_date": "2010-04-13T23:59:59.000Z",
+          "pi_name": "Rob Redmon, Paul Loto'aniu, Howard Singer"
+        },
+        "DN_MAGN-L2-HIRES_G10": {
+          "description": "GOES-10 Magnetometer L2 - Rob Redmon, Paul Loto'aniu, Howard Singer (DOC/NOAA/NCEI and DOC/NOAA/NWS/SWPC respectively)",
+          "start_date": "1997-05-06T00:00:00.000Z",
+          "stop_date": "2005-05-31T23:59:59.000Z",
+          "pi_name": "Rob Redmon, Paul Loto'aniu, Howard Singer"
+        },
+        "DN_MAGN-L2-HIRES_G13": {
+          "description": "GOES-13 Magnetometer L2 - Rob Redmon, Paul Loto'aniu, Howard Singer (DOC/NOAA/NCEI and DOC/NOAA/NWS/SWPC respectively)",
+          "start_date": "2010-05-04T00:00:00.000Z",
+          "stop_date": "2017-12-09T23:59:59.000Z",
+          "pi_name": "Rob Redmon, Paul Loto'aniu, Howard Singer"
+        },
+        "DN_MAGN-L2-HIRES_G12": {
+          "description": "GOES-12 Magnetometer L2 - Rob Redmon, Paul Loto'aniu, Howard Singer (DOC/NOAA/NCEI and DOC/NOAA/NWS/SWPC respectively)",
+          "start_date": "2000-01-01T12:00:00.000Z",
+          "stop_date": "2009-09-16T23:59:59.000Z",
+          "pi_name": "Rob Redmon, Paul Loto'aniu, Howard Singer"
+        },
+        "DN_MAGN-L2-HIRES_G15": {
+          "description": "GOES-15 Magnetometer L2 - Rob Redmon, Paul Loto'aniu, Howard Singer (DOC/NOAA/NCEI and DOC/NOAA/NWS/SWPC respectively)",
+          "start_date": "2011-01-01T00:00:00.000Z",
+          "stop_date": "2017-12-09T23:59:59.000Z",
+          "pi_name": "Rob Redmon, Paul Loto'aniu, Howard Singer"
+        },
+        "DN_MAGN-L2-HIRES_G14": {
+          "description": "GOES-14 Magnetometer L2 - Rob Redmon, Paul Loto'aniu, Howard Singer (DOC/NOAA/NCEI and DOC/NOAA/NWS/SWPC respectively)",
+          "start_date": "2012-10-01T00:00:00.000Z",
+          "stop_date": "2017-12-07T23:59:59.000Z",
+          "pi_name": "Rob Redmon, Paul Loto'aniu, Howard Singer"
+        },
+        "DN_MAGN-L2-HIRES_G17": {
+          "description": "GOES-17 Magnetometer L2 - Rob Redmon, Paul Loto'aniu, Howard Singer (DOC/NOAA/NCEI and DOC/NOAA/NWS/SWPC respectively)",
+          "start_date": "2018-08-01T00:00:00.000Z",
+          "stop_date": "2023-03-14T23:59:59.000Z",
+          "pi_name": "Rob Redmon, Paul Loto'aniu, Howard Singer"
+        },
+        "DN_MAGN-L2-HIRES_G16": {
+          "description": "GOES-16 Magnetometer L2 - Rob Redmon, Paul Loto'aniu, Howard Singer (DOC/NOAA/NCEI and DOC/NOAA/NWS/SWPC respectively)",
+          "start_date": "2018-08-29T00:00:00.000Z",
+          "stop_date": "2025-04-07T23:59:59.000Z",
+          "pi_name": "Rob Redmon, Paul Loto'aniu, Howard Singer"
+        },
+        "DN_MAGN-L2-HIRES_G19": {
+          "description": "GOES-19 Magnetometer L2 Geomagnetic Field 10 Hz Product with Complete Coordinate Frames - Rob Redmon, Paul Loto'aniu (DOC/NOAA/NESDIS/NCEI/OGSSD/STP)",
+          "start_date": "2025-06-01T00:00:00.000Z",
+          "stop_date": "2026-03-04T23:59:59.000Z",
+          "pi_name": "Rob Redmon, Paul Loto'aniu"
+        },
+        "DN_MAGN-L2-HIRES_G18": {
+          "description": "GOES-18 Magnetometer L2 - Rob Redmon, Paul Loto'aniu (DOC/NOAA/NESDIS/NCEI/OGSSD/STP)",
+          "start_date": "2022-08-08T00:00:00.000Z",
+          "stop_date": "2026-03-04T23:59:59.000Z",
+          "pi_name": "Rob Redmon, Paul Loto'aniu"
+        },
+        "G7_K1_MAG": {
+          "description": "GOES-7 Magnetometer Calculated PSD for Hn - R. Zwickl (NOAA SEL)",
+          "start_date": "1995-02-11T04:00:30.000Z",
+          "stop_date": "1995-04-09T00:59:30.000Z",
+          "pi_name": "R. Zwickl"
+        },
+        "G9_K0_MAG": {
+          "description": "GOES 9 Magnetometer Key Parameters - H. Singer (NOAA SEC)",
+          "start_date": "1995-12-01T00:00:30.000Z",
+          "stop_date": "1998-07-27T23:59:30.000Z",
+          "pi_name": "H. Singer"
+        },
+        "G12_L2_MAG": {
+          "description": "GOES-12 High Resolution Magnetometer data vectors (at 512 ms, ephem at 60 sec) - Howard J. Singer (NOAA Space Weather Prediction Center)",
+          "start_date": "2007-01-01T00:00:00.000Z",
+          "stop_date": "2008-12-31T23:59:59.000Z",
+          "pi_name": "Howard J. Singer"
+        }
+      }
+    },
+    "ephemeris": {
+      "name": "Ephemeris and Attitude",
+      "keywords": [
+        "ephemeris",
+        "orbit",
+        "attitude",
+        "position"
+      ],
+      "datasets": {
+        "GOES16_EPHEMERIS_SSC": {
+          "description": "GOES16 Ephemeris data from the SSCWeb system - SPDF (Goddard Space Flight Center)",
+          "start_date": "2016-12-03T10:56:00.000Z",
+          "stop_date": "2025-08-17T00:00:00.000Z",
+          "pi_name": "SPDF"
+        },
+        "GOES14_EPHEMERIS_SSC": {
+          "description": "GOES14 Ephemeris data from the SSCWeb system - SPDF (Goddard Space Flight Center)",
+          "start_date": "2009-07-09T00:00:00.000Z",
+          "stop_date": "2025-08-17T00:00:00.000Z",
+          "pi_name": "SPDF"
+        },
+        "GOES18_EPHEMERIS_SSC": {
+          "description": "GOES-18 ephemeris data generated by the SSCWeb system - SPDF (Goddard Space Flight Center)",
+          "start_date": "2022-03-18T00:00:00.000Z",
+          "stop_date": "2026-03-23T00:00:00.000Z",
+          "pi_name": "SPDF"
+        },
+        "GOES11_EPHEMERIS_SSC": {
+          "description": "GOES11 Ephemeris data from the SSCWeb system - SPDF (Goddard Space Flight Center)",
+          "start_date": "2000-05-17T00:00:00.000Z",
+          "stop_date": "2016-01-01T00:00:00.000Z",
+          "pi_name": "SPDF"
+        },
+        "GOES12_EPHEMERIS_SSC": {
+          "description": "GOES12 Ephemeris data from the SSCWeb system - SPDF (Goddard Space Flight Center)",
+          "start_date": "2006-01-01T00:00:00.000Z",
+          "stop_date": "2016-12-20T00:00:00.000Z",
+          "pi_name": "SPDF"
+        },
+        "GOES15_EPHEMERIS_SSC": {
+          "description": "GOES-15 Ephemeris data from the SSCWeb system - SPDF (Goddard Space Flight Center)",
+          "start_date": "2010-03-21T00:00:00.000Z",
+          "stop_date": "2023-10-29T00:00:00.000Z",
+          "pi_name": "SPDF"
+        },
+        "GOES8_EPHEMERIS_SSC": {
+          "description": "GOES8 Ephemeris data from the SSCWeb system - SPDF (Goddard Space Flight Center)",
+          "start_date": "1994-05-03T00:00:00.000Z",
+          "stop_date": "2016-11-23T00:00:00.000Z",
+          "pi_name": "SPDF"
+        },
+        "GOES9_EPHEMERIS_SSC": {
+          "description": "GOES9 Ephemeris data from the SSCWeb system - SPDF (Goddard Space Flight Center)",
+          "start_date": "1995-06-05T00:00:00.000Z",
+          "stop_date": "2010-01-01T00:00:00.000Z",
+          "pi_name": "SPDF"
+        },
+        "GOES10_EPHEMERIS_SSC": {
+          "description": "GOES10 Ephemeris data from the SSCWeb system - SPDF (Goddard Space Flight Center)",
+          "start_date": "1997-04-25T00:06:00.000Z",
+          "stop_date": "2009-01-01T00:00:00.000Z",
+          "pi_name": "SPDF"
+        },
+        "GOES13_EPHEMERIS_SSC": {
+          "description": "GOES13 Ephemeris data from the SSCWeb system - SPDF (Goddard Space Flight Center)",
+          "start_date": "2006-06-10T00:00:00.000Z",
+          "stop_date": "2022-02-13T00:00:00.000Z",
+          "pi_name": "SPDF"
+        },
+        "GOES17_EPHEMERIS_SSC": {
+          "description": "GOES17 Ephemeris data from the SSCWeb system - SPDF (Goddard Space Flight Center)",
+          "start_date": "2018-03-21T00:00:00.000Z",
+          "stop_date": "2025-08-17T00:00:00.000Z",
+          "pi_name": "SPDF"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "goes"
+}

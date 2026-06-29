@@ -1,0 +1,39 @@
+{
+  "id": "msl",
+  "name": "Mars Science Laboratory (MSL)",
+  "profile": {
+    "description": "Mars Science Laboratory (MSL) data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "particles": {
+      "name": "Energetic Particles",
+      "keywords": [
+        "particle",
+        "energetic",
+        "cosmic ray"
+      ],
+      "datasets": {
+        "MSL_RAD_OBS-L1": {
+          "description": "MSL/RAD Level 1 observational counter data - D. Hassler (SwRI-Boulder)",
+          "start_date": "2015-01-02T00:10:45.000Z",
+          "stop_date": "2026-03-03T11:11:16.000Z",
+          "pi_name": "D. Hassler"
+        },
+        "MSL_RAD_OBS-L2": {
+          "description": "MSL/RAD Level 2 observational radiation data - D. Hassler (SwRI-Boulder)",
+          "start_date": "2015-01-01T00:11:01.000Z",
+          "stop_date": "2026-03-03T11:11:16.000Z",
+          "pi_name": "D. Hassler"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "msl"
+}

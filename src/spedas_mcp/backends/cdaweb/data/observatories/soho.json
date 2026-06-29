@@ -1,0 +1,198 @@
+{
+  "id": "soho",
+  "name": "SOHO",
+  "profile": {
+    "description": "SOHO data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "plasma": {
+      "name": "Plasma and Solar Wind",
+      "keywords": [
+        "plasma",
+        "solar wind",
+        "proton",
+        "density",
+        "velocity",
+        "temperature",
+        "ion",
+        "electron"
+      ],
+      "datasets": {
+        "SO_K0_CEL": {
+          "description": "SOHO Charge, Element and Isotope Analysis System, Key Parameters - Peter Bochsler (Physikalisches Institut, )",
+          "start_date": "1995-12-22T00:00:11.000Z",
+          "stop_date": "2002-01-31T23:51:06.000Z",
+          "pi_name": "Peter Bochsler",
+          "doi": "10.48322/n40y-m550"
+        },
+        "SOHO_CELIAS-PM_30S": {
+          "description": "SOHO CELIAS-PM 30 second data - Robert Wimmer-Schweingruber (wimmer@physik.uni-kiel.de) (Christian Albrechts Universitat)",
+          "start_date": "1996-01-20T17:30:28.000Z",
+          "stop_date": "2023-05-31T23:59:16.000Z",
+          "pi_name": "Robert Wimmer-Schweingruber (wimmer@physik.uni-kiel.de)",
+          "doi": "10.48322/nb4b-f027"
+        },
+        "SOHO_CELIAS-PM_5MIN": {
+          "description": "SOHO CELIAS-PM 5 minute data - Robert Wimmer-Schweingruber (wimmer@physik.uni-kiel.de) (Christian Albrechts Universitat)",
+          "start_date": "1996-01-20T20:18:00.000Z",
+          "stop_date": "2023-07-06T23:57:16.000Z",
+          "pi_name": "Robert Wimmer-Schweingruber (wimmer@physik.uni-kiel.de)",
+          "doi": "10.48322/a1m9-qh25"
+        }
+      }
+    },
+    "particles": {
+      "name": "Energetic Particles",
+      "keywords": [
+        "particle",
+        "energetic",
+        "cosmic ray"
+      ],
+      "datasets": {
+        "SOHO_COSTEP-EPHIN_L3I-1DAY": {
+          "description": "SOHO COSTEP-EPHIN Level3 intensity 1 day data - Bernd Heber (heber@physik.uni-kiel.de) (Christian Albrechts Universitat)",
+          "start_date": "1995-12-08T00:00:00.000Z",
+          "stop_date": "2026-02-19T00:00:00.000Z",
+          "pi_name": "Bernd Heber (heber@physik.uni-kiel.de)"
+        },
+        "SOHO_ERNE-HED_L2-1MIN": {
+          "description": "SOHO ERNE-HED Level2 1 minute data - Rami Vainio (rami.vainio@utu.fi) (Space Research Laboratory)",
+          "start_date": "1996-05-07T17:19:56.000Z",
+          "stop_date": "2026-02-04T23:59:36.000Z",
+          "pi_name": "Rami Vainio (rami.vainio@utu.fi)",
+          "doi": "10.48322/78x1-m644"
+        },
+        "SO_K0_CST": {
+          "description": "SOHO ComprehensiveSuprathermal and  EnergeticParticle Analyser  - Horst Kunow (University of Kiel, Germany)",
+          "start_date": "1995-12-02T00:00:00.000Z",
+          "stop_date": "2002-01-31T23:57:25.000Z",
+          "pi_name": "Horst Kunow"
+        },
+        "SOHO_ERNE_HEAVY-ION-1HR": {
+          "description": "SOHO ERNE heavy ion 1 hour data - Rami Vainio (rami.vainio@utu.fi) (Space Research Laboratory)",
+          "start_date": "1996-01-01T00:00:00.000Z",
+          "stop_date": "2023-02-28T23:00:00.000Z",
+          "pi_name": "Rami Vainio (rami.vainio@utu.fi)",
+          "doi": "10.48322/js86-0v08"
+        },
+        "SOHO_ERNE-LED_L2-1MIN": {
+          "description": "SOHO ERNE-LED Level2 1 minute data - Rami Vainio (rami.vainio@utu.fi) (Space Research Laboratory)",
+          "start_date": "1996-05-07T17:19:56.000Z",
+          "stop_date": "2023-07-19T14:19:14.000Z",
+          "pi_name": "Rami Vainio (rami.vainio@utu.fi)",
+          "doi": "10.48322/0cna-yt27"
+        },
+        "SOHO_COSTEP-EPHIN_L3I-30MIN": {
+          "description": "SOHO COSTEP-EPHIN Level3 intensity 30 minute data - Bernd Heber (heber@physik.uni-kiel.de) (Christian Albrechts Universitat)",
+          "start_date": "1995-12-08T00:00:00.000Z",
+          "stop_date": "2026-02-19T23:30:00.000Z",
+          "pi_name": "Bernd Heber (heber@physik.uni-kiel.de)"
+        },
+        "SOHO_COSTEP-EPHIN_L3I-5MIN": {
+          "description": "SOHO COSTEP-EPHIN Level3 intensity 5 minute data - Bernd Heber (heber@physik.uni-kiel.de) (Christian Albrechts Universitat)",
+          "start_date": "1995-12-08T00:00:00.000Z",
+          "stop_date": "2026-02-19T23:55:00.000Z",
+          "pi_name": "Bernd Heber (heber@physik.uni-kiel.de)"
+        },
+        "SOHO_ERNE_HEAVY-ION-5MIN": {
+          "description": "SOHO ERNE heavy ion 5 minute data - Rami Vainio (rami.vainio@utu.fi) (Space Research Laboratory)",
+          "start_date": "1996-01-01T00:00:00.000Z",
+          "stop_date": "2023-02-28T23:55:00.000Z",
+          "pi_name": "Rami Vainio (rami.vainio@utu.fi)",
+          "doi": "10.48322/2md9-8h18"
+        },
+        "SO_K0_ERN": {
+          "description": "SOHO Energetic and Relativistic Nuclei and Electron experiment, Key Parameters - J Torsti (University of Turku)",
+          "start_date": "1995-12-02T00:00:00.000Z",
+          "stop_date": "2000-02-09T23:59:57.000Z",
+          "pi_name": "J Torsti",
+          "doi": "10.48322/byv5-gp28"
+        },
+        "SOHO_COSTEP-EPHIN_L3I-10MIN": {
+          "description": "SOHO COSTEP-EPHIN Level3 intensity 10 minute data - Bernd Heber (heber@physik.uni-kiel.de) (Christian Albrechts Universitat)",
+          "start_date": "1995-12-08T00:00:00.000Z",
+          "stop_date": "2026-02-19T23:50:00.000Z",
+          "pi_name": "Bernd Heber (heber@physik.uni-kiel.de)"
+        },
+        "SOHO_COSTEP-EPHIN_L3I-1MIN": {
+          "description": "SOHO COSTEP-EPHIN Level3 intensity 1 minute data - Bernd Heber (heber@physik.uni-kiel.de) (Christian Albrechts Universitat)",
+          "start_date": "1995-12-08T00:01:00.000Z",
+          "stop_date": "2026-02-19T23:59:00.000Z",
+          "pi_name": "Bernd Heber (heber@physik.uni-kiel.de)"
+        },
+        "SOHO_COSTEP-EPHIN_L3I-1HR": {
+          "description": "SOHO COSTEP-EPHIN Level3 intensity 1 hour data - Bernd Heber (heber@physik.uni-kiel.de) (Christian Albrechts Universitat)",
+          "start_date": "1995-12-08T00:00:00.000Z",
+          "stop_date": "2026-02-19T23:00:00.000Z",
+          "pi_name": "Bernd Heber (heber@physik.uni-kiel.de)"
+        }
+      }
+    },
+    "imaging_sun": {
+      "name": "Solar Imaging",
+      "keywords": [
+        "solar",
+        "coronagraph",
+        "euv",
+        "uv",
+        "x-ray"
+      ],
+      "datasets": {
+        "SOHO_CELIAS-SEM_15S": {
+          "description": "SOHO CELIAS-SEM 15 second data - Robert Wimmer-Schweingruber (wimmer@physik.uni-kiel.de) (Christian Albrechts Universitat)",
+          "start_date": "1995-12-21T00:00:05.000Z",
+          "stop_date": "2026-02-19T23:59:46.000Z",
+          "pi_name": "Robert Wimmer-Schweingruber (wimmer@physik.uni-kiel.de)",
+          "doi": "10.48322/perq-dq14"
+        },
+        "SOHO_CELIAS-SEM_1DAY": {
+          "description": "SOHO CELIAS-SEM 1 day data - Robert Wimmer-Schweingruber (wimmer@physik.uni-kiel.de) (Christian Albrechts Universitat)",
+          "start_date": "1995-01-01T12:00:00.000Z",
+          "stop_date": "2026-02-20T12:00:00.000Z",
+          "pi_name": "Robert Wimmer-Schweingruber (wimmer@physik.uni-kiel.de)",
+          "doi": "10.48322/d93q-e053"
+        }
+      }
+    },
+    "ephemeris": {
+      "name": "Ephemeris and Attitude",
+      "keywords": [
+        "ephemeris",
+        "orbit",
+        "attitude",
+        "position"
+      ],
+      "datasets": {
+        "SO_AT_DEF": {
+          "description": "SOHO Definitive Attitude Data",
+          "start_date": "1995-05-22T00:05:00.000Z",
+          "stop_date": "2002-09-22T23:55:00.000Z"
+        },
+        "SO_OR_PRE": {
+          "description": "Soho Predicted Data Orbit",
+          "start_date": "1995-05-22T00:00:00.000Z",
+          "stop_date": "2026-05-13T23:50:00.000Z"
+        },
+        "SO_OR_DEF": {
+          "description": "SOHO Definitive Orbit Data",
+          "start_date": "1995-12-02T00:00:00.000Z",
+          "stop_date": "1997-09-09T23:50:00.000Z"
+        },
+        "SOHO_HELIO1HR_POSITION": {
+          "description": "Position in heliocentric coordinates from SPDF Helioweb - Natalia Papitashvili (NASA/GSFC/SPDF)",
+          "start_date": "1995-12-03T00:00:00.000Z",
+          "stop_date": "2026-04-05T23:00:00.000Z",
+          "pi_name": "Natalia Papitashvili"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "soho"
+}

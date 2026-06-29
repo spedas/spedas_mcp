@@ -1,0 +1,45 @@
+{
+  "id": "moon",
+  "name": "Moon",
+  "profile": {
+    "description": "Moon data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "imaging_and_remote_sensingmagnetosphere_earth": {
+      "name": "Imaging and Remote Sensing(Magnetosphere/Earth)",
+      "keywords": [],
+      "datasets": {
+        "CLPS-BGM1_LEXI_L1C-PHOTONS": {
+          "description": "Lunar Environment Heliophysics X-ray Imager (LEXI) Level 1c photon event data - B. Walsh (Boston U.)",
+          "start_date": "2025-03-16T19:01:32.000Z",
+          "stop_date": "2025-03-16T21:14:59.000Z",
+          "pi_name": "B. Walsh"
+        }
+      }
+    },
+    "imaging_mag": {
+      "name": "Magnetospheric Imaging",
+      "keywords": [
+        "imaging",
+        "remote sensing",
+        "magnetosphere"
+      ],
+      "datasets": {
+        "CLPS-BGM1_LEXI_L2-IMAGES": {
+          "description": "Lunar Environment Heliophysics X-ray Imager (LEXI) Level 2 image data - B. Walsh (Boston U.)",
+          "start_date": "2025-03-16T19:00:00.000Z",
+          "stop_date": "2025-03-16T21:10:00.000Z",
+          "pi_name": "B. Walsh"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "moon"
+}

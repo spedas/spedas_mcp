@@ -1,0 +1,39 @@
+{
+  "id": "genesis",
+  "name": "Genesis",
+  "profile": {
+    "description": "Genesis data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "plasma": {
+      "name": "Plasma and Solar Wind",
+      "keywords": [
+        "plasma",
+        "solar wind",
+        "proton",
+        "density",
+        "velocity",
+        "temperature",
+        "ion",
+        "electron"
+      ],
+      "datasets": {
+        "GENESIS_3DL2_GIM": {
+          "description": "Genesis Ion Monitor Experiment - Roger C. Wiens (LANL)",
+          "start_date": "2001-08-24T16:16:12.000Z",
+          "stop_date": "2004-04-30T23:58:09.000Z",
+          "pi_name": "Roger C. Wiens",
+          "doi": "10.48322/wdvm-s118"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "genesis"
+}

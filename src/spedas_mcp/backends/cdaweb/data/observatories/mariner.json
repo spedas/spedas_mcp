@@ -1,0 +1,35 @@
+{
+  "id": "mariner",
+  "name": "Mariner",
+  "profile": {
+    "description": "Mariner data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "mag": {
+      "name": "Magnetic Fields",
+      "keywords": [
+        "magnetic",
+        "field",
+        "mag",
+        "b-field",
+        "imf",
+        "magnetometer"
+      ],
+      "datasets": {
+        "MARINER2_R0_MAGPLASMA": {
+          "description": "Mariner2 merged magnetic field and plasma hourly data from COHOWeb Service",
+          "start_date": "2005-01-01T00:00:00.000Z",
+          "stop_date": "2005-01-01T01:00:00.000Z"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "mariner"
+}

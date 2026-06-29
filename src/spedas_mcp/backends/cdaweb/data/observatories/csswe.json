@@ -1,0 +1,216 @@
+{
+  "id": "csswe",
+  "name": "Smallsats/Cubesats",
+  "profile": {
+    "description": "Smallsats/Cubesats data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "particles": {
+      "name": "Energetic Particles",
+      "keywords": [
+        "particle",
+        "energetic",
+        "cosmic ray"
+      ],
+      "datasets": {
+        "CSSWE_REPTILE_6SEC-FLUX-L2": {
+          "description": "CSSWE REPTile level2 6sec flux and Position - Xinlin Li (University of Colorado at Boulder)",
+          "start_date": "2012-09-14T00:28:03.000Z",
+          "stop_date": "2014-08-20T20:27:56.000Z",
+          "pi_name": "Xinlin Li",
+          "doi": "10.48322/brd0-ak96"
+        },
+        "ELB_L1_EPDEF": {
+          "description": "Energetic Particle Detector, Counts, Electrons>keV [UNCALIBRATED RAW DATA]  - V. Angelopoulos (UCLA, IGPP/EPSS)",
+          "start_date": "2019-05-22T04:42:13.000Z",
+          "stop_date": "2022-09-24T08:12:01.000Z",
+          "pi_name": "V. Angelopoulos",
+          "doi": "10.48322/w4ac-2h02"
+        },
+        "ELB_L1_EPDIF": {
+          "description": "[UNCALIBRATED RAW DATA ONLY] Energetic Partical Detector Energy Particles, Ions>keV  - V. Angelopoulos (UCLA, IGPP/EPSS)",
+          "start_date": "2019-05-22T04:42:13.000Z",
+          "stop_date": "2022-09-19T20:24:15.000Z",
+          "pi_name": "V. Angelopoulos",
+          "doi": "10.48322/0etj-j292"
+        },
+        "ELA_L1_EPDIF": {
+          "description": "Energetic Particle Detector, Counts, Ions>keV [UNCALIBRATED RAW DATA]  - V. Angelopoulos (UCLA, IGPP/EPSS)",
+          "start_date": "2018-12-14T20:30:02.000Z",
+          "stop_date": "2022-09-11T23:42:45.000Z",
+          "pi_name": "V. Angelopoulos",
+          "doi": "10.48322/csjm-bk25"
+        },
+        "ELA_L1_EPDEF": {
+          "description": "Energetic Particle Detector, Counts, Electrons>keV [UNCALIBRATED RAW DATA]  - V. Angelopoulos (UCLA, IGPP/EPSS)",
+          "start_date": "2018-12-14T20:31:00.000Z",
+          "stop_date": "2022-09-11T23:42:45.000Z",
+          "pi_name": "V. Angelopoulos",
+          "doi": "10.48322/jyaq-cq12"
+        },
+        "AEROCUBE-6-B_DOSIMETER_L2": {
+          "description": "Aerocube 6/Dosimeter Level 2 - J. B. Blake (The Aerospace Corporation)",
+          "start_date": "2014-06-21T14:49:56.000Z",
+          "stop_date": "2017-06-30T15:24:08.000Z",
+          "pi_name": "J. B. Blake",
+          "doi": "10.48322/49dd-na02"
+        },
+        "CIRBE_REPTILE-2_L1A_DETECTORS": {
+          "description": "Colorado Inner Radiation Belt Experiment, Relativistic Electron Proton Telescope integrated little experiment-2, Level 1A Data Product, Detectors - Xinlin Li (University of Colorado at Boulder)",
+          "start_date": "2023-04-19T16:28:15.000Z",
+          "stop_date": "2024-09-28T07:13:58.000Z",
+          "pi_name": "Xinlin Li"
+        },
+        "CIRBE_REPTILE-2_L1B_RNG_ELECS": {
+          "description": "Colorado Inner Radiation Belt Experiment, Relativistic Electron Proton Telescope integrated little experiment-2, Level 1B Data Product, Range Electrons - Xinlin Li (University of Colorado at Boulder)",
+          "start_date": "2023-04-19T16:28:15.000Z",
+          "stop_date": "2024-09-28T07:13:58.000Z",
+          "pi_name": "Xinlin Li"
+        },
+        "AEROCUBE-6-A_DOSIMETER_L2": {
+          "description": "Aerocube 6/Dosimeter Level 2 - J. B. Blake (The Aerospace Corporation)",
+          "start_date": "2014-06-21T14:50:52.000Z",
+          "stop_date": "2019-04-12T13:39:41.000Z",
+          "pi_name": "J. B. Blake",
+          "doi": "10.48322/gn8x-mj75"
+        },
+        "CIRBE_REPTILE-2_L2_RNG_ELECS": {
+          "description": "Colorado Inner Radiation Belt Experiment, Relativistic Electron-Proton Telescope integrated little experiment-2, Level 2 Data Product, Range Electrons - Xinlin Li (University of Colorado at Boulder)",
+          "start_date": "2023-04-19T16:28:15.000Z",
+          "stop_date": "2024-09-28T07:13:58.000Z",
+          "pi_name": "Xinlin Li"
+        }
+      }
+    },
+    "engineering": {
+      "name": "Engineering",
+      "keywords": [
+        "engineering",
+        "housekeeping"
+      ],
+      "datasets": {
+        "ELB_L1_STATE_PRED": {
+          "description": "ELFIN-B state file, contains predictive position, velocity, and attitude - V. Angelopoulos (UCLA, IGPP/EPSS)",
+          "start_date": "2018-09-17T00:00:00.000Z",
+          "stop_date": "2022-09-27T23:59:59.000Z",
+          "pi_name": "V. Angelopoulos",
+          "doi": "10.48322/vqdr-6e19"
+        },
+        "ELA_L1_STATE_PRED": {
+          "description": "ELFIN-A state file, contains predictive position, velocity, and attitude - V. Angelopoulos (UCLA, IGPP/EPSS)",
+          "start_date": "2018-09-17T00:00:00.000Z",
+          "stop_date": "2022-09-17T23:59:59.000Z",
+          "pi_name": "V. Angelopoulos",
+          "doi": "10.48322/qmsd-zf76"
+        },
+        "ELB_L1_STATE_DEFN": {
+          "description": "ELFIN-B state file, contains definitive position, attitude and orbit events - V. Angelopoulos (UCLA, IGPP/EPSS)",
+          "start_date": "2018-09-16T00:00:00.000Z",
+          "stop_date": "2022-09-27T23:59:59.000Z",
+          "pi_name": "V. Angelopoulos"
+        },
+        "ELA_L1_STATE_DEFN": {
+          "description": "ELFIN-A state file, contains definitive position, attitude and orbit events - V. Angelopoulos (UCLA, IGPP/EPSS)",
+          "start_date": "2018-09-16T00:00:00.000Z",
+          "stop_date": "2022-09-17T23:59:59.000Z",
+          "pi_name": "V. Angelopoulos"
+        }
+      }
+    },
+    "imaging_itm": {
+      "name": "ITM Imaging",
+      "keywords": [
+        "imaging",
+        "ionosphere",
+        "thermosphere",
+        "mesosphere"
+      ],
+      "datasets": {
+        "SNOE_L3_MAG": {
+          "description": "NO density, 100 - 150 km, geomagnetic coordinates  - Charles A. Barth (LASP/CU)",
+          "start_date": "1998-03-11T00:48:16.000Z",
+          "stop_date": "2000-09-30T19:10:39.000Z",
+          "pi_name": "Charles A. Barth"
+        },
+        "SNOE_L3_GEO": {
+          "description": "NO density, 100 - 150 km, geographic coordinates  - Charles A. Barth (LASP/CU)",
+          "start_date": "1998-03-11T00:44:55.000Z",
+          "stop_date": "2000-09-30T19:11:33.000Z",
+          "pi_name": "Charles A. Barth"
+        }
+      }
+    },
+    "mag": {
+      "name": "Magnetic Fields",
+      "keywords": [
+        "magnetic",
+        "field",
+        "mag",
+        "b-field",
+        "imf",
+        "magnetometer"
+      ],
+      "datasets": {
+        "CSSWE_REPTILE_6SEC-COUNTS-L1": {
+          "description": "CSSWE REPTile level1 6sec Counts and Position - Xinlin Li (University of Colorado at Boulder)",
+          "start_date": "2012-09-14T00:28:03.000Z",
+          "stop_date": "2014-08-20T20:27:56.000Z",
+          "pi_name": "Xinlin Li",
+          "doi": "10.48322/dy3g-xz52"
+        }
+      }
+    },
+    "plasma": {
+      "name": "Plasma and Solar Wind",
+      "keywords": [
+        "plasma",
+        "solar wind",
+        "proton",
+        "density",
+        "velocity",
+        "temperature",
+        "ion",
+        "electron"
+      ],
+      "datasets": {
+        "MUNIN_M1_MDSE": {
+          "description": "Electron Fluxes 6eV to 20 keV, from the MEDUSA instrument on the Munin nanosat - David Winningham (Southwest Research Institute)",
+          "start_date": "2000-12-09T11:46:12.000Z",
+          "stop_date": "2001-02-11T15:22:33.000Z",
+          "pi_name": "David Winningham"
+        },
+        "MUNIN_M1_MDSI": {
+          "description": "Ion Fluxes 1eV to 12 keV, from the MEDUSA instrument on the MUNIN nanosat - David Winningham (Southwest Research Institute)",
+          "start_date": "2000-12-09T11:46:12.000Z",
+          "stop_date": "2001-02-11T15:22:33.000Z",
+          "pi_name": "David Winningham"
+        }
+      }
+    },
+    "ephemeris": {
+      "name": "Ephemeris and Attitude",
+      "keywords": [
+        "ephemeris",
+        "orbit",
+        "attitude",
+        "position"
+      ],
+      "datasets": {
+        "MUNIN_M1_OA": {
+          "description": "Munin: Orbit and Attitude Data - Rymd Plasma Gruppen (Swedish Institute of Space Physics)",
+          "start_date": "2000-12-08T09:51:08.000Z",
+          "stop_date": "2001-02-12T06:00:11.000Z",
+          "pi_name": "Rymd Plasma Gruppen"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "csswe"
+}

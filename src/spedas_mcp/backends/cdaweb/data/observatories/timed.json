@@ -1,0 +1,186 @@
+{
+  "id": "timed",
+  "name": "TIMED",
+  "profile": {
+    "description": "TIMED data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "imaging_itm": {
+      "name": "ITM Imaging",
+      "keywords": [
+        "imaging",
+        "ionosphere",
+        "thermosphere",
+        "mesosphere"
+      ],
+      "datasets": {
+        "TIMED_L1CDISK_GUVI_1304A_SP_MOVIES": {
+          "description": "Airglow flux 14 day movies, at wavelength 1304A in South Polar Projection - Andrew Christensen (Aerospace)",
+          "start_date": "2002-05-31T00:00:00.000Z",
+          "stop_date": "2007-12-21T23:00:00.000Z",
+          "pi_name": "Andrew Christensen",
+          "doi": "10.48322/y8xm-6j61"
+        },
+        "TIMED_L1CDISK_GUVI_1356A_NP_MOVIES": {
+          "description": "Airglow flux 14 day movies, at wavelength 1356A in North Polar Pojection - Andrew Christensen (Aerospace)",
+          "start_date": "2002-05-31T00:00:00.000Z",
+          "stop_date": "2007-12-21T23:00:00.000Z",
+          "pi_name": "Andrew Christensen",
+          "doi": "10.48322/nkhj-b417"
+        },
+        "TIMED_L1CDISK_GUVI_1356A_MERC_MOVIES": {
+          "description": "Airglow flux 14 day movies, at wavelength 1356A in Mercator Projection - Andrew Christensen (Aerospace)",
+          "start_date": "2002-05-26T01:00:00.000Z",
+          "stop_date": "2007-12-21T23:00:00.000Z",
+          "pi_name": "Andrew Christensen",
+          "doi": "10.48322/v5mt-mm05"
+        },
+        "TIMED_WINDVECTORSNCAR_TIDI": {
+          "description": "Zonal and meridional winds at 60 to 180 km, version 0307,  - Timothy Killeen (NCAR)",
+          "start_date": "2002-02-20T00:06:55.000Z",
+          "stop_date": "2020-12-31T23:52:46.000Z",
+          "pi_name": "Timothy Killeen",
+          "doi": "10.48322/9pec-k333"
+        },
+        "TIMED_L1CDISK_GUVI_1304A_NP_MOVIES": {
+          "description": "Airglow flux 14 day movies, at wavelength 1304A in North Polar Projection - Andrew Christensen (Aerospace)",
+          "start_date": "2002-05-31T00:00:00.000Z",
+          "stop_date": "2007-12-21T23:00:00.000Z",
+          "pi_name": "Andrew Christensen",
+          "doi": "10.48322/vvkt-am30"
+        },
+        "TIMED_L1CDISK_GUVI_LBH2_NP_MOVIES": {
+          "description": "Airglow flux 14 day movies, at wavelength LBH2 in North Polar Projection - Andrew Christensen (Aerospace)",
+          "start_date": "2002-05-31T00:00:00.000Z",
+          "stop_date": "2007-12-21T23:00:00.000Z",
+          "pi_name": "Andrew Christensen",
+          "doi": "10.48322/tkj8-4v93"
+        },
+        "TIMED_L1CDISK_GUVI_LBH2_MERC_MOVIES": {
+          "description": "Airglow flux 14 day movies, at wavelength LBH2 in Mercator Projection - Andrew Christensen (Aerospace)",
+          "start_date": "2002-05-26T01:00:00.000Z",
+          "stop_date": "2007-12-21T23:00:00.000Z",
+          "pi_name": "Andrew Christensen",
+          "doi": "10.48322/13ey-2t41"
+        },
+        "TIMED_L2A_SABER": {
+          "description": "O3, CO2, H2O Mixing Ratios and O, O2, OH, NO Volume Emission Rates, also NMC Neutral Temp., Density, and Pressure, Version 2.0,  - James Russell III (Hampton University)",
+          "start_date": "2002-01-25T01:21:48.000Z",
+          "stop_date": "2026-02-28T00:14:52.000Z",
+          "pi_name": "James Russell III"
+        },
+        "TIMED_L1CDISK_GUVI_1304A_MERC_MOVIES": {
+          "description": "Airglow flux 14 day movies, at wavelength 1304A in Mercator Projection - Andrew Christensen (Aerospace)",
+          "start_date": "2002-05-26T01:00:00.000Z",
+          "stop_date": "2007-12-21T23:00:00.000Z",
+          "pi_name": "Andrew Christensen",
+          "doi": "10.48322/axbx-mz18"
+        },
+        "TIMED_L1CDISK_GUVI": {
+          "description": "Airglow fluxes at 5 wavelengths bands - Andrew Christensen (Aerospace)",
+          "start_date": "2001-10-18T06:10:25.000Z",
+          "stop_date": "2007-12-10T22:52:41.000Z",
+          "pi_name": "Andrew Christensen",
+          "doi": "10.48322/91h6-7w03"
+        },
+        "TIMED_L1CDISK_GUVI_LBH2_SP_MOVIES": {
+          "description": "Airglow flux 14 day movies, at wavelength LBH2 in South Polar Projection - Andrew Christensen (Aerospace)",
+          "start_date": "2002-05-31T00:00:00.000Z",
+          "stop_date": "2007-12-21T23:00:00.000Z",
+          "pi_name": "Andrew Christensen",
+          "doi": "10.48322/8gse-9m53"
+        },
+        "TIMED_L1BV20_SABER": {
+          "description": "IR Radiances in 10 channels (1.27 to 17ym) from 0 to 150 km, Version 1.07,  - James Russell III (Hampton University)",
+          "start_date": "2002-01-25T01:21:56.000Z",
+          "stop_date": "2026-02-28T00:14:49.000Z",
+          "pi_name": "James Russell III",
+          "doi": "10.48322/4sth-3w84"
+        },
+        "TIMED_EDP_GUVI": {
+          "description": "Electron Density Profiles - Andrew Christensen (Aerospace)",
+          "start_date": "2002-01-07T05:53:28.000Z",
+          "stop_date": "2007-10-04T23:20:59.000Z",
+          "pi_name": "Andrew Christensen",
+          "doi": "10.48322/pzbn-gq12"
+        },
+        "TIMED_L1CDISK_GUVI_LBH1_MERC_MOVIES": {
+          "description": "Airglow flux 14 day movies, at wavelength LBH1 in Mercator Projection - Andrew Christensen (Aerospace)",
+          "start_date": "2002-05-26T01:00:00.000Z",
+          "stop_date": "2007-12-21T23:00:00.000Z",
+          "pi_name": "Andrew Christensen",
+          "doi": "10.48322/3pg9-1k40"
+        },
+        "TIMED_L1CDISK_GUVI_1216A_MERC_MOVIES": {
+          "description": "Airglow flux 14 day movies, at wavelength 1216A in Mercator Projection - Andrew Christensen (Aerospace)",
+          "start_date": "2002-05-26T01:00:00.000Z",
+          "stop_date": "2007-12-21T23:00:00.000Z",
+          "pi_name": "Andrew Christensen",
+          "doi": "10.48322/01h4-f268"
+        },
+        "TIMED_L1CDISK_GUVI_LBH1_SP_MOVIES": {
+          "description": "Airglow flux 14 day movies, at wavelength LBH1 in South Polar Projection - Andrew Christensen (Aerospace)",
+          "start_date": "2002-05-31T00:00:00.000Z",
+          "stop_date": "2007-12-21T23:00:00.000Z",
+          "pi_name": "Andrew Christensen",
+          "doi": "10.48322/xge7-0c55"
+        },
+        "TIMED_L1CDISK_GUVI_1216A_NP_MOVIES": {
+          "description": "Airglow flux 14 day movies, at wavelength 1216 A in North Polar Projection - Andrew Christensen (Aerospace)",
+          "start_date": "2002-05-31T00:00:00.000Z",
+          "stop_date": "2007-12-21T23:00:00.000Z",
+          "pi_name": "Andrew Christensen",
+          "doi": "10.48322/6154-6423"
+        },
+        "TIMED_L1CDISK_GUVI_1356A_SP_MOVIES": {
+          "description": "Airglow flux 14 day movies, at wavelength 1356A in South Polar Pojection - Andrew Christensen (Aerospace)",
+          "start_date": "2002-06-15T00:00:00.000Z",
+          "stop_date": "2007-12-21T23:00:00.000Z",
+          "pi_name": "Andrew Christensen",
+          "doi": "10.48322/nc6p-gx92"
+        },
+        "TIMED_L1CDISK_GUVI_1216A_SP_MOVIES": {
+          "description": "Airglow flux 14 day movies, at wavelength 1216 A in South Polar Projection - Andrew Christensen (Aerospace)",
+          "start_date": "2002-05-31T00:00:00.000Z",
+          "stop_date": "2007-12-21T23:00:00.000Z",
+          "pi_name": "Andrew Christensen",
+          "doi": "10.48322/bm5z-yr54"
+        },
+        "TIMED_L1CDISK_GUVI_LBH1_NP_MOVIES": {
+          "description": "Airglow flux 14 day movies, at wavelength LBH1 in North Polar Projection - Andrew Christensen (Aerospace)",
+          "start_date": "2002-06-15T00:00:00.000Z",
+          "stop_date": "2007-12-21T23:00:00.000Z",
+          "pi_name": "Andrew Christensen",
+          "doi": "10.48322/1jgs-as21"
+        }
+      }
+    },
+    "imaging_sun": {
+      "name": "Solar Imaging",
+      "keywords": [
+        "solar",
+        "coronagraph",
+        "euv",
+        "uv",
+        "x-ray"
+      ],
+      "datasets": {
+        "TIMED_L3A_SEE": {
+          "description": "Solar irradiances 0.1 - 194 nm, Version 11 - Tom Woods (LASP/CU)",
+          "start_date": "2002-01-22T05:10:36.000Z",
+          "stop_date": "2026-03-03T22:27:35.000Z",
+          "pi_name": "Tom Woods",
+          "doi": "10.48322/3x4k-mx60"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "timed"
+}

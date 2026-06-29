@@ -1,0 +1,42 @@
+{
+  "id": "mgs",
+  "name": "Mars Global Surveyor (MGS)",
+  "profile": {
+    "description": "Mars Global Surveyor (MGS) data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "mag": {
+      "name": "Magnetic Fields",
+      "keywords": [
+        "magnetic",
+        "field",
+        "mag",
+        "b-field",
+        "imf",
+        "magnetometer"
+      ],
+      "datasets": {
+        "MGS_MAG_LOW": {
+          "description": "Mars Global Surveyor Magnetometer Modified Data - M. Acuna (NASA/GSFC)",
+          "start_date": "1997-09-14T00:42:11.000Z",
+          "stop_date": "2006-11-02T23:23:43.000Z",
+          "pi_name": "M. Acuna"
+        },
+        "MGS_MAG_HIGH": {
+          "description": "Mars Global Surveyor Magnetometer High Resolution - M. Acuna (NASA/GSFC)",
+          "start_date": "1997-09-14T00:42:11.000Z",
+          "stop_date": "2006-11-02T23:23:46.000Z",
+          "pi_name": "M. Acuna"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "mgs"
+}

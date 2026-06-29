@@ -1,0 +1,167 @@
+{
+  "id": "darn",
+  "name": "Ground-Based Investigations",
+  "profile": {
+    "description": "Ground-Based Investigations data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "ground-based_hf-radars": {
+      "name": "Ground-Based HF-Radars",
+      "keywords": [],
+      "datasets": {
+        "DN_K0_PACE": {
+          "description": "DARN PACE, Key Parameters - R. Greenwald (JHU/APL)",
+          "start_date": "1992-12-04T00:01:06.000Z",
+          "stop_date": "2001-09-20T09:14:02.000Z",
+          "pi_name": "R. Greenwald"
+        },
+        "DN_K0_SASK": {
+          "description": "DARN Saskatoon, Key Parameters - R. Greenwald (JHU/APL)",
+          "start_date": "1994-07-02T12:00:52.000Z",
+          "stop_date": "1999-11-04T23:55:00.000Z",
+          "pi_name": "R. Greenwald"
+        },
+        "DN_K0_HANK": {
+          "description": "DARN Hankasalmi, Key Parameters - R. Greenwald (JHU/APL)",
+          "start_date": "1996-07-01T00:00:49.000Z",
+          "stop_date": "2001-08-05T23:58:56.000Z",
+          "pi_name": "R. Greenwald"
+        },
+        "DN_K0_ICEW": {
+          "description": "DARN Iceland West (Stokkseyri),Key Parameters - R. Greenwald (JHU/APL)",
+          "start_date": "1994-08-28T00:02:02.000Z",
+          "stop_date": "1999-11-03T23:55:00.000Z",
+          "pi_name": "R. Greenwald"
+        },
+        "CN_K0_BARS": {
+          "description": "CANOPUS Bistatic Auroral Radar System, Key Parameters - John Samson (University of Alberta)",
+          "start_date": "1992-07-20T03:50:30.000Z",
+          "stop_date": "1994-09-30T23:59:30.000Z",
+          "pi_name": "John Samson"
+        },
+        "DN_K0_GBAY": {
+          "description": "DARN Goose Bay, Key Parameters - R. Greenwald (JHU/APL)",
+          "start_date": "1992-07-20T00:02:06.000Z",
+          "stop_date": "1999-11-04T23:55:00.000Z",
+          "pi_name": "R. Greenwald"
+        },
+        "DN_K0_KAPU": {
+          "description": "DARN Kapuskasing,Key Parameters - R. Greenwald (JHU/APL)",
+          "start_date": "1994-08-28T00:02:10.000Z",
+          "stop_date": "1999-11-04T23:55:00.000Z",
+          "pi_name": "R. Greenwald"
+        },
+        "DN_K0_PYKK": {
+          "description": "DARN Pykkvibaer, Key Parameters - R. Greenwald (JHU/APL)",
+          "start_date": "1996-07-01T00:00:48.000Z",
+          "stop_date": "2001-05-16T09:16:58.000Z",
+          "pi_name": "R. Greenwald"
+        }
+      }
+    },
+    "ground-based_vlf_elf_ulf,_photometers": {
+      "name": "Ground-Based VLF/ELF/ULF, Photometers",
+      "keywords": [],
+      "datasets": {
+        "SE_K0_FPI": {
+          "description": "SESAME Fabry-Perot Interferometer, Key Parameters - J.R. Dudeney (British Antarctic Survey)",
+          "start_date": "1992-07-22T00:00:00.000Z",
+          "stop_date": "1995-09-13T01:30:00.000Z",
+          "pi_name": "J.R. Dudeney"
+        },
+        "CN_K0_MPA": {
+          "description": "CANOPUS Meridian Photometer Array, Key Parameters - J. Samson (U. Alberta)",
+          "start_date": "1992-09-01T01:42:00.000Z",
+          "stop_date": "1999-12-30T23:59:00.000Z",
+          "pi_name": "J. Samson"
+        },
+        "SE_K0_VLF": {
+          "description": "SESAME VLF/ELF Logger Experiment (VELOX)Key Parameters - J. Dudeney (British Antarctic Survey)",
+          "start_date": "1992-07-22T00:00:35.000Z",
+          "stop_date": "2001-10-17T15:31:00.000Z",
+          "pi_name": "J. Dudeney"
+        }
+      }
+    },
+    "ground-based_imagers": {
+      "name": "Ground-Based Imagers",
+      "keywords": [],
+      "datasets": {
+        "FM_K0_KILP": {
+          "description": "FMI Kilpisjarvi: All-Sky Camera Key Parameters  - K. Kauristie (Finnish Meteorological Institute)",
+          "start_date": "1997-01-01T00:00:00.000Z",
+          "stop_date": "2001-04-17T23:59:00.000Z",
+          "pi_name": "K. Kauristie"
+        },
+        "CN_K0_ASI": {
+          "description": "CANOPUS All Sky Imager, Key Parameters - J. Samson (U. Alberta)",
+          "start_date": "1993-02-13T05:10:01.000Z",
+          "stop_date": "1999-12-30T23:55:05.000Z",
+          "pi_name": "J. Samson"
+        }
+      }
+    },
+    "indices": {
+      "name": "Activity Indices",
+      "keywords": [
+        "index",
+        "indices",
+        "geomagnetic",
+        "sym-h",
+        "dst",
+        "kp",
+        "ae"
+      ],
+      "datasets": {
+        "CN_K0_MARI": {
+          "description": "CANOPUS MARI Magnetometer Key Parameters - J. Samson (U. Alberta)",
+          "start_date": "1992-09-01T00:00:00.000Z",
+          "stop_date": "1999-12-30T23:59:00.000Z",
+          "pi_name": "J. Samson"
+        }
+      }
+    },
+    "ground_mag": {
+      "name": "Ground-Based Magnetometers",
+      "keywords": [
+        "ground",
+        "magnetometer",
+        "riometer"
+      ],
+      "datasets": {
+        "SE_K0_RIO": {
+          "description": "SESAME 30MHz Riometer Array, Key Parameters - J. Dudeney (British Antarctic Survey)",
+          "start_date": "1994-01-02T00:00:00.000Z",
+          "stop_date": "2001-10-16T23:59:00.000Z",
+          "pi_name": "J. Dudeney"
+        },
+        "SE_K0_AIS": {
+          "description": "SESAME Advanced Ionospheric Sounder, Key Parameters - J. Dudeney (British Antarctic Survey)",
+          "start_date": "1992-09-01T00:00:21.000Z",
+          "stop_date": "2001-10-17T23:45:00.000Z",
+          "pi_name": "J. Dudeney"
+        },
+        "CN_K1_MARI": {
+          "description": "CANOPUS MARI Riometer Key Parameters - J. Samson (U. Alberta)",
+          "start_date": "1992-09-01T00:00:00.000Z",
+          "stop_date": "1999-12-30T23:59:00.000Z",
+          "pi_name": "J. Samson"
+        },
+        "SE_K0_MAG": {
+          "description": "SESAME Fluxgate Magnetometer Key Parameters - J. Dudeney (British Antarctic Survey)",
+          "start_date": "1993-12-09T00:00:00.000Z",
+          "stop_date": "2001-10-17T23:59:00.000Z",
+          "pi_name": "J. Dudeney"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "darn"
+}

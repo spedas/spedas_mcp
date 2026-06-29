@@ -1,0 +1,55 @@
+{
+  "id": "cassini",
+  "name": "Cassini",
+  "profile": {
+    "description": "Cassini data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "ephemeris": {
+      "name": "Ephemeris and Attitude",
+      "keywords": [
+        "ephemeris",
+        "orbit",
+        "attitude",
+        "position"
+      ],
+      "datasets": {
+        "CASSINI_HELIO1HR_POSITION": {
+          "description": "Position in heliocentric coordinates from SPDF Helioweb - Natalia Papitashvili (NASA/GSFC/SPDF)",
+          "start_date": "1997-10-16T00:00:00.000Z",
+          "stop_date": "2017-09-14T23:00:00.000Z",
+          "pi_name": "Natalia Papitashvili",
+          "doi": "10.48322/86mw-ad45"
+        }
+      }
+    },
+    "mag": {
+      "name": "Magnetic Fields",
+      "keywords": [
+        "magnetic",
+        "field",
+        "mag",
+        "b-field",
+        "imf",
+        "magnetometer"
+      ],
+      "datasets": {
+        "CASSINI_MAG_1MIN_MAGNETIC_FIELD": {
+          "description": "1 min averaged magnetic field - Michele Dougherty (Imperial College, London)",
+          "start_date": "2000-01-20T02:28:00.000Z",
+          "stop_date": "2004-06-26T23:59:00.000Z",
+          "pi_name": "Michele Dougherty",
+          "doi": "10.48322/vfsa-ej68"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "cassini"
+}

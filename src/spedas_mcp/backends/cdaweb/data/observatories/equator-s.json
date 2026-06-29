@@ -1,0 +1,117 @@
+{
+  "id": "equator-s",
+  "name": "Equator-S",
+  "profile": {
+    "description": "Equator-S data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "ephemeris": {
+      "name": "Ephemeris and Attitude",
+      "keywords": [
+        "ephemeris",
+        "orbit",
+        "attitude",
+        "position"
+      ],
+      "datasets": {
+        "EQ_PP_AUX": {
+          "description": "Equator-S Auxiliary Data Prime Parameters -  EDC (MPE)",
+          "start_date": "1997-12-16T11:25:00.000Z",
+          "stop_date": "1998-04-30T01:52:44.000Z",
+          "pi_name": "EDC"
+        }
+      }
+    },
+    "particles": {
+      "name": "Energetic Particles",
+      "keywords": [
+        "particle",
+        "energetic",
+        "cosmic ray"
+      ],
+      "datasets": {
+        "EQ_PP_EPI": {
+          "description": "Equator-S Energetic Particle Instrument Prime Parameters - T. Sanderson (ESTEC)",
+          "start_date": "1997-01-01T00:00:01.000Z",
+          "stop_date": "1998-04-30T01:56:05.000Z",
+          "pi_name": "T. Sanderson"
+        },
+        "EQ_SP_SFD": {
+          "description": "Equator-S Scintillating Fibre Detector Summary Parameters - L. Adams (ESTEC)",
+          "start_date": "1997-12-16T11:26:30.000Z",
+          "stop_date": "1998-04-30T02:30:30.000Z",
+          "pi_name": "L. Adams"
+        }
+      }
+    },
+    "plasma": {
+      "name": "Plasma and Solar Wind",
+      "keywords": [
+        "plasma",
+        "solar wind",
+        "proton",
+        "density",
+        "velocity",
+        "temperature",
+        "ion",
+        "electron"
+      ],
+      "datasets": {
+        "EQ_PP_PCD": {
+          "description": "Equator-S Potential Control Device Prime Parameters - K. Torkar (IWF)",
+          "start_date": "1997-12-16T00:00:00.000Z",
+          "stop_date": "1998-04-30T01:56:09.000Z",
+          "pi_name": "K. Torkar"
+        },
+        "EQ_PP_ICI": {
+          "description": "Equator-S Ion Composition Instrument Prime Parameters.(The raw moments calculated onboard should only be used qualitatively for identifying regions and temporal variations. Quantitative analysis should be done with the final moments generated from telemetered 3D distributions.) - L. Kistler (UNH)",
+          "start_date": "1998-01-21T00:33:11.000Z",
+          "stop_date": "1998-04-28T17:18:29.000Z",
+          "pi_name": "L. Kistler"
+        }
+      }
+    },
+    "efield": {
+      "name": "Electric Fields",
+      "keywords": [
+        "electric",
+        "e-field"
+      ],
+      "datasets": {
+        "EQ_PP_EDI": {
+          "description": "Equator-S Electron Drift Instrument Prime Parameters - G. Paschmann (MPE)",
+          "start_date": "1998-03-25T21:53:13.000Z",
+          "stop_date": "1998-04-28T09:25:25.000Z",
+          "pi_name": "G. Paschmann"
+        }
+      }
+    },
+    "mag": {
+      "name": "Magnetic Fields",
+      "keywords": [
+        "magnetic",
+        "field",
+        "mag",
+        "b-field",
+        "imf",
+        "magnetometer"
+      ],
+      "datasets": {
+        "EQ_PP_MAM": {
+          "description": "Equator-S Fluxgate Magnetometer Prime Parameters - W. Baumjohann (MPE)",
+          "start_date": "1997-12-16T11:25:01.000Z",
+          "stop_date": "1998-04-30T00:00:00.000Z",
+          "pi_name": "W. Baumjohann"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "equator-s"
+}

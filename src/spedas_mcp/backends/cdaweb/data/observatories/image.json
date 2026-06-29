@@ -1,0 +1,200 @@
+{
+  "id": "image",
+  "name": "IMAGE",
+  "profile": {
+    "description": "IMAGE data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "engineering": {
+      "name": "Engineering",
+      "keywords": [
+        "engineering",
+        "housekeeping"
+      ],
+      "datasets": {
+        "IM_HK_COM": {
+          "description": "Image Communication Systems Housekeeping - Dr. Jim Burch (Southwest Research Institute)",
+          "start_date": "2000-03-25T21:31:52.000Z",
+          "stop_date": "2005-12-18T07:38:17.000Z",
+          "pi_name": "Dr. Jim Burch",
+          "doi": "10.48322/dt0h-xw03"
+        },
+        "IM_HK_TML": {
+          "description": "Image Thermal Housekeeping - Dr. Jim Burch (Southwest Research Institute)",
+          "start_date": "2000-03-25T21:31:52.000Z",
+          "stop_date": "2005-12-18T07:38:17.000Z",
+          "pi_name": "Dr. Jim Burch",
+          "doi": "10.48322/dt0h-xw03"
+        },
+        "IM_HK_FSW": {
+          "description": "Image Flight Software Housekeeping - Dr. Jim Burch (Southwest Research Institute)",
+          "start_date": "2000-03-25T21:31:52.000Z",
+          "stop_date": "2005-12-18T07:38:17.000Z",
+          "pi_name": "Dr. Jim Burch",
+          "doi": "10.48322/dt0h-xw03"
+        },
+        "IM_HK_AST": {
+          "description": "Image Autonomous Star Tracker Housekeeping - Dr. Jim Burch (Southwest Research Institute)",
+          "start_date": "2000-03-25T21:31:52.000Z",
+          "stop_date": "2005-12-18T07:38:17.000Z",
+          "pi_name": "Dr. Jim Burch",
+          "doi": "10.48322/dt0h-xw03"
+        },
+        "IM_HK_ADS": {
+          "description": "Image Attitude Determination System Housekeeping - Dr. Jim Burch (Southwest Research Institute)",
+          "start_date": "2000-03-25T21:31:52.000Z",
+          "stop_date": "2005-12-18T07:38:17.000Z",
+          "pi_name": "Dr. Jim Burch",
+          "doi": "10.48322/dt0h-xw03"
+        },
+        "IM_HK_PWR": {
+          "description": "Image Power Systems Housekeeping - Dr. Jim Burch (Southwest Research Institute)",
+          "start_date": "2000-03-25T21:31:52.000Z",
+          "stop_date": "2005-12-18T07:38:17.000Z",
+          "pi_name": "Dr. Jim Burch",
+          "doi": "10.48322/dt0h-xw03"
+        }
+      }
+    },
+    "imaging_mag": {
+      "name": "Magnetospheric Imaging",
+      "keywords": [
+        "imaging",
+        "remote sensing",
+        "magnetosphere"
+      ],
+      "datasets": {
+        "IM_K0_HENA": {
+          "description": "High Energy Neutral Atom (HENA) H Images, Key Parameters, IMAGE - Dr. Don Mitchell (APL)",
+          "start_date": "2000-04-21T01:50:04.000Z",
+          "stop_date": "2005-12-18T07:28:01.000Z",
+          "pi_name": "Dr. Don Mitchell"
+        },
+        "IM_K0_EUV": {
+          "description": "Ion Images, Key Parameters, IMAGE Extreme UltraViolet (EUV) experiment - Bill Sandel (U/Arizona)",
+          "start_date": "2000-03-28T09:56:32.000Z",
+          "stop_date": "2005-12-18T02:49:43.000Z",
+          "pi_name": "Bill Sandel"
+        },
+        "IMAGE_M2_EUV": {
+          "description": "Imager for Magnetospause-to-Aurora Global Extreme Ultraviolet Imager Modified Data 2 - R. M. Katus (Eastern Michigan University)",
+          "start_date": "2000-05-03T20:20:00.000Z",
+          "stop_date": "2005-12-17T23:49:59.000Z",
+          "pi_name": "R. M. Katus",
+          "doi": "10.48322/xsb1-nc45"
+        }
+      }
+    },
+    "imaging_itm": {
+      "name": "ITM Imaging",
+      "keywords": [
+        "imaging",
+        "ionosphere",
+        "thermosphere",
+        "mesosphere"
+      ],
+      "datasets": {
+        "IM_K0_LENA": {
+          "description": "IMAGE Low Energy Neutral Atom (LENA) Imager Key Parameters - Dr. Tom Moore (GSFC)",
+          "start_date": "2000-05-24T00:00:00.000Z",
+          "stop_date": "2005-12-18T07:31:59.000Z",
+          "pi_name": "Dr. Tom Moore"
+        },
+        "IM_K0_SIP": {
+          "description": "Proton Auroral Images @ 1218A, Key Parameters, IMAGE Far UltraViolet (FUV) Spectrographic Imaging camera Protons (SIP) - S. Mende (UC/Berkeley/SSL)",
+          "start_date": "2000-04-25T09:41:42.000Z",
+          "stop_date": "2005-12-18T07:35:42.000Z",
+          "pi_name": "S. Mende"
+        },
+        "IM_K0_SIE": {
+          "description": "Electron Auroral Images @ 1356A, Key Parameters, IMAGE Far UltraViolet (FUV) Spectrographic Imaging camera Electrons (SIE)  - S. Mende (UC/Berkeley/SSL)",
+          "start_date": "2000-04-25T09:52:03.000Z",
+          "stop_date": "2005-12-18T07:35:42.000Z",
+          "pi_name": "S. Mende"
+        },
+        "IM_K0_WIC": {
+          "description": "Auroral Images, Key Parameters, IMAGE Far UltraViolet (FUV) Wide-band Imaging Camera (WIC) - S. Mende (UC/Berkeley/SSL)",
+          "start_date": "2000-04-25T07:44:03.000Z",
+          "stop_date": "2005-12-18T07:35:41.000Z",
+          "pi_name": "S. Mende"
+        },
+        "IM_K0_MENA": {
+          "description": "Medium Energy Neutral Atom (MENA) H Images, Key Parameters, IMAGE - Dr. Craig Pollock (SwRI)",
+          "start_date": "2000-04-04T12:56:37.000Z",
+          "stop_date": "2005-12-18T07:34:05.000Z",
+          "pi_name": "Dr. Craig Pollock"
+        }
+      }
+    },
+    "waves": {
+      "name": "Radio and Plasma Waves",
+      "keywords": [
+        "radio",
+        "wave",
+        "plasma wave"
+      ],
+      "datasets": {
+        "IM_K0_RPI": {
+          "description": "RPI Plasmagram/Echomap, Key Parameters, IMAGE Radio Plasma Imager (RPI) - B.W. Reinisch (UMLCAR)",
+          "start_date": "2000-03-26T07:51:50.000Z",
+          "stop_date": "2005-12-18T07:40:47.000Z",
+          "pi_name": "B.W. Reinisch",
+          "doi": "10.48322/0kry-rn33"
+        },
+        "IM_ELECTRON_DENSITY_RPI": {
+          "description": "IMAGE RPI electron density along the spacecraft orbit, IMAGE Radio Plasma Imager (RPI) - R. E. Denton & B.W. Reinisch (Dartmouth, UMLCAR)",
+          "start_date": "2001-01-01T00:06:37.000Z",
+          "stop_date": "2005-12-18T06:45:56.000Z",
+          "pi_name": "R. E. Denton & B.W. Reinisch",
+          "doi": "10.48322/awms-1e38"
+        },
+        "IM_K1_RPI": {
+          "description": "RPI Dynamic Spectrogram, Key Parameters, IMAGE Radio Plasma Imager (RPI) - B.W. Reinisch (UMLCAR)",
+          "start_date": "2000-04-12T20:35:45.000Z",
+          "stop_date": "2005-12-18T07:39:52.000Z",
+          "pi_name": "B.W. Reinisch",
+          "doi": "10.48322/tqpm-9804"
+        }
+      }
+    },
+    "ephemeris": {
+      "name": "Ephemeris and Attitude",
+      "keywords": [
+        "ephemeris",
+        "orbit",
+        "attitude",
+        "position"
+      ],
+      "datasets": {
+        "IM_OR_DEF": {
+          "description": "Image Definitive Data Orbit - Dr. Jim Burch (Southwest Research Institute)",
+          "start_date": "2000-03-27T00:00:55.000Z",
+          "stop_date": "2005-12-19T23:58:00.000Z",
+          "pi_name": "Dr. Jim Burch",
+          "doi": "10.48322/xp4c-3j37"
+        },
+        "IM_OR_GIFWALK": {
+          "description": "Link to IMAGE orbit plots - Polar-Wind-Geotail Ground System (NASA GSFC)",
+          "start_date": "2004-08-09T00:00:00.000Z",
+          "stop_date": "2004-08-09T01:00:00.000Z",
+          "pi_name": "Polar-Wind-Geotail Ground System"
+        },
+        "IM_OR_PRE": {
+          "description": "IMAGE Predicted Orbit - Dr. Jim Burch (Southwest Research Institute)",
+          "start_date": "2001-02-21T00:00:00.000Z",
+          "stop_date": "2006-01-30T23:59:59.000Z",
+          "pi_name": "Dr. Jim Burch",
+          "doi": "10.48322/gnrm-pd86"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "image"
+}

@@ -362,7 +362,7 @@ def test_user_facing_branding_hides_backend_package_names():
 
 
 def test_load_data_source_cdaweb_translates_backend_guidance_to_facade(monkeypatch):
-    import cdawebmcp.prompts as prompts
+    import spedas_mcp.backends.cdaweb.prompts as prompts
 
     def _fake_prompt(observatory_id: str) -> str:
         return (
@@ -416,7 +416,7 @@ def test_load_data_source_pds_translates_backend_guidance_to_facade(monkeypatch)
 
 def test_cdaweb_fetch_product_limit_and_quality_stats(monkeypatch, tmp_path: Path):
     import pandas as pd
-    import cdawebmcp.fetch as fetch_mod
+    import spedas_mcp.backends.cdaweb.fetch as fetch_mod
 
     def _fake_fetch_data(dataset_id: str, parameters: list[str], start: str, stop: str):
         index = pd.date_range("2025-01-01T00:00:00", periods=5, freq="s")
@@ -469,7 +469,7 @@ def test_cdaweb_fetch_product_limit_and_quality_stats(monkeypatch, tmp_path: Pat
 
 
 def test_fetch_data_product_rejects_bad_times_before_cdaweb_backend(monkeypatch, tmp_path: Path):
-    import cdawebmcp.fetch as fetch_mod
+    import spedas_mcp.backends.cdaweb.fetch as fetch_mod
 
     called = False
 
@@ -510,7 +510,7 @@ def test_fetch_data_product_rejects_bad_times_before_cdaweb_backend(monkeypatch,
 
 
 def test_fetch_data_product_shapes_cdaweb_no_data_codes(monkeypatch, tmp_path: Path):
-    import cdawebmcp.fetch as fetch_mod
+    import spedas_mcp.backends.cdaweb.fetch as fetch_mod
 
     def _fake_fetch_data(dataset_id: str, parameters: list[str], start: str, stop: str):
         if dataset_id == "PSP_TOTALLY_FAKE_DATASET":
@@ -605,7 +605,7 @@ def test_unified_cache_manager_passes_cdaweb_kwargs(monkeypatch):
         refresh_metadata=lambda dataset_ids=None, observatory=None: {"status": "success"},
         refresh_time_ranges=lambda observatory=None: {"status": "success"},
     )
-    monkeypatch.setitem(sys.modules, "cdawebmcp.cache", cache_mod)
+    monkeypatch.setitem(sys.modules, "spedas_mcp.backends.cdaweb.cache", cache_mod)
 
     server = create_server()
     data = json.loads(_call_tool(server, "manage_data_cache", {
@@ -619,7 +619,7 @@ def test_unified_cache_manager_passes_cdaweb_kwargs(monkeypatch):
     assert data["status"] == "success"
     assert seen == {
         "category": "cdf_cache",
-        "observatory": "MMS",
+        "observatories": ["MMS"],
         "older_than_days": 7,
         "dry_run": False,
     }

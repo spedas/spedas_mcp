@@ -1,0 +1,40 @@
+{
+  "id": "formosat-rocsat",
+  "name": "Formosat",
+  "profile": {
+    "description": "Formosat data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "particles": {
+      "name": "Energetic Particles",
+      "keywords": [
+        "particle",
+        "energetic",
+        "cosmic ray"
+      ],
+      "datasets": {
+        "FORMOSAT5_AIP_IDN": {
+          "description": "FORMOSAT-5, Advanced Ionospheric Probe, Ion Density - C.K. Chao (NCU)",
+          "start_date": "2017-09-13T13:06:00.000Z",
+          "stop_date": "2025-06-30T23:05:30.000Z",
+          "pi_name": "C.K. Chao"
+        },
+        "RS_K0_IPEI": {
+          "description": "ROCSAT-1(FORMOSAT-1)/IPEI, Key Parameters - Shin-Yi Su (Institute of Space Science, National Central University, Taiwan, R.O.C.)",
+          "start_date": "1999-03-11T00:00:00.000Z",
+          "stop_date": "2004-06-11T23:59:56.000Z",
+          "pi_name": "Shin-Yi Su",
+          "doi": "10.48322/jz5h-kr21"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "formosat-rocsat"
+}

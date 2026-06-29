@@ -1,0 +1,331 @@
+{
+  "id": "isis",
+  "name": "ISIS",
+  "profile": {
+    "description": "ISIS data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "imaging_itm": {
+      "name": "ITM Imaging",
+      "keywords": [
+        "imaging",
+        "ionosphere",
+        "thermosphere",
+        "mesosphere"
+      ],
+      "datasets": {
+        "I2_AV_QUI": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Quito, Equador (lat/lon=-1/281) - R.F. Benson (NASA GSFC)",
+          "start_date": "1973-01-03T02:22:10.000Z",
+          "stop_date": "1979-10-18T04:22:30.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/3b6w-n092"
+        },
+        "I1_AV_RES": {
+          "description": "ISIS-1 Topside Sounder Ionogram over Resolute Bay, Canada (lat/lon=75/265) - R.F. Benson (NASA GSFC)",
+          "start_date": "1969-01-30T21:18:14.000Z",
+          "stop_date": "1976-02-22T19:07:32.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/t5z1-q826"
+        },
+        "I1_AV_ALL": {
+          "description": "ISIS-1 Topside sounder ionograms, all stations merged into a single dataset - R.F. Benson (NASA GSFC)",
+          "start_date": "1969-01-30T14:50:12.000Z",
+          "stop_date": "1983-12-30T15:19:33.000Z",
+          "pi_name": "R.F. Benson"
+        },
+        "I1_AV2_QUI": {
+          "description": "ISIS Topside Sounder Ionogram - R.F. Benson (NASA GSFC)",
+          "start_date": "1969-01-31T04:20:04.000Z",
+          "stop_date": "1972-03-29T04:06:03.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/jp1z-v010"
+        },
+        "I2_AV_ULA": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Fairbanks, Alaska (lat/lon=65/212) - R.F. Benson (NASA GSFC)",
+          "start_date": "1972-12-31T00:00:00.000Z",
+          "stop_date": "1979-07-30T02:17:45.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/r74f-7s65"
+        },
+        "I1_AV_QUI": {
+          "description": "ISIS-1 Topside Sounder Ionogram over Quito, Equador (lat/lon=-1/281) - R.F. Benson (NASA GSFC)",
+          "start_date": "1969-01-31T04:20:04.000Z",
+          "stop_date": "1978-06-22T04:44:35.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/2asp-4y55"
+        },
+        "I2_AV_LAU": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Lauder, New Zealand (lat/lon=-45/170) - R.F. Benson (NASA GSFC)",
+          "start_date": "1973-01-01T04:14:29.000Z",
+          "stop_date": "1981-01-18T15:47:50.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/k60x-b752"
+        },
+        "I2_AV_TRO": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Tromso, Norway (lat/lon=70/19) - R.F. Benson (NASA GSFC)",
+          "start_date": "1973-01-19T10:38:36.000Z",
+          "stop_date": "1977-10-06T20:20:00.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/jf1k-7m60"
+        },
+        "I2_AV_CNA": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Las Palmas,  Canary Is., Spain (lat/lon=28/345) - R.F. Benson (NASA GSFC)",
+          "start_date": "1974-01-16T17:42:39.000Z",
+          "stop_date": "1976-02-01T11:15:40.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/7861-q181"
+        },
+        "I1_NEPROF_TOPS": {
+          "description": "ISIS-1 Topside Electron Density Profiles, manually scaled at CRC - J. E. Jackson (Communication Research Centre (CRC), Ottawa)",
+          "start_date": "1969-02-01T15:50:12.000Z",
+          "stop_date": "1980-05-30T02:41:08.000Z",
+          "pi_name": "J. E. Jackson"
+        },
+        "I2_AV_KSH": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Kashima, Japan (lat/lon=36/141) - R.F. Benson (NASA GSFC)",
+          "start_date": "1972-01-01T00:01:10.000Z",
+          "stop_date": "1984-01-06T14:08:01.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/vjx5-cg74"
+        },
+        "I1_AV_ULA": {
+          "description": "ISIS-1 Topside Sounder Ionogram over Fairbanks, Alaska (lat/lon=65/212) - R.F. Benson (NASA GSFC)",
+          "start_date": "1975-01-04T18:15:16.000Z",
+          "stop_date": "1979-09-14T12:06:35.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/36sp-d814"
+        },
+        "I2_AV_KRU": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Kourou, French Guyana (lat/lon=5/307) - R.F. Benson (NASA GSFC)",
+          "start_date": "1973-02-06T01:16:08.000Z",
+          "stop_date": "1978-07-23T22:07:30.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/kqjt-0j93"
+        },
+        "I2_AV_KWA": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Kwajalein, Marshall Is. (lat/lon=9/168) - R.F. Benson (NASA GSFC)",
+          "start_date": "1978-01-10T08:46:53.000Z",
+          "stop_date": "1978-11-09T07:38:18.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/mn3b-zt16"
+        },
+        "I2_AV_BRZ": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Brazzavillle, Congo (lat/lon=-4/15) - R.F. Benson (NASA GSFC)",
+          "start_date": "1972-08-05T16:17:40.000Z",
+          "stop_date": "1975-09-25T16:12:59.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/zmt2-jm89"
+        },
+        "I2_AV_SNT": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Santiago, Chile (lat/lon=-33/298)  - R.F. Benson (NASA GSFC)",
+          "start_date": "1973-06-15T09:48:17.000Z",
+          "stop_date": "1980-03-21T09:09:03.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/39gd-j282"
+        },
+        "I1_AV2_OTT": {
+          "description": "ISIS Topside Sounder Ionogram - R.F. Benson (NASA GSFC)",
+          "start_date": "1969-01-30T14:50:12.000Z",
+          "stop_date": "1983-12-17T13:08:05.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/h6zf-1404"
+        },
+        "I2_AV_SOD": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Sodankyla, Finland (lat/lon=67/27) - R.F. Benson (NASA GSFC)",
+          "start_date": "1977-12-11T21:47:50.000Z",
+          "stop_date": "1978-09-13T21:01:48.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/gpwf-9m90"
+        },
+        "I2_AV_SOL": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Falkland Is., U.K. (lat/lon=-52/302) - R.F. Benson (NASA GSFC)",
+          "start_date": "1972-01-12T16:31:05.000Z",
+          "stop_date": "1972-12-10T00:57:02.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/gn72-s865"
+        },
+        "I2_AV_OTT": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Ottawa, Canada (lat/lon=45/284) - R.F. Benson (NASA GSFC)",
+          "start_date": "1971-11-11T18:18:16.000Z",
+          "stop_date": "1984-01-04T05:16:00.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/nm0h-ff87"
+        },
+        "I2_AV_SYO": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Syowa Base, Antartica (lat/lon=-69/40) - R.F. Benson (NASA GSFC)",
+          "start_date": "1973-02-03T05:49:37.000Z",
+          "stop_date": "1983-01-13T11:06:43.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/ae1m-0y25"
+        },
+        "I2_AV_ORR": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Orroral Australia (lat/lon=-36/149) - R.F. Benson (NASA GSFC)",
+          "start_date": "1973-03-15T03:33:11.000Z",
+          "stop_date": "1981-07-20T20:42:22.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/y928-ra86"
+        },
+        "I2_AV_BUR": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Johannesburg, South Africa (lat/lon=-26/28) - R.F. Benson (NASA GSFC)",
+          "start_date": "1972-08-07T15:26:03.000Z",
+          "stop_date": "1976-01-16T19:18:39.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/czyb-z063"
+        },
+        "I2_AV_KER": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Kerguelen Is., France (lat/lon=-49/70) - R.F. Benson (NASA GSFC)",
+          "start_date": "1977-01-01T00:01:37.000Z",
+          "stop_date": "1984-01-27T18:16:53.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/9j4h-wk74"
+        },
+        "I1_AV2_SNT": {
+          "description": "ISIS Topside Sounder Ionogram - R.F. Benson (NASA GSFC)",
+          "start_date": "1969-01-31T04:32:48.000Z",
+          "stop_date": "1970-12-28T00:45:37.000Z",
+          "pi_name": "R.F. Benson"
+        },
+        "I1_AV_KWA": {
+          "description": "ISIS-1 Topside Sounder Ionogram over Kwajalein, Marshall Is. (lat/lon=9/168) - R.F. Benson (NASA GSFC)",
+          "start_date": "1978-01-03T04:13:25.000Z",
+          "stop_date": "1978-12-30T21:34:08.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/mamd-r685"
+        },
+        "I2_AV_ODG": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Ouagadougou, Burkina Faso (lat/lon=14/359) - R.F. Benson (NASA GSFC)",
+          "start_date": "1972-08-06T05:36:37.000Z",
+          "stop_date": "1979-11-22T15:25:12.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/v4nk-nm48"
+        },
+        "I2_NEPROF_TOPIST": {
+          "description": "ISIS-2 TOPIST produced electron density profiles, of highest quality (quality flag = 2 and 3 - X. Huang and B. Reinisch (University of MassachusettsLowell)",
+          "start_date": "1971-11-11T18:18:40.000Z",
+          "stop_date": "1984-01-04T05:15:38.000Z",
+          "pi_name": "X. Huang and B. Reinisch"
+        },
+        "I1_AV_TRO": {
+          "description": "ISIS-1 Topside Sounder Ionogram over Tromso, Norway (lat/lon=70/19) - R.F. Benson (NASA GSFC)",
+          "start_date": "1969-02-05T18:15:49.000Z",
+          "stop_date": "1969-12-28T15:12:00.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/qbyn-b789"
+        },
+        "I2_AV_WNK": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Winkfield, U.K. (lat/lon=51/359) - R.F. Benson (NASA GSFC)",
+          "start_date": "1973-03-14T11:55:35.000Z",
+          "stop_date": "1979-07-15T04:35:11.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/pj1s-fh45"
+        },
+        "I1_AV_ORR": {
+          "description": "ISIS-1 Topside Sounder Ionogram over Orroral, Australia (lat/lon=-36/149) - R.F. Benson (NASA GSFC)",
+          "start_date": "1970-01-28T09:47:09.000Z",
+          "stop_date": "1981-08-24T14:00:56.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/17np-3m13"
+        },
+        "I2_AV_AME": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Ahmedabad, India (lat/lon=23/73) - R.F. Benson (NASA GSFC)",
+          "start_date": "1973-02-03T04:00:26.000Z",
+          "stop_date": "1978-01-23T07:28:43.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/2sxz-wd73"
+        },
+        "I1_AV_KER": {
+          "description": "ISIS-1 Topside Sounder Ionograms over Kerguelen Island, France (Lat=-49, Long=70) - R.F. Benson (NASA GSFC)",
+          "start_date": "1983-08-24T15:21:21.000Z",
+          "stop_date": "1983-12-30T15:19:33.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/16jh-6z67"
+        },
+        "I1_AV2_ULA": {
+          "description": "ISIS Topside Sounder Ionogram - R.F. Benson (NASA GSFC)",
+          "start_date": "1975-01-04T18:15:50.000Z",
+          "stop_date": "1979-09-14T12:06:30.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/4swk-8z58"
+        },
+        "I1_AV_KSH": {
+          "description": "ISIS-1 Topside Sounder Ionogram over Kashima, Japan (lat/lon=36/141) - R.F. Benson (NASA GSFC)",
+          "start_date": "1978-01-06T04:52:17.000Z",
+          "stop_date": "1981-12-30T16:22:49.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/3y4m-8k92"
+        },
+        "I2_NEPROF_TOPS": {
+          "description": "ISIS-2 Topside Electron Density Profiles, manually scaled at CRC - J. E. Jackson (Communication Research Centre (CRC), Ottawa)",
+          "start_date": "1971-04-08T22:27:48.000Z",
+          "stop_date": "1979-08-27T17:52:25.000Z",
+          "pi_name": "J. E. Jackson"
+        },
+        "I1_AV_OTT": {
+          "description": "ISIS-1 Topside Sounder Ionogram over Ottawa, Canada (lat/lon=45/284) - R.F. Benson (NASA GSFC)",
+          "start_date": "1969-01-30T14:50:12.000Z",
+          "stop_date": "1983-12-17T13:08:05.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/qbk5-6d27"
+        },
+        "I1_AV_WNK": {
+          "description": "ISIS-1 Topside Sounder Ionogram over Winkfield, U.K. (lat/lon=51/359) - R.F. Benson (NASA GSFC)",
+          "start_date": "1969-02-03T01:02:10.000Z",
+          "stop_date": "1975-07-18T05:06:36.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/wcqv-zf08"
+        },
+        "I1_AV_SNT": {
+          "description": "ISIS-1 Topside Sounder Ionogram over Santiago, Chile (lat/lon=-33/298) - R.F. Benson (NASA GSFC)",
+          "start_date": "1969-01-31T01:29:39.000Z",
+          "stop_date": "1972-12-25T07:01:13.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/12mc-z496"
+        },
+        "I1_AV_SOD": {
+          "description": "ISIS-1 Topside Sounder Ionogram over Sodankyla, Finland (lat/lon=67/27) - R.F. Benson (NASA GSFC)",
+          "start_date": "1977-12-14T22:30:46.000Z",
+          "stop_date": "1979-03-30T14:10:33.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/9qaw-s520"
+        },
+        "I2_AV_ACN": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Ascension Is., U.K. (lat/lon= -8/346) - R.F. Benson (NASA GSFC)",
+          "start_date": "1975-01-09T01:22:59.000Z",
+          "stop_date": "1978-09-28T16:37:11.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/5h5w-fq61"
+        },
+        "I2_AV_RES": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Resolute Bay, Canada (lat/lon=75/265) - R.F. Benson (NASA GSFC)",
+          "start_date": "1971-04-01T09:22:52.000Z",
+          "stop_date": "1983-01-13T11:06:43.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/ygmh-1645"
+        },
+        "I2_AV_ADL": {
+          "description": "ISIS-2 Topside Sounder Ionogram over Terre Adelie, Antarctica (lat/lon=-67/140) - R.F. Benson (NASA GSFC)",
+          "start_date": "1973-01-12T10:18:21.000Z",
+          "stop_date": "1983-02-03T18:47:56.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/p51y-d876"
+        },
+        "I1_AV_ODG": {
+          "description": "ISIS-1 Topside Sounder Ionogram over Ouagadougou, Burkina Faso (lat/lon=14/359) - R.F. Benson (NASA GSFC)",
+          "start_date": "1969-02-03T13:27:25.000Z",
+          "stop_date": "1976-06-28T17:19:36.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/tnsj-h558"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "isis"
+}

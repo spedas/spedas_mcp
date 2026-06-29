@@ -1,0 +1,193 @@
+{
+  "id": "interball",
+  "name": "Interball",
+  "profile": {
+    "description": "Interball data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "plasma": {
+      "name": "Plasma and Solar Wind",
+      "keywords": [
+        "plasma",
+        "solar wind",
+        "proton",
+        "density",
+        "velocity",
+        "temperature",
+        "ion",
+        "electron"
+      ],
+      "datasets": {
+        "IT_K0_COR": {
+          "description": "Interball Tail Probe CORALL ion moments, Key Parameters - Yu.Yermolaev (Space Research Inst., Russian Acad. Sci., Moscow, Russia)",
+          "start_date": "1995-09-02T15:02:58.000Z",
+          "stop_date": "1998-12-31T23:59:21.000Z",
+          "pi_name": "Yu.Yermolaev"
+        }
+      }
+    },
+    "ground_mag": {
+      "name": "Ground-Based Magnetometers",
+      "keywords": [
+        "ground",
+        "magnetometer",
+        "riometer"
+      ],
+      "datasets": {
+        "IG_K0_PCI": {
+          "description": "Interball Polar Cap Activity Index, Key Parameters - V.Sergeev  (Institute of physics Univ. of St.-Peterburg St.-Peterburg, Russia )",
+          "start_date": "1995-08-07T00:02:30.000Z",
+          "stop_date": "2000-10-22T23:57:30.000Z",
+          "pi_name": "V.Sergeev",
+          "doi": "10.48322/vdm3-4236"
+        }
+      }
+    },
+    "ephemeris": {
+      "name": "Ephemeris and Attitude",
+      "keywords": [
+        "ephemeris",
+        "orbit",
+        "attitude",
+        "position"
+      ],
+      "datasets": {
+        "IA_OR_DEF": {
+          "description": "Interball Auroral Probe Orbital Data, Key Parameters - V.Prokhorenko (Space Research Inst., Russian Acad. Sci., Moscow, Russia. )",
+          "start_date": "1996-09-19T00:00:00.000Z",
+          "stop_date": "1997-06-04T23:50:00.000Z",
+          "pi_name": "V.Prokhorenko"
+        },
+        "IT_OR_GIFWALK": {
+          "description": "Links to Interball-Tail and multi-mission orbit plots - Polar-Wind-Geotail Ground System (NASA GSFC)",
+          "start_date": "2004-08-08T00:00:00.000Z",
+          "stop_date": "2004-08-08T01:00:00.000Z",
+          "pi_name": "Polar-Wind-Geotail Ground System"
+        },
+        "IT_OR_DEF": {
+          "description": "Interball Tail Orbital Data, Key Parameters - V.Prokhorenko (Space Research Inst., Russian Acad. Sci., Moscow, Russia. )",
+          "start_date": "1995-08-07T00:00:00.000Z",
+          "stop_date": "2000-10-16T13:55:00.000Z",
+          "pi_name": "V.Prokhorenko",
+          "doi": "10.48322/qjyq-y358"
+        }
+      }
+    },
+    "mag": {
+      "name": "Magnetic Fields",
+      "keywords": [
+        "magnetic",
+        "field",
+        "mag",
+        "b-field",
+        "imf",
+        "magnetometer"
+      ],
+      "datasets": {
+        "IT_K0_MFI": {
+          "description": "Interball Tail probe Magnetic Field, Key Parameters - S.Romanov (Space Research Inst., Russian Acad. Sci., Moscow, Russia. )",
+          "start_date": "1995-08-06T05:35:00.000Z",
+          "stop_date": "2000-10-16T01:17:00.000Z",
+          "pi_name": "S.Romanov"
+        },
+        "IT_H0_MFI": {
+          "description": "Interball-Tail 6 sec vector magnetic field data - M.Nozdrachev (IKI, Moscow, Russia)",
+          "start_date": "1995-08-06T07:11:09.000Z",
+          "stop_date": "2000-10-15T21:53:27.000Z",
+          "pi_name": "M.Nozdrachev",
+          "doi": "10.48322/r63a-ay51"
+        },
+        "IA_K0_MFI": {
+          "description": "Interball Auroral probe Magnetic Field, Key Parameters - V.Petrov (IMAP:IZMIRAN,Troitsk,  Russia. )",
+          "start_date": "1996-09-01T04:25:00.000Z",
+          "stop_date": "1997-06-17T04:25:00.000Z",
+          "pi_name": "V.Petrov"
+        }
+      }
+    },
+    "particles": {
+      "name": "Energetic Particles",
+      "keywords": [
+        "particle",
+        "energetic",
+        "cosmic ray"
+      ],
+      "datasets": {
+        "IT_K0_VDP": {
+          "description": "Interball Tail probe VDP instrument, Key Parameters - J.Safrankova (Charles University, Prague, Czech Republic )",
+          "start_date": "1995-08-14T03:05:00.000Z",
+          "stop_date": "2000-10-15T17:23:00.000Z",
+          "pi_name": "J.Safrankova"
+        },
+        "IT_K0_ICD": {
+          "description": "Interball Tail Probe Ion Composition Experiment PROMICS, Key Parameters - I.Sandahl (IRF, Kiruna, Sweden)",
+          "start_date": "1995-08-22T21:06:06.000Z",
+          "stop_date": "1996-06-07T23:58:12.000Z",
+          "pi_name": "I.Sandahl"
+        },
+        "IA_K0_ENF": {
+          "description": "Interball Auroral Probemeasurements of spectra and anisotropy of electrons SKA-3, Key Parameters - Yu. Galperin, R. Kovrazhkin,  A. Kuzmin,  F. Shuiskaya (IKI RAN, Russia)",
+          "start_date": "1996-09-20T01:03:00.000Z",
+          "stop_date": "1997-03-28T23:59:00.000Z",
+          "pi_name": "Yu. Galperin, R. Kovrazhkin,  A. Kuzmin,  F. Shuiskaya"
+        },
+        "IT_K0_EPI": {
+          "description": "Interball Tail Energetic Particle Instruments, Key Parameters - DOK-2: K.Kudela (DOK-2: Institute of experimental physics Slovak Acad. Sci., Kosize, Slovakia )",
+          "start_date": "1995-08-04T00:01:00.000Z",
+          "stop_date": "2000-10-16T03:31:00.000Z",
+          "pi_name": "DOK-2: K.Kudela",
+          "doi": "10.48322/c0xs-k906"
+        },
+        "IT_K0_ELE": {
+          "description": "Interball Tail probe ELECTRON instrument, Key Parameters - J.-A. Sauvaud (CESR, BP 4346, 31029, Toulouse, France )",
+          "start_date": "1995-08-15T06:03:00.000Z",
+          "stop_date": "2000-10-16T01:17:00.000Z",
+          "pi_name": "J.-A. Sauvaud"
+        },
+        "IA_K0_ICD": {
+          "description": "Interball Auroral Probe Ion Composition Experiment PROMICS, Key Parameters - I.Sandahl (IRF, Kiruna, Sweden)",
+          "start_date": "1996-09-18T09:23:36.000Z",
+          "stop_date": "1998-05-01T09:28:02.000Z",
+          "pi_name": "I.Sandahl"
+        },
+        "IA_K0_EPI": {
+          "description": "Interball Auroral Energetic Particle Instruments, KeyParameters - DOK-2: K.Kudela (DOK-2: Institute of experimental physics Slovak Acad. Sci., Kosize, Slovakia )",
+          "start_date": "1996-09-03T09:39:00.000Z",
+          "stop_date": "1997-10-30T12:51:00.000Z",
+          "pi_name": "DOK-2: K.Kudela"
+        }
+      }
+    },
+    "waves": {
+      "name": "Radio and Plasma Waves",
+      "keywords": [
+        "radio",
+        "wave",
+        "plasma wave"
+      ],
+      "datasets": {
+        "IT_K0_AKR": {
+          "description": "Interball Tail Probe AKR Radioemission flux, Key Parameters - V.Kurilchik (Sternberg Astronomical Inst.,Moscow State University, 119899, Universitetsky pr., 13 Moscow, Russia)",
+          "start_date": "1995-08-06T07:11:00.000Z",
+          "stop_date": "2000-10-16T01:17:00.000Z",
+          "pi_name": "V.Kurilchik",
+          "doi": "10.48322/z1rp-x549"
+        },
+        "IT_K0_WAV": {
+          "description": "Interball Tail probe Magnetic Field, Key Parameters - S.Romanov (Space Research Inst., Russian Acad. Sci., Moscow, Russia. )",
+          "start_date": "1998-01-01T00:01:00.000Z",
+          "stop_date": "2000-10-16T01:17:00.000Z",
+          "pi_name": "S.Romanov"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "interball"
+}

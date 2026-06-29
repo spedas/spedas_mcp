@@ -1,0 +1,1324 @@
+{
+  "id": "tss",
+  "name": "TSS-1R",
+  "profile": {
+    "description": "TSS-1R data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "engineering": {
+      "name": "Engineering",
+      "keywords": [
+        "engineering",
+        "housekeeping"
+      ],
+      "datasets": {
+        "TSS-1R_M1_DCTA": {
+          "description": "TSS-1R, Temperature Measurements IDFS format - Carlo Bonifazi (ASI)",
+          "start_date": "1996-02-23T09:33:34.000Z",
+          "stop_date": "1996-03-01T11:17:50.000Z",
+          "pi_name": "Carlo Bonifazi"
+        },
+        "TSS-1R_M1_DPMK": {
+          "description": "TSS-1R, Reel Motor Command Data IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:19.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DCSB": {
+          "description": "TSS-1R, General Status Measurements IDFS format - Carlo Bonifazi (ASI)",
+          "start_date": "1996-02-23T09:33:35.000Z",
+          "stop_date": "1996-03-01T11:17:51.000Z",
+          "pi_name": "Carlo Bonifazi"
+        },
+        "TSS-1R_M1_DCSA": {
+          "description": "TSS-1R, General High Rate Status Measurements IDFS format - Carlo Bonifazi (ASI)",
+          "start_date": "1996-02-23T09:33:34.000Z",
+          "stop_date": "1996-03-01T11:17:52.000Z",
+          "pi_name": "Carlo Bonifazi"
+        },
+        "TSS-1R_M1_DPMJ": {
+          "description": "TSS-1R, DEL-L Measurements IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:19.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DPMI": {
+          "description": "TSS-1R, Tether Length Raw Encoder Counts IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:23.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DPMH": {
+          "description": "TSS-1R, Tether Velocity IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:19.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DPMG": {
+          "description": "TSS-1R, Tether Length IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:19.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DPMF": {
+          "description": "TSS-1R, Voltage, Current, and Tether Tension Data IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:19.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DPME": {
+          "description": "TSS-1R, Miscellaneous Tether Measurements IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:19.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DPMD": {
+          "description": "TSS-1R, Tether Rate Raw Timer Counts IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:23.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DPMC": {
+          "description": "TSS-1R, 16 bit Measured Tether Lengths and Rates IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:19.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DPMB": {
+          "description": "TSS-1R, Low Rate Tether Information IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:19.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DPMA": {
+          "description": "TSS-1R, CP Tether Tensions IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:23.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_STFA": {
+          "description": "TSS-1R, SETS FPEG Monitors IDFS format - Ivan Linscott (Stanford University)",
+          "start_date": "1996-02-22T23:09:42.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Ivan Linscott"
+        },
+        "TSS-1R_M1_STFB": {
+          "description": "TSS-1R, FPEG Status Data IDFS format - Ivan Linscott (Stanford University)",
+          "start_date": "1996-02-22T23:09:42.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Ivan Linscott"
+        },
+        "TSS-1R_M1_STCC": {
+          "description": "TSS-1R, CCP Status Data IDFS format - Ivan Linscott (Stanford University)",
+          "start_date": "1996-02-22T23:09:42.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Ivan Linscott"
+        },
+        "TSS-1R_M1_STCD": {
+          "description": "TSS-1R, SETS CCP Monitor Data IDFS format - Ivan Linscott (Stanford University)",
+          "start_date": "1996-02-22T23:09:42.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Ivan Linscott"
+        },
+        "TSS-1R_M1_DPHE": {
+          "description": "TSS-1R, Time Stamp Data IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:23.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DPHD": {
+          "description": "TSS-1R, Segment Information IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:19.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DPHC": {
+          "description": "TSS-1R, Rotating Memeory Dump Data IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:19.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DPHB": {
+          "description": "TSS-1R, SFMSD Command Word Data IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:19.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DPHA": {
+          "description": "TSS-1R, 16/major Frame Miscellaneous Housekeeping Data IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:23.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_STDC": {
+          "description": "TSS-1R, DEP: CPU, GMT and Multibus Time IDFS format - Ivan Linscott (Stanford University)",
+          "start_date": "1996-02-22T23:09:42.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Ivan Linscott"
+        },
+        "TSS-1R_M1_STDA": {
+          "description": "TSS-1R, DEP and Timing Information IDFS format - Ivan Linscott (Stanford University)",
+          "start_date": "1996-02-22T23:09:42.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Ivan Linscott"
+        },
+        "TSS-1R_M1_STDB": {
+          "description": "TSS-1R, DEP Operation Timing Information IDFS format - Ivan Linscott (Stanford University)",
+          "start_date": "1996-02-22T23:09:42.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Ivan Linscott"
+        },
+        "TSS-1R_M1_DPTA": {
+          "description": "TSS-1R, Reel And Boom Temperature Data IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:19.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DPTB": {
+          "description": "TSS-1R, Temperature Data IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:19.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_SPHE": {
+          "description": "TSS-1R, Uplink Command Echo IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:53.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_M1_SPHC": {
+          "description": "TSS-1R, FDR Tape Counters IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:53.000Z",
+          "stop_date": "1996-03-01T11:16:18.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_M1_SPHD": {
+          "description": "TSS-1R, Space Counter Data IDFS format - Dr Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:53.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Dr Dave Hardy"
+        },
+        "TSS-1R_M1_SPHA": {
+          "description": "TSS-1R, Subcommutated Housekeeping Measureents IDFS format - Dr Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:53.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Dr Dave Hardy"
+        },
+        "TSS-1R_M1_SPHB": {
+          "description": "TSS-1R, FDR Housekeeping Measurements IDFS format - Dr Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:53.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Dr Dave Hardy"
+        },
+        "TSS-1R_M1_STMB": {
+          "description": "TSS-1R, SETS AMAG And SPIB Monitors IDFS format - Ivan Linscott (Stanford University)",
+          "start_date": "1996-02-22T23:09:42.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Ivan Linscott"
+        },
+        "TSS-1R_M1_STMA": {
+          "description": "TSS-1R, SRPA, SPIB and AMAG Power Status Data IDFS format - Ivan Linscott (Stanford University)",
+          "start_date": "1996-02-22T23:09:42.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Ivan Linscott"
+        },
+        "TSS-1R_M1_SCMC": {
+          "description": "TSS-1R, Satellite Ampmeter Current Monitors  (SCMC) IDFS format - Carlo Bonifazi (ASI)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:12.000Z",
+          "pi_name": "Carlo Bonifazi"
+        },
+        "TSS-1R_M1_SCMB": {
+          "description": "TSS-1R, SA Temperature and Overtemperature Monitors  (SCMB) IDFS format - Carlo Bonifazi (ASI)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:12.000Z",
+          "pi_name": "Carlo Bonifazi"
+        },
+        "TSS-1R_M1_SCMA": {
+          "description": "TSS-1R, SLA Temperature and Voltage Monitors IDFS format - Carlo Bonifazi (ASI)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:11.000Z",
+          "pi_name": "Carlo Bonifazi"
+        },
+        "TSS-1R_M1_DPSJ": {
+          "description": "TSS-1R, Miscellaneous Relay Status Data IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:19.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DPSI": {
+          "description": "TSS-1R, Maneuver Status Data IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:19.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DPSH": {
+          "description": "TSS-1R, 16/major Frame Miscellaneous Status Data IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:23.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DPSG": {
+          "description": "TSS-1R, 1/major Frame Miscellaneous Status Data IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:19.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DPSF": {
+          "description": "TSS-1R, L-DOT, DEL-L, and Talkback Status Data IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:19.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DPSE": {
+          "description": "TSS-1R, U1 and U2 Status Data IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:19.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DPSD": {
+          "description": "TSS-1R, Latch Status Data IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:19.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DPSC": {
+          "description": "TSS-1R, Power and ADC Voltage Status Data IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:19.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DPSA": {
+          "description": "TSS-1R, Boom Status Data IDFS format - Ron Geiger (Martin Marietta Astronautics)",
+          "start_date": "1996-02-22T23:51:19.000Z",
+          "stop_date": "1996-03-01T11:16:19.000Z",
+          "pi_name": "Ron Geiger"
+        },
+        "TSS-1R_M1_DCDV": {
+          "description": "TSS-1R, DV Voltage and DVG Pressure Measurements IDFS format - Carlo Bonifazi (ASI)",
+          "start_date": "1996-02-23T09:33:34.000Z",
+          "stop_date": "1996-03-01T11:17:52.000Z",
+          "pi_name": "Carlo Bonifazi"
+        },
+        "TSS-1R_M1_RPSD": {
+          "description": "TSS-1R, DIFP RAM Test Data (RPSD) IDFS format - Dr. Nobie Stone (Marshall Space Flight Center)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:10.000Z",
+          "pi_name": "Dr. Nobie Stone"
+        },
+        "TSS-1R_M1_RPSC": {
+          "description": "TSS-1R, Floating Supply Discrete Status Values (RPSC) IDFS format - Dr. Nobie Stone (Marshall Space Flight Center)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:10.000Z",
+          "pi_name": "Dr. Nobie Stone"
+        },
+        "TSS-1R_M1_RPSB": {
+          "description": "TSS-1R, ROPE Command Status Words (RPSB) IDFS format - Dr. Nobie Stone (Marshall Space Flight Center)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:00.000Z",
+          "pi_name": "Dr. Nobie Stone"
+        },
+        "TSS-1R_M1_RPSA": {
+          "description": "TSS-1R, SPES Grid Bias And HVU 1/2 Status (RPSA) IDFS format - Dr. J. David Winningham (Southwest Research Institute)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:08.000Z",
+          "pi_name": "Dr. J. David Winningham"
+        },
+        "TSS-1R_M1_DCME": {
+          "description": "TSS-1R, Applicative Programs Data IDFS format - Carlo Bonifazi (ASI)",
+          "start_date": "1996-02-23T09:33:35.000Z",
+          "stop_date": "1996-03-01T11:17:51.000Z",
+          "pi_name": "Carlo Bonifazi"
+        },
+        "TSS-1R_M1_DCMD": {
+          "description": "TSS-1R, DCORE Format Counter and Dump Data IDFS format - Carlo Bonifazi (ASI)",
+          "start_date": "1996-02-23T09:33:34.000Z",
+          "stop_date": "1996-03-01T11:17:50.000Z",
+          "pi_name": "Carlo Bonifazi"
+        },
+        "TSS-1R_M1_DCMC": {
+          "description": "TSS-1R, EGA Filament and Tether Current Cycle Data IDFS format - Carlo Bonifazi (ASI)",
+          "start_date": "1996-02-23T09:33:34.000Z",
+          "stop_date": "1996-03-01T11:17:49.000Z",
+          "pi_name": "Carlo Bonifazi"
+        },
+        "TSS-1R_M1_DCMB": {
+          "description": "TSS-1R, Memory Dump Data IDFS format - Carlo Bonifazi (ASI)",
+          "start_date": "1996-02-23T09:33:34.000Z",
+          "stop_date": "1996-03-01T11:17:50.000Z",
+          "pi_name": "Carlo Bonifazi"
+        },
+        "TSS-1R_M1_DCMA": {
+          "description": "TSS-1R, General Monitor Measurements IDFS format - Carlo Bonifazi (ASI)",
+          "start_date": "1996-02-23T09:33:35.000Z",
+          "stop_date": "1996-03-01T11:17:51.000Z",
+          "pi_name": "Carlo Bonifazi"
+        },
+        "TSS-1R_R0_DCORE": {
+          "description": "DCORE (Deployer Core Equipment) Data Sets Follow:",
+          "start_date": "1996-02-22T00:00:00.000Z",
+          "stop_date": "1996-02-22T01:00:00.000Z"
+        },
+        "TSS-1R_M1_DCGA": {
+          "description": "TSS-1R, Electron Gun Current Monitors  (DCGA) IDFS format - Carlo Bonifazi (ASI)",
+          "start_date": "1996-02-23T09:33:34.000Z",
+          "stop_date": "1996-03-01T11:17:52.000Z",
+          "pi_name": "Carlo Bonifazi"
+        },
+        "TSS-1R_M1_DCGC": {
+          "description": "TSS-1R, Electron Filament Voltage And Acceleration Potentials IDFS format - Carlo Bonifazi (ASI)",
+          "start_date": "1996-02-23T09:33:34.000Z",
+          "stop_date": "1996-03-01T11:17:52.000Z",
+          "pi_name": "Carlo Bonifazi"
+        },
+        "TSS-1R_M1_DCGB": {
+          "description": "TSS-1R, Electron Gun Tether Current Offset Measurements IDFS format - Carlo Bonifazi (ASI)",
+          "start_date": "1996-02-23T09:33:35.000Z",
+          "stop_date": "1996-03-01T11:17:51.000Z",
+          "pi_name": "Carlo Bonifazi"
+        },
+        "TSS-1R_M1_SHSE": {
+          "description": "TSS-1R, Medium resolution miscellaneous status flags  (SHSE) IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:10.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHSD": {
+          "description": "TSS-1R, Satellite Program Status Flags IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:35.000Z",
+          "stop_date": "1996-03-01T05:42:05.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHSG": {
+          "description": "TSS-1R, Satellite slow status data IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:43.000Z",
+          "stop_date": "1996-03-01T05:42:13.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHSF": {
+          "description": "TSS-1R, Satellite medium resolution status data  (SHSF) IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:11.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHSA": {
+          "description": "TSS-1R, Low resolution gyro status flags  (SHSA) IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:43.000Z",
+          "stop_date": "1996-03-01T05:42:13.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHSC": {
+          "description": "TSS-1R, Low resolution FDS3/FDS4 status flags   (SHSC) IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:10.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHSB": {
+          "description": "TSS-1R, Gyro converter, heating and wheel status data   (SHSB) IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:11.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHPA": {
+          "description": "TSS-1R, Satellite miscellaneous power monitors IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:31.000Z",
+          "stop_date": "1996-03-01T05:42:11.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHMC": {
+          "description": "TSS-1R, Memory Dump And TLC Data   (SHMC) IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:39.000Z",
+          "stop_date": "1996-03-01T05:42:09.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHMB": {
+          "description": "TSS-1R, Onboard Data Handling ASMN Data IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:10.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHME": {
+          "description": "TSS-1R, OBDH and AMCS Data IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:35.000Z",
+          "stop_date": "1996-03-01T05:42:05.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHMD": {
+          "description": "TSS-1R, OBDH And AMCS Status Flags IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:40.000Z",
+          "stop_date": "1996-03-01T05:42:11.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHMA": {
+          "description": "TSS-1R, Onboard Data Handling RSMN Data    (SHMA) IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:10.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_EPSA": {
+          "description": "TSS-1R, EMP Satellite and Deployer Status Data IDFS format - Tony Lavoie (Marshall Space Flight Center)",
+          "start_date": "1996-02-22T23:05:05.000Z",
+          "stop_date": "1996-03-01T12:00:00.000Z",
+          "pi_name": "Tony Lavoie"
+        },
+        "TSS-1R_M1_EPSD": {
+          "description": "TSS-1R, SDIO Channel Status Data IDFS format - Tony Lavoie (Marshall Space Flight Center)",
+          "start_date": "1996-02-22T23:05:05.000Z",
+          "stop_date": "1996-03-01T12:00:00.000Z",
+          "pi_name": "Tony Lavoie"
+        },
+        "TSS-1R_M1_EPSC": {
+          "description": "TSS-1R, EMP SFMDM D05 and D28 LEV and PUL Status Data IDFS format - Tony Lavoie (Marshall Space Flight Center)",
+          "start_date": "1996-02-22T23:05:05.000Z",
+          "stop_date": "1996-03-01T12:00:00.000Z",
+          "pi_name": "Tony Lavoie"
+        },
+        "TSS-1R_M1_EPSB": {
+          "description": "TSS-1R, EMP SFMDM General Status Data IDFS format - Tony Lavoie (Marshall Space Flight Center)",
+          "start_date": "1996-02-22T23:05:04.000Z",
+          "stop_date": "1996-03-01T12:00:00.000Z",
+          "pi_name": "Tony Lavoie"
+        },
+        "TSS-1R_R0_ROPE": {
+          "description": "ROPE (Research on Orbital Plasma Electrodynamics) Data Sets Follow:",
+          "start_date": "1996-02-22T00:00:00.000Z",
+          "stop_date": "1996-02-22T01:00:00.000Z"
+        },
+        "TSS-1R_M1_SHTB": {
+          "description": "TSS-1R, Satellite temperatures IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:10.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHTA": {
+          "description": "TSS-1R, Gyro and Earth Sensor Temperatures IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:10.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHTC": {
+          "description": "TSS-1R, Satellite temperatures and pressures   (SHTC) IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:10.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_EPMH": {
+          "description": "TSS-1R, SFMDM RS-422 And IO Transfer Data IDFS format - Tony Lavoie (Marshall Space Flight Center)",
+          "start_date": "1996-02-22T23:05:05.000Z",
+          "stop_date": "1996-03-01T12:00:00.000Z",
+          "pi_name": "Tony Lavoie"
+        },
+        "TSS-1R_M1_EPMG": {
+          "description": "TSS-1R, DDCS and SFMDM Miscellaneous Data IDFS format - Tony Lavoie (Marshall Space Flight Center)",
+          "start_date": "1996-02-22T23:05:04.000Z",
+          "stop_date": "1996-03-01T12:00:00.000Z",
+          "pi_name": "Tony Lavoie"
+        },
+        "TSS-1R_M1_SHSI": {
+          "description": "TSS-1R, Satellite miscellaneous power status data IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:10.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_EPMF": {
+          "description": "TSS-1R, Timeline Data IDFS format - Tony Lavoie (Marshall Space Flight Center)",
+          "start_date": "1996-02-22T23:05:05.000Z",
+          "stop_date": "1996-03-01T12:00:00.000Z",
+          "pi_name": "Tony Lavoie"
+        },
+        "TSS-1R_M1_SHSH": {
+          "description": "TSS-1R, Satellite high time resolution status data  (SHSH) IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:12.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHSK": {
+          "description": "TSS-1R, Satellite Thruster Status Data IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:12.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHSJ": {
+          "description": "TSS-1R, Alpha, Beta, and FDS1/FDS2 status data  (SHSJ) IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:11.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_EPMC": {
+          "description": "TSS-1R, SFMDM Last Command Accepted Buffer IDFS format - Tony Lavoie (Marshall Space Flight Center)",
+          "start_date": "1996-02-22T23:05:05.000Z",
+          "stop_date": "1996-03-01T12:00:00.000Z",
+          "pi_name": "Tony Lavoie"
+        },
+        "TSS-1R_M1_EPMB": {
+          "description": "TSS-1R, Output Command Block and Variable Data Block IDFS format - Tony Lavoie (Marshall Space Flight Center)",
+          "start_date": "1996-02-22T23:05:05.000Z",
+          "stop_date": "1996-03-01T12:00:00.000Z",
+          "pi_name": "Tony Lavoie"
+        },
+        "TSS-1R_M1_EPMA": {
+          "description": "TSS-1R, Temperature, Voltage, Current, and Freon Data IDFS format - Tony Lavoie (Marshall Space Flight Center)",
+          "start_date": "1996-02-22T23:05:05.000Z",
+          "stop_date": "1996-03-01T12:00:00.000Z",
+          "pi_name": "Tony Lavoie"
+        },
+        "TSS-1R_R0_DRB": {
+          "description": "DRB (Deployable-Retrievable Boom)  Data Sets Follow:",
+          "start_date": "1996-02-22T00:00:00.000Z",
+          "stop_date": "1996-02-22T01:00:00.000Z"
+        },
+        "TSS-1R_M1_STSB": {
+          "description": "TSS-1R, Spherical Retarding Potential Analyzer IDFS format - Ivan Linscott (Stanford University)",
+          "start_date": "1996-02-22T23:09:42.000Z",
+          "stop_date": "1996-03-01T11:16:22.000Z",
+          "pi_name": "Ivan Linscott"
+        },
+        "TSS-1R_M1_STSC": {
+          "description": "TSS-1R, SETS SRPA Monitors IDFS format - Ivan Linscott (Stanford University)",
+          "start_date": "1996-02-22T23:09:42.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Ivan Linscott"
+        },
+        "TSS-1R_M1_SCSB": {
+          "description": "TSS-1R, High time resolution experiment status flags  (SCSB) IDFS format - Carlo Bonifazi (ASI)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:11.000Z",
+          "pi_name": "Carlo Bonifazi"
+        },
+        "TSS-1R_M1_SCSA": {
+          "description": "TSS-1R, Low time resolution experiment status flags  (SCSA) IDFS format - Carlo Bonifazi (ASI)",
+          "start_date": "1996-02-23T18:00:31.000Z",
+          "stop_date": "1996-03-01T05:42:11.000Z",
+          "pi_name": "Carlo Bonifazi"
+        },
+        "TSS-1R_M1_STTC": {
+          "description": "TSS-1R, SETS TCVM Monitor Data IDFS format - Ivan Linscott (Stanford University)",
+          "start_date": "1996-02-22T23:09:42.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Ivan Linscott"
+        },
+        "TSS-1R_M1_STTD": {
+          "description": "TSS-1R, TCVM Relay Status Data IDFS format - Ivan Linscott (Stanford University)",
+          "start_date": "1996-02-22T23:09:42.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Ivan Linscott"
+        },
+        "TSS-1R_M1_STTA": {
+          "description": "TSS-1R, TCVM Tether Current Monitor IDFS format - Ivan Linscott (Stanford University)",
+          "start_date": "1996-02-22T23:09:42.000Z",
+          "stop_date": "1996-03-01T11:16:22.000Z",
+          "pi_name": "Ivan Linscott"
+        },
+        "TSS-1R_M1_STTB": {
+          "description": "TSS-1R, Tether Voltage Monitor IDFS format - Brian Gilchrist (Unversity of Michigan)",
+          "start_date": "1996-02-22T23:09:42.000Z",
+          "stop_date": "1996-03-01T11:16:22.000Z",
+          "pi_name": "Brian Gilchrist"
+        },
+        "TSS-1R_M1_SHHB": {
+          "description": "TSS-1R, 24 Bit Battery Current  and Power Moniters   (SHHB) IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:34.000Z",
+          "stop_date": "1996-03-01T05:42:04.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHHA": {
+          "description": "TSS-1R, Miscellaneous Housekeeping Data IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:39.000Z",
+          "stop_date": "1996-03-01T05:42:09.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHHD": {
+          "description": "TSS-1R, Various 64/major frame 8 bit Housekeeping Data (SHHD) IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:11.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHHC": {
+          "description": "TSS-1R, Miscellaneous Timing Data    (SHHC) IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:38.000Z",
+          "stop_date": "1996-03-01T05:42:08.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHHF": {
+          "description": "TSS-1R, Satellite RX Coherent AGC and Loop Stress Data IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:10.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHHE": {
+          "description": "TSS-1R, Low time resolution 3 bit satellite monitors  (SHHE) IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:36.000Z",
+          "stop_date": "1996-03-01T05:42:07.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SPSD": {
+          "description": "TSS-1R, DCORE and SETS Gun Status IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:53.000Z",
+          "stop_date": "1996-03-01T11:16:21.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_M1_SPSB": {
+          "description": "TSS-1R, DPU and FDR Sense Key Status Data IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:58.000Z",
+          "stop_date": "1996-03-01T11:16:04.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_M1_SPSC": {
+          "description": "TSS-1R, FDR Tape Status IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:53.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_M1_SPSA": {
+          "description": "TSS-1R, SPACE Status And Flow Monitor Data IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:53.000Z",
+          "stop_date": "1996-03-01T11:16:18.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_M1_CSSC": {
+          "description": "TSS-1R, RCS/Vernier Jets-Impulse/Exhaust Gases Status IDFS format - Tony Lavoie (Marshall Space Flight Center)",
+          "start_date": "1996-02-22T21:26:29.000Z",
+          "stop_date": "1996-03-01T11:59:48.000Z",
+          "pi_name": "Tony Lavoie"
+        },
+        "TSS-1R_M1_CSSA": {
+          "description": "TSS-1R, FCP, Water and Waste Dump, FES, and Power Status IDFS format - Tony Lavoie (Marshall Space Flight Center)",
+          "start_date": "1996-02-22T21:26:29.000Z",
+          "stop_date": "1996-03-01T11:59:46.000Z",
+          "pi_name": "Tony Lavoie"
+        },
+        "TSS-1R_M1_CSSB": {
+          "description": "TSS-1R, KU-BAND Communications/RADAR and Recorder Operation Status IDFS format - Tony Lavoie (Marshall Space Flight Center)",
+          "start_date": "1996-02-22T21:26:29.000Z",
+          "stop_date": "1996-03-01T11:59:46.000Z",
+          "pi_name": "Tony Lavoie"
+        },
+        "TSS-1R_M1_CSTA": {
+          "description": "TSS-1R, GMT and MET Data IDFS format - Tony Lavoie (Marshall Space Flight Center)",
+          "start_date": "1996-02-22T21:26:29.000Z",
+          "stop_date": "1996-03-01T11:59:46.000Z",
+          "pi_name": "Tony Lavoie"
+        },
+        "TSS-1R_R0_EMP": {
+          "description": "EMP (End Mass Payload)  Data Sets Follow:",
+          "start_date": "1996-02-22T00:00:00.000Z",
+          "stop_date": "1996-02-22T01:00:00.000Z"
+        },
+        "TSS-1R_M1_CSEA": {
+          "description": "TSS-1R, Temperature, Voltage, and Current Measurements IDFS format - Tony Lavoie (Marshall Space Flight Center)",
+          "start_date": "1996-02-22T21:26:29.000Z",
+          "stop_date": "1996-03-01T11:59:46.000Z",
+          "pi_name": "Tony Lavoie"
+        },
+        "TSS-1R_M1_CSEB": {
+          "description": "TSS-1R, Supply and Waste Water Quantities IDFS format - Tony Lavoie (Marshall Space Flight Center)",
+          "start_date": "1996-02-22T21:26:29.000Z",
+          "stop_date": "1996-03-01T11:59:46.000Z",
+          "pi_name": "Tony Lavoie"
+        },
+        "TSS-1R_R0_TEMAG": {
+          "description": "TEMAG (Magnetic Field Experiment to TSS Mission) Data Sets Follow:",
+          "start_date": "1996-02-22T00:00:00.000Z",
+          "stop_date": "1996-02-22T01:00:00.000Z"
+        },
+        "TSS-1R_M1_CSMA": {
+          "description": "TSS-1R, KU-Band Communications/RADAR Roll and Pitch Monitors IDFS format - Tony Lavoie (Marshall Space Flight Center)",
+          "start_date": "1996-02-22T21:26:29.000Z",
+          "stop_date": "1996-03-01T11:59:46.000Z",
+          "pi_name": "Tony Lavoie"
+        },
+        "TSS-1R_M1_CSMB": {
+          "description": "TSS-1R, KU-Band Communications/RADAR Power and Range Monitors IDFS format - Tony Lavoie (Marshall Space Flight Center)",
+          "start_date": "1996-02-22T21:26:29.000Z",
+          "stop_date": "1996-03-01T11:59:46.000Z",
+          "pi_name": "Tony Lavoie"
+        },
+        "TSS-1R_R0_DPLY": {
+          "description": "DPLY (Deployer Miscellaneous Housekeeping) Data Sets Follow:",
+          "start_date": "1996-02-22T00:00:00.000Z",
+          "stop_date": "1996-02-22T01:00:00.000Z"
+        },
+        "TSS-1R_M1_RPDM": {
+          "description": "TSS-1R, DIFP Peak Monitor Data  (RPDM) IDFS format - Dr. Nobie Stone (Marshall Space Flight Center)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:10.000Z",
+          "pi_name": "Dr. Nobie Stone"
+        },
+        "TSS-1R_M1_RPEM": {
+          "description": "TSS-1R, DIFP Electrometer Data IDFS format - Dr. Nobie Stone (Marshall Space Flight Center)",
+          "start_date": "1996-02-23T18:33:00.000Z",
+          "stop_date": "1996-02-28T23:16:00.000Z",
+          "pi_name": "Dr. Nobie Stone"
+        },
+        "TSS-1R_M1_DBSC": {
+          "description": "TSS-1R, DPY/RTR and JTR Power Status IDFS format - Jean Sabbagh (ASI)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:12.000Z",
+          "pi_name": "Jean Sabbagh"
+        },
+        "TSS-1R_M1_DBSB": {
+          "description": "TSS-1R, Boom Stowed Status, DPY/RTR Status, and JTR Fire Status IDFS format - Jean Sabbagh (ASI)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:11.000Z",
+          "pi_name": "Jean Sabbagh"
+        },
+        "TSS-1R_M1_DBSA": {
+          "description": "TSS-1R, Boom, DPY/RTR, and JTS Status Data  (DBSA) IDFS format - Jean Sabbagh (ASI)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:10.000Z",
+          "pi_name": "Jean Sabbagh"
+        },
+        "TSS-1R_M1_RPDP": {
+          "description": "TSS-1R, DIFP Deflection and Retard Data  (RPDP) IDFS format - Dr. Nobie Stone (Marshall Space Flight Center)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:08.000Z",
+          "pi_name": "Dr. Nobie Stone"
+        },
+        "TSS-1R_M1_RPBB": {
+          "description": "TSS-1R, Boom Biasing Current and Voltage IDFS format - Dr. J. David Winningham (Southwest Research Institute)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:12.000Z",
+          "pi_name": "Dr. J. David Winningham"
+        },
+        "TSS-1R_M1_DBPO": {
+          "description": "TSS-1R, Boom Tip Position           (DBPO) IDFS format - Jean Sabbagh (ASI)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:11.000Z",
+          "pi_name": "Jean Sabbagh"
+        },
+        "TSS-1R_M1_RTKH": {
+          "description": "TSS-1R, MF RETE Format Data IDFS format - Dr. Marino Dobrowolny (Instituto Di Fisica Dello Spazio Interplanetario)",
+          "start_date": "1996-02-23T18:27:15.000Z",
+          "stop_date": "1996-03-01T05:35:10.000Z",
+          "pi_name": "Dr. Marino Dobrowolny"
+        },
+        "TSS-1R_M1_RTKG": {
+          "description": "TSS-1R, LF RETE Format Data IDFS format - Dr. Marino Dobrowolny (Instituto Di Fisica Dello Spazio Interplanetario)",
+          "start_date": "1996-02-23T17:59:57.000Z",
+          "stop_date": "1996-03-01T05:41:27.000Z",
+          "pi_name": "Dr. Marino Dobrowolny"
+        },
+        "TSS-1R_M1_RTKI": {
+          "description": "TSS-1R, HF RETE Format Data IDFS format - Dr. Marino Dobrowolny (Instituto Di Fisica Dello Spazio Interplanetario)",
+          "start_date": "1996-02-23T18:27:15.000Z",
+          "stop_date": "1996-03-01T05:35:10.000Z",
+          "pi_name": "Dr. Marino Dobrowolny"
+        },
+        "TSS-1R_M1_RTKD": {
+          "description": "TSS-1R, Telecommand Echo IDFS format - Dr. Marino Dobrowolny (Instituto Di Fisica Dello Spazio Interplanetario)",
+          "start_date": "1996-02-23T18:27:15.000Z",
+          "stop_date": "1996-03-01T05:36:48.000Z",
+          "pi_name": "Dr. Marino Dobrowolny"
+        },
+        "TSS-1R_M1_RTKC": {
+          "description": "TSS-1R, Error table measurements IDFS format - Dr. Marino Dobrowolny (Instituto Di Fisica Dello Spazio Interplanetario)",
+          "start_date": "1996-02-23T18:27:15.000Z",
+          "stop_date": "1996-03-01T05:36:48.000Z",
+          "pi_name": "Dr. Marino Dobrowolny"
+        },
+        "TSS-1R_M1_RTKE": {
+          "description": "TSS-1R, Pentode Current And DCBP Voltage IDFS format - Dr. Marino Dobrowolny (Instituto Di Fisica Dello Spazio Interplanetario)",
+          "start_date": "1996-02-23T18:27:15.000Z",
+          "stop_date": "1996-03-01T05:38:02.000Z",
+          "pi_name": "Dr. Marino Dobrowolny"
+        },
+        "TSS-1R_M1_RTKA": {
+          "description": "TSS-1R, AC Housekeeping measurements IDFS format - Dr. Marino Dobrowolny (Instituto Di Fisica Dello Spazio Interplanetario)",
+          "start_date": "1996-02-23T18:27:15.000Z",
+          "stop_date": "1996-03-01T05:37:30.000Z",
+          "pi_name": "Dr. Marino Dobrowolny"
+        },
+        "TSS-1R_M1_TMTA": {
+          "description": "TSS-1R, Tether Current   (TMTA) IDFS format - Dr. Franco Mariani (University of Vergata, Departmento Fisica)",
+          "start_date": "1996-02-23T18:00:13.000Z",
+          "stop_date": "1996-03-01T05:41:55.000Z",
+          "pi_name": "Dr. Franco Mariani"
+        },
+        "TSS-1R_M1_RPHE": {
+          "description": "TSS-1R, ROPE CEP and FS Voltage And Temperature Monitors (RPHE) IDFS format - Dr. J. David Winningham (Southwest Research Institute)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:00.000Z",
+          "pi_name": "Dr. J. David Winningham"
+        },
+        "TSS-1R_M1_RPHD": {
+          "description": "TSS-1R, SPES Grid Voltages  (RPHD) IDFS format - Dr. J. David Winningham (Southwest Research Institute)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:08.000Z",
+          "pi_name": "Dr. J. David Winningham"
+        },
+        "TSS-1R_M1_RPHG": {
+          "description": "TSS-1R, Floating Power Supply Current (RPHG) IDFS format - Dr. Nobie Stone (Marshall Space Flight Center)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:10.000Z",
+          "pi_name": "Dr. Nobie Stone"
+        },
+        "TSS-1R_M1_RPHF": {
+          "description": "TSS-1R, Satellite Programmable Power Supply Monitors (RPHF) IDFS format - Dr. J. David Winningham (Southwest Research Institute)",
+          "start_date": "1996-02-24T20:27:18.000Z",
+          "stop_date": "1996-03-01T05:42:12.000Z",
+          "pi_name": "Dr. J. David Winningham"
+        },
+        "TSS-1R_M1_RPHA": {
+          "description": "TSS-1R, DIFP Miscellaneous Housekeeping  (RPHA) IDFS format - Dr. Nobie Stone (Marshall Space Flight Center)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:10.000Z",
+          "pi_name": "Dr. Nobie Stone"
+        },
+        "TSS-1R_M1_RPHC": {
+          "description": "TSS-1R, SPES Voltage And Current Monitors (RPHC) IDFS format - Dr. J. David Winningham (Southwest Research Institute)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:08.000Z",
+          "pi_name": "Dr. J. David Winningham"
+        },
+        "TSS-1R_M1_RPHB": {
+          "description": "TSS-1R, DIFP A/D Voltage And Current Monitors IDFS format - Dr. Nobie Stone (Marshall Space Flight Center)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:10.000Z",
+          "pi_name": "Dr. Nobie Stone"
+        },
+        "TSS-1R_M1_DBTA": {
+          "description": "TSS-1R, Boom Temperature Monitors   (DBTA) IDFS format - Jean Sabbagh (ASI)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:10.000Z",
+          "pi_name": "Jean Sabbagh"
+        },
+        "TSS-1R_M1_TMHA": {
+          "description": "TSS-1R, Housekeeping Data   (TMHA) IDFS format - Dr. Franco Mariani (University of Vergata, Departmento Fisica)",
+          "start_date": "1996-02-23T18:00:13.000Z",
+          "stop_date": "1996-03-01T05:41:54.000Z",
+          "pi_name": "Dr. Franco Mariani"
+        },
+        "TSS-1R_M1_TMHB": {
+          "description": "TSS-1R, Telecommand Echo And Checksum  (TMHB) IDFS format - Dr. Franco Mariani (University of Vergata, Departmento Fisica)",
+          "start_date": "1996-02-23T18:00:13.000Z",
+          "stop_date": "1996-03-01T05:41:54.000Z",
+          "pi_name": "Dr. Franco Mariani"
+        }
+      }
+    },
+    "plasma": {
+      "name": "Plasma and Solar Wind",
+      "keywords": [
+        "plasma",
+        "solar wind",
+        "proton",
+        "density",
+        "velocity",
+        "temperature",
+        "ion",
+        "electron"
+      ],
+      "datasets": {
+        "TSS-1R_M1_SPBA": {
+          "description": "TSS-1R, Space Beam Data IDFS format - Dr Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:53.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Dr Dave Hardy"
+        },
+        "TSS-1R_M1_STCB": {
+          "description": "TSS-1R, Direct Current and Charge Probe Monitors IDFS format - Ivan Linscott (Stanford University)",
+          "start_date": "1996-02-22T23:09:42.000Z",
+          "stop_date": "1996-03-01T11:16:22.000Z",
+          "pi_name": "Ivan Linscott"
+        },
+        "TSS-1R_M1_STCA": {
+          "description": "TSS-1R, Current and Charge Probe, Peak Monitors IDFS format - Ivan Linscott (Stanford University)",
+          "start_date": "1996-02-22T23:09:42.000Z",
+          "stop_date": "1996-03-01T11:16:22.000Z",
+          "pi_name": "Ivan Linscott"
+        },
+        "TSS-1R_M1_RTRLP": {
+          "description": "TSS-1R, Reduced Langmuir Probe Data IDFS format - J-P. Lebreton (ESA/ESTEC, Solar System Division)",
+          "start_date": "1996-02-25T20:28:08.000Z",
+          "stop_date": "1996-02-26T01:39:55.000Z",
+          "pi_name": "J-P. Lebreton"
+        },
+        "TSS-1R_M1_SPOP": {
+          "description": "TSS-1R, Orbiter Potential Data IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:53.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_R0_SPREE": {
+          "description": "SPREE (Shuttle Potential and Return Electron Experiment) Data Sets Follow:",
+          "start_date": "1996-02-22T00:00:00.000Z",
+          "stop_date": "1996-02-22T01:00:00.000Z"
+        },
+        "TSS-1R_M1_RTIP": {
+          "description": "TSS-1R, Ion Probe Data IDFS format - Dr. Marino Dobrowolny (Instituto Di Fisica Dello Spazio Interplanetario)",
+          "start_date": "1996-02-23T18:27:48.000Z",
+          "stop_date": "1996-03-01T05:35:42.000Z",
+          "pi_name": "Dr. Marino Dobrowolny"
+        }
+      }
+    },
+    "ephemeris": {
+      "name": "Ephemeris and Attitude",
+      "keywords": [
+        "ephemeris",
+        "orbit",
+        "attitude",
+        "position"
+      ],
+      "datasets": {
+        "TSS-1R_R0_SCORE": {
+          "description": "SCORE (Satellite Core Equipment) Data Sets Follow:",
+          "start_date": "1996-02-22T00:00:00.000Z",
+          "stop_date": "1996-02-22T01:00:00.000Z"
+        },
+        "TSS-1R_M1_SCAC": {
+          "description": "TSS-1R, SLA vector coarse acceleration (SCAC) IDFS format - Carlo Bonifazi (ASI)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:11.000Z",
+          "pi_name": "Carlo Bonifazi"
+        },
+        "TSS-1R_M1_SCAF": {
+          "description": "TSS-1R, SLA High Res Vector Acceleration Measurements (SCAF) IDFS format - Carlo Bonifazi (ASI)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:12.000Z",
+          "pi_name": "Carlo Bonifazi"
+        },
+        "TSS-1R_R0_CAS": {
+          "description": "CAS (Shuttle Ancillary System) Data Sets Follow:",
+          "start_date": "1996-02-22T00:00:00.000Z",
+          "stop_date": "1996-02-22T01:00:00.000Z"
+        },
+        "TSS-1R_R0_SAHK": {
+          "description": "SAHK (Spacecraft Housekeeping)  Data Sets Follow:",
+          "start_date": "1996-02-22T00:00:00.000Z",
+          "stop_date": "1996-02-22T01:00:00.000Z"
+        },
+        "TSS-1R_M1_SHAG": {
+          "description": "TSS-1R, Gyro and Attitude Angular Data IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:11.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHAF": {
+          "description": "TSS-1R, Satellite Spin Rate        (SAHF) IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:46.000Z",
+          "stop_date": "1996-03-01T05:42:16.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHAC": {
+          "description": "TSS-1R, Gyro Rate and Sun Presence IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:10.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHAB": {
+          "description": "TSS-1R, Scaled Roll, Yaw and Pitch Data    (SHAB) IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:11.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHAE": {
+          "description": "TSS-1R, Gyro and Attitude Data IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:44.000Z",
+          "stop_date": "1996-03-01T05:42:14.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHAD": {
+          "description": "TSS-1R, Gyro Angular Data           (SHAD) IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:11.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_SHAA": {
+          "description": "TSS-1R, Yaw, Roll and Pitch Data IDFS format - G. Oelker (Alenia Spazio  S.p.A.)",
+          "start_date": "1996-02-23T18:00:30.000Z",
+          "stop_date": "1996-03-01T05:42:11.000Z",
+          "pi_name": "G. Oelker"
+        },
+        "TSS-1R_M1_CSCA": {
+          "description": "TSS-1R, Computed OA Data Values IDFS format - Tony Lavoie (Marshall Space Flight Center)",
+          "start_date": "1996-02-22T21:26:29.000Z",
+          "stop_date": "1996-03-01T11:59:46.000Z",
+          "pi_name": "Tony Lavoie"
+        },
+        "TSS-1R_M1_CSCB": {
+          "description": "TSS-1R, Special Computation Events IDFS format - Tony Lavoie (Marshall Space Flight Center)",
+          "start_date": "1996-02-22T21:26:29.000Z",
+          "stop_date": "1996-03-01T11:59:46.000Z",
+          "pi_name": "Tony Lavoie"
+        },
+        "TSS-1R_M1_CSAA": {
+          "description": "TSS-1R, Shuttle Attitude Data IDFS format - Tony Lavoie (Marshall Space Flight Center)",
+          "start_date": "1996-02-22T21:26:29.000Z",
+          "stop_date": "1996-03-01T11:59:46.000Z",
+          "pi_name": "Tony Lavoie"
+        },
+        "TSS-1R_M1_CSAB": {
+          "description": "TSS-1R, Orbiter and Target State Vectors IDFS format - Tony Lavoie (Marshall Space Flight Center)",
+          "start_date": "1996-02-22T21:26:29.000Z",
+          "stop_date": "1996-03-01T11:59:46.000Z",
+          "pi_name": "Tony Lavoie"
+        }
+      }
+    },
+    "particles": {
+      "name": "Energetic Particles",
+      "keywords": [
+        "particle",
+        "energetic",
+        "cosmic ray"
+      ],
+      "datasets": {
+        "TSS-1R_M1_SPIF": {
+          "description": "TSS-1R, Ion Spectra From Spectrometer B IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:53.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_M1_SPID": {
+          "description": "TSS-1R, Selected Ion Spectra From Spectrometer B IDFS format - Capt. Marilyn R. Oberhardt (GL/PHE)",
+          "start_date": "1996-02-23T13:19:53.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Capt. Marilyn R. Oberhardt"
+        },
+        "TSS-1R_M1_SPIE": {
+          "description": "TSS-1R, Ion Spectra From Spectrometer A IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:53.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_M1_SPIB": {
+          "description": "TSS-1R, Zone Summed Ion Spectra From Spectrometer B IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:53.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_M1_SPIC": {
+          "description": "TSS-1R, Selected Ion Spectra From Spectrometer A IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:53.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_M1_SPIA": {
+          "description": "TSS-1R, Zone Summed Ion Spectra From Spectrometer A IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:53.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_M1_SPED": {
+          "description": "TSS-1R, Electron Spectra From Spectrometer B IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:55.000Z",
+          "stop_date": "1996-03-01T11:16:13.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_M1_SPEB": {
+          "description": "TSS-1R, Selected Electron Spectra From Spectrometer B IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:53.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_M1_SPEC": {
+          "description": "TSS-1R, Electron Spectra From Spectrometer A IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:53.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_M1_SPEA": {
+          "description": "TSS-1R, Selected Electron Spectra From Spectrometer A IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:53.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_M1_SPFA": {
+          "description": "TSS-1R, ESA A, High Frequency Electron Auto-Corellation Spectra IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:59.000Z",
+          "stop_date": "1996-02-28T23:44:04.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_M1_SPFB": {
+          "description": "TSS-1R, ESA B, High Frequency Electron Auto-Corellation Spectra IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:20:03.000Z",
+          "stop_date": "1996-02-28T23:44:00.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_M1_SPLC": {
+          "description": "TSS-1R, Spectrometer B, Low Frequency Ion Auto-Corellation Spectra IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:59.000Z",
+          "stop_date": "1996-03-01T11:16:15.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_M1_SPLD": {
+          "description": "TSS-1R, ESA B, Low Frequency Electron Auto-Corellation Spectra IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:20:01.000Z",
+          "stop_date": "1996-03-01T11:16:13.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_M1_SPLA": {
+          "description": "TSS-1R, Spectrometer A, Low Frequency Ion Auto-Corellation Spectra IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:57.000Z",
+          "stop_date": "1996-03-01T11:16:11.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_M1_SPLB": {
+          "description": "TSS-1R, ESA A, Low Frequency Electron Auto-Corellation Spectra IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:57.000Z",
+          "stop_date": "1996-03-01T11:16:14.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_M1_RPEB": {
+          "description": "TSS-1R, Boom Mounted Electron Sensors IDFS format - Dr. J. David Winningham (Southwest Research Institute)",
+          "start_date": "1996-02-24T20:27:18.000Z",
+          "stop_date": "1996-03-01T05:42:12.000Z",
+          "pi_name": "Dr. J. David Winningham"
+        },
+        "TSS-1R_M1_RPEA": {
+          "description": "TSS-1R, Satellite Mounted Electron Sensors  (RPEA) IDFS format - Dr. J. David Winningham (Southwest Research Institute)",
+          "start_date": "1996-02-24T20:27:18.000Z",
+          "stop_date": "1996-03-01T05:42:12.000Z",
+          "pi_name": "Dr. J. David Winningham"
+        },
+        "TSS-1R_M1_RPIB": {
+          "description": "TSS-1R, Boom Mounted Ion Sensors (RPIB) IDFS format - Dr. J. David Winningham (Southwest Research Institute)",
+          "start_date": "1996-02-24T20:27:18.000Z",
+          "stop_date": "1996-03-01T05:42:12.000Z",
+          "pi_name": "Dr. J. David Winningham"
+        },
+        "TSS-1R_M1_RPIA": {
+          "description": "TSS-1R, Satellite Mounted Ion Sensor IDFS format - Dr. J. David Winningham (Southwest Research Institute)",
+          "start_date": "1996-02-24T20:27:18.000Z",
+          "stop_date": "1996-03-01T05:42:12.000Z",
+          "pi_name": "Dr. J. David Winningham"
+        }
+      }
+    },
+    "mag": {
+      "name": "Magnetic Fields",
+      "keywords": [
+        "magnetic",
+        "field",
+        "mag",
+        "b-field",
+        "imf",
+        "magnetometer"
+      ],
+      "datasets": {
+        "TSS-1R_R0_SETS": {
+          "description": "SETS (Shuttle Electrodynamic Tether System) Data Sets Follow:",
+          "start_date": "1996-02-22T00:00:00.000Z",
+          "stop_date": "1996-02-22T01:00:00.000Z"
+        },
+        "TSS-1R_M1_STAA": {
+          "description": "TSS-1R, Magnetic Field IDFS format - Ivan Linscott (Stanford University)",
+          "start_date": "1996-02-22T23:09:42.000Z",
+          "stop_date": "1996-03-01T11:16:21.000Z",
+          "pi_name": "Ivan Linscott"
+        },
+        "TSS-1R_M1_SPMF": {
+          "description": "TSS-1R, Magnetic Field Data IDFS format - Dr. Dave Hardy (GL/PHE)",
+          "start_date": "1996-02-23T13:19:53.000Z",
+          "stop_date": "1996-03-01T11:16:20.000Z",
+          "pi_name": "Dr. Dave Hardy"
+        },
+        "TSS-1R_M1_TMMO": {
+          "description": "TSS-1R, Satellite Outboard Magnetometer Data  (TMMO) IDFS format - Dr. Franco Mariani (University of Vergata, Departmento Fisica)",
+          "start_date": "1996-02-23T18:00:13.000Z",
+          "stop_date": "1996-03-01T05:41:53.000Z",
+          "pi_name": "Dr. Franco Mariani"
+        },
+        "TSS-1R_M1_TMMI": {
+          "description": "TSS-1R, Satellite Inboard Magnetometer Data  (TMMI) IDFS format - Dr. Franco Mariani (University of Vergata, Departmento Fisica)",
+          "start_date": "1996-02-23T18:00:13.000Z",
+          "stop_date": "1996-03-01T05:41:54.000Z",
+          "pi_name": "Dr. Franco Mariani"
+        }
+      }
+    },
+    "waves": {
+      "name": "Radio and Plasma Waves",
+      "keywords": [
+        "radio",
+        "wave",
+        "plasma wave"
+      ],
+      "datasets": {
+        "TSS-1R_M1_STSA": {
+          "description": "TSS-1R, Langmuir Probe IDFS format - Ivan Linscott (Stanford University)",
+          "start_date": "1996-02-22T23:09:42.000Z",
+          "stop_date": "1996-03-01T11:16:22.000Z",
+          "pi_name": "Ivan Linscott"
+        }
+      }
+    },
+    "efield": {
+      "name": "Electric Fields",
+      "keywords": [
+        "electric",
+        "e-field"
+      ],
+      "datasets": {
+        "TSS-1R_M1_RTLA": {
+          "description": "TSS-1R, Low Frequency Electromagnetic Wave Data (Band A) IDFS format - Dr. Marino Dobrowolny (Instituto Di Fisica Dello Spazio Interplanetario)",
+          "start_date": "1996-02-23T17:59:57.000Z",
+          "stop_date": "1996-03-01T05:41:46.000Z",
+          "pi_name": "Dr. Marino Dobrowolny"
+        },
+        "TSS-1R_M1_RTLB": {
+          "description": "TSS-1R, Low Frequency Electromagnetic Wave Data (Band B) IDFS format - Dr. Marino Dobrowolny (Instituto Di Fisica Dello Spazio Interplanetario)",
+          "start_date": "1996-02-23T18:00:06.000Z",
+          "stop_date": "1996-03-01T05:41:44.000Z",
+          "pi_name": "Dr. Marino Dobrowolny"
+        },
+        "TSS-1R_M1_RTMF": {
+          "description": "TSS-1R, Medium Frequency Electromagnetic Wave Data (Band F) IDFS format - Dr. Marino Dobrowolny (Instituto Di Fisica Dello Spazio Interplanetario)",
+          "start_date": "1996-02-23T18:27:51.000Z",
+          "stop_date": "1996-03-01T05:37:20.000Z",
+          "pi_name": "Dr. Marino Dobrowolny"
+        },
+        "TSS-1R_M1_RTME": {
+          "description": "TSS-1R, Medium Frequency Electromagnetic Wave Data (Band E) IDFS format - Dr. Marino Dobrowolny (Instituto Di Fisica Dello Spazio Interplanetario)",
+          "start_date": "1996-02-23T18:27:50.000Z",
+          "stop_date": "1996-03-01T05:37:20.000Z",
+          "pi_name": "Dr. Marino Dobrowolny"
+        },
+        "TSS-1R_M1_RTMD": {
+          "description": "TSS-1R, Medium Frequency Electromagnetic Wave Data (Band D) IDFS format - Dr. Marino Dobrowolny (Instituto Di Fisica Dello Spazio Interplanetario)",
+          "start_date": "1996-02-23T18:27:50.000Z",
+          "stop_date": "1996-03-01T05:37:16.000Z",
+          "pi_name": "Dr. Marino Dobrowolny"
+        },
+        "TSS-1R_M1_RTMC": {
+          "description": "TSS-1R, Medium Frequency Electromagnetic Wave Data (Band C) IDFS format - Dr. Marino Dobrowolny (Instituto Di Fisica Dello Spazio Interplanetario)",
+          "start_date": "1996-02-23T18:27:48.000Z",
+          "stop_date": "1996-03-01T05:37:14.000Z",
+          "pi_name": "Dr. Marino Dobrowolny"
+        },
+        "TSS-1R_M1_RTKF": {
+          "description": "TSS-1R, RETE Format Data IDFS format - Dr. Marino Dobrowolny (Instituto Di Fisica Dello Spazio Interplanetario)",
+          "start_date": "1996-02-23T17:59:57.000Z",
+          "stop_date": "1996-03-01T05:41:27.000Z",
+          "pi_name": "Dr. Marino Dobrowolny"
+        },
+        "TSS-1R_M1_RTHF": {
+          "description": "TSS-1R, High Frequency Electromagnetic Wave Data IDFS format - Dr. Marino Dobrowolny (Instituto Di Fisica Dello Spazio Interplanetario)",
+          "start_date": "1996-02-23T18:27:48.000Z",
+          "stop_date": "1996-03-01T05:36:59.000Z",
+          "pi_name": "Dr. Marino Dobrowolny"
+        },
+        "TSS-1R_R0_RETE": {
+          "description": "RETE ( Research on Electrodynamic Tether Effects) Data Sets Follow:",
+          "start_date": "1996-02-22T00:00:00.000Z",
+          "stop_date": "1996-02-22T01:00:00.000Z"
+        },
+        "TSS-1R_M1_RTEF": {
+          "description": "TSS-1R, Langmuir Probe DC Electric Field Data IDFS format - Dr. Marino Dobrowolny (Instituto Di Fisica Dello Spazio Interplanetario)",
+          "start_date": "1996-02-23T18:27:15.000Z",
+          "stop_date": "1996-03-01T05:37:20.000Z",
+          "pi_name": "Dr. Marino Dobrowolny"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "tss"
+}

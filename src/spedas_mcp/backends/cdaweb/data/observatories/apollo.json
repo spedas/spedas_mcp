@@ -1,0 +1,60 @@
+{
+  "id": "apollo",
+  "name": "Apollo",
+  "profile": {
+    "description": "Apollo data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "plasma": {
+      "name": "Plasma and Solar Wind",
+      "keywords": [
+        "plasma",
+        "solar wind",
+        "proton",
+        "density",
+        "velocity",
+        "temperature",
+        "ion",
+        "electron"
+      ],
+      "datasets": {
+        "APOLLO15_SWS_1HR": {
+          "description": "Apollo 15 Solar Wind measurements at the lunar surface - Conway W. Snyder (Jet Propulsion Laboratory )",
+          "start_date": "1971-07-31T19:30:00.000Z",
+          "stop_date": "1972-06-30T17:30:00.000Z",
+          "pi_name": "Conway W. Snyder",
+          "doi": "10.48322/70qp-jj13"
+        },
+        "APOLLO15_SWS_28S": {
+          "description": "Apollo 15 Solar Wind measurements at the lunar surface - Conway W. Snyder (Jet Propulsion Laboratory )",
+          "start_date": "1971-07-31T19:38:38.000Z",
+          "stop_date": "1972-06-30T18:14:35.000Z",
+          "pi_name": "Conway W. Snyder",
+          "doi": "10.48322/97e0-5h57"
+        },
+        "APOLLO12_SWS_1HR": {
+          "description": "Apollo 12 Solar Wind measurements at the lunar surface - Conway W. Snyder (Jet Propulsion Laboratory )",
+          "start_date": "1969-11-19T19:30:00.000Z",
+          "stop_date": "1976-03-25T08:30:00.000Z",
+          "pi_name": "Conway W. Snyder",
+          "doi": "10.48322/vars-pj10"
+        },
+        "APOLLO12_SWS_28S": {
+          "description": "Apollo 12 Solar Wind measurements at the lunar surface - Conway W. Snyder (Jet Propulsion Laboratory )",
+          "start_date": "1969-11-19T18:42:13.000Z",
+          "stop_date": "1976-03-25T08:35:57.000Z",
+          "pi_name": "Conway W. Snyder",
+          "doi": "10.48322/wh21-c403"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "apollo"
+}

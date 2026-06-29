@@ -1,0 +1,34 @@
+{
+  "id": "aim",
+  "name": "AIM",
+  "profile": {
+    "description": "AIM data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "imaging_itm": {
+      "name": "ITM Imaging",
+      "keywords": [
+        "imaging",
+        "ionosphere",
+        "thermosphere",
+        "mesosphere"
+      ],
+      "datasets": {
+        "AIM_CIPS_SCI_3A": {
+          "description": "AIM Cloud Imaging and Particle Size (CIPS) Polar Mesospheric Clouds (PMC) Daily Images - Cora E. Randall (University of Colorado)",
+          "start_date": "2007-05-24T00:00:00.000Z",
+          "stop_date": "2022-09-05T23:59:59.000Z",
+          "pi_name": "Cora E. Randall"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "aim"
+}

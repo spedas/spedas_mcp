@@ -1,0 +1,219 @@
+{
+  "id": "reach",
+  "name": "REACH",
+  "profile": {
+    "description": "REACH data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "particles": {
+      "name": "Energetic Particles",
+      "keywords": [
+        "particle",
+        "energetic",
+        "cosmic ray"
+      ],
+      "datasets": {
+        "REACH-VID-163_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 163 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2018-05-15T20:41:40.000Z",
+          "stop_date": "2019-12-12T19:23:45.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-162_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 162 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2018-06-14T19:40:20.000Z",
+          "stop_date": "2019-12-12T19:23:30.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-164_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 164 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2018-06-21T16:01:25.000Z",
+          "stop_date": "2019-12-12T19:23:50.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-176_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 176 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2018-05-15T20:41:20.000Z",
+          "stop_date": "2019-12-12T19:24:40.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-166_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 166 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2019-02-06T12:44:25.000Z",
+          "stop_date": "2019-12-12T19:24:00.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-139_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 139 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2018-01-31T17:58:45.000Z",
+          "stop_date": "2019-12-12T19:22:50.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-113_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 113 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2017-07-17T13:05:20.000Z",
+          "stop_date": "2019-12-12T19:21:45.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-115_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 115 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2017-11-21T16:21:20.000Z",
+          "stop_date": "2019-12-12T19:22:00.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-172_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 172 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2018-08-23T12:58:45.000Z",
+          "stop_date": "2019-12-12T19:24:25.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-135_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 135 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2017-07-28T13:55:15.000Z",
+          "stop_date": "2019-12-12T19:22:30.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-134_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 134 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2017-11-21T16:21:55.000Z",
+          "stop_date": "2019-12-12T19:22:25.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-169_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 169 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2018-09-11T19:13:35.000Z",
+          "stop_date": "2019-12-12T19:24:05.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-138_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 138 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2018-02-13T19:49:30.000Z",
+          "stop_date": "2019-12-12T19:22:45.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-165_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 165 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2018-04-20T18:10:10.000Z",
+          "stop_date": "2019-12-12T19:23:55.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-114_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 114 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2018-06-14T19:44:40.000Z",
+          "stop_date": "2019-12-12T19:21:55.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-175_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 175 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2019-02-06T12:44:50.000Z",
+          "stop_date": "2019-12-12T19:24:40.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-171_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 171 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2018-08-20T17:20:45.000Z",
+          "stop_date": "2019-12-12T19:24:20.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-181_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 181 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2018-08-20T17:21:10.000Z",
+          "stop_date": "2019-12-12T19:25:20.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-108_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 108 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2017-12-18T17:00:40.000Z",
+          "stop_date": "2019-12-12T19:21:40.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-180_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 180 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2019-01-29T19:00:10.000Z",
+          "stop_date": "2019-12-12T19:25:10.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-148_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 148 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2018-01-22T16:21:00.000Z",
+          "stop_date": "2019-12-12T19:23:05.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-140_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 140 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2017-11-21T16:21:45.000Z",
+          "stop_date": "2019-12-12T19:22:55.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-149_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 149 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2018-08-30T20:21:15.000Z",
+          "stop_date": "2019-12-12T19:23:10.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-105_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 105 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2017-02-24T19:30:50.000Z",
+          "stop_date": "2019-12-12T19:21:30.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-101_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 101 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2017-04-10T12:58:55.000Z",
+          "stop_date": "2019-12-12T19:21:15.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-170_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 170 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2018-08-15T14:07:10.000Z",
+          "stop_date": "2019-12-12T19:24:10.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-136_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 136 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2017-11-09T18:15:45.000Z",
+          "stop_date": "2019-12-12T19:22:35.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-137_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 137 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2017-11-20T15:24:20.000Z",
+          "stop_date": "2019-12-12T19:22:40.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-133_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 133 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2017-07-27T15:14:55.000Z",
+          "stop_date": "2019-12-12T19:22:20.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-173_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 173 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2018-08-27T18:16:15.000Z",
+          "stop_date": "2019-12-12T19:24:30.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-116_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 116 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2018-03-06T20:26:55.000Z",
+          "stop_date": "2019-12-12T19:22:05.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        },
+        "REACH-VID-102_DOSIMETER-L1C": {
+          "description": "Dosimeter measurements from the Responsive Environmental Assessment Commerically Hosted satellite 102 - Joe Mazur (joseph.e.mazur@aero.org) (The Aerospace Corporation)",
+          "start_date": "2018-03-26T11:52:45.000Z",
+          "stop_date": "2019-12-12T19:21:25.000Z",
+          "pi_name": "Joe Mazur (joseph.e.mazur@aero.org)"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "reach"
+}

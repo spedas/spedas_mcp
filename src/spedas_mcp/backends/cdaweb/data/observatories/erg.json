@@ -1,0 +1,176 @@
+{
+  "id": "erg",
+  "name": "Arase (ERG)",
+  "profile": {
+    "description": "Arase (ERG) data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "particles": {
+      "name": "Energetic Particles",
+      "keywords": [
+        "particle",
+        "energetic",
+        "cosmic ray"
+      ],
+      "datasets": {
+        "ERG_MEPI_L2_3DFLUX": {
+          "description": "Exploration of Energization and Radiation in Geospace (ERG) Medium Energy Particle experiments - ion mass analyzer (MEP-i) Level-2 3D flux data - Shoichiro Yokota (Osaka University)",
+          "start_date": "2017-03-24T04:04:51.000Z",
+          "stop_date": "2025-02-28T23:59:48.000Z",
+          "pi_name": "Shoichiro Yokota"
+        },
+        "ERG_XEP_L2_OMNIFLUX": {
+          "description": "Exploration of Energization and Radiation in Geospace (ERG) Extremely High-Energy Electron Experiment (XEP) Level 2 extremely high energy electron data - Nana Higashio (Space Environment Group, Aerospace Research and Development Directorate, Tsukuba Space Center, Japan Aerospace Exploration Agency, 2-1-1 Sengen, Tsukuba, Ibaraki 305-8505, Japan)",
+          "start_date": "2017-03-19T00:00:02.000Z",
+          "stop_date": "2025-02-28T23:59:36.000Z",
+          "pi_name": "Nana Higashio"
+        },
+        "ERG_HEP_L2_OMNIFLUX": {
+          "description": "High-energy electron experiments (HEP) Level-2 omni flux data, ARASE/ERG) - Takefumi Mitani (ISAS, JAXA)",
+          "start_date": "2017-03-19T23:59:58.000Z",
+          "stop_date": "2025-02-28T23:59:52.000Z",
+          "pi_name": "Takefumi Mitani"
+        },
+        "ERG_LEPI_L2_OMNIFLUX": {
+          "description": "Exploration of Low Energy Particle Ion (LEPi) Experiment 3D ion flux data, ARASE/ERG - Kazushi Asamura (ISAS, Jaxa)",
+          "start_date": "2017-04-01T01:16:44.000Z",
+          "stop_date": "2024-05-15T23:59:49.000Z",
+          "pi_name": "Kazushi Asamura"
+        },
+        "ERG_MEPI_L2_OMNIFLUX": {
+          "description": "Medium Energy Particle experiments - ion mass analyzer (MEP-i) 3D ion omni flux data, ARASE/ERG - Shoichiro Yokota (Osaka University)",
+          "start_date": "2017-03-24T04:04:51.000Z",
+          "stop_date": "2025-02-28T23:59:48.000Z",
+          "pi_name": "Shoichiro Yokota"
+        },
+        "ERG_MEPE_L2_OMNIFLUX": {
+          "description": "Medium Energy Particle experiments - electron analyzer (MEP-e) electron omni flux data, ARASE/ERG - Satoshi Kasahara (The University of Tokyo)",
+          "start_date": "2017-03-23T00:31:13.000Z",
+          "stop_date": "2025-02-28T23:59:56.000Z",
+          "pi_name": "Satoshi Kasahara"
+        },
+        "ERG_LEPE_L2_OMNIFLUX": {
+          "description": "Low-Energy Particle experiments - electron analyzer (LEP-e) Level 2 omni electron flux data, ARASE/ERG - Shiang-Yu Wang (Academia Sinica, Taiwan)",
+          "start_date": "2017-02-03T18:55:03.000Z",
+          "stop_date": "2025-02-28T23:59:44.000Z",
+          "pi_name": "Shiang-Yu Wang"
+        },
+        "ERG_MEPE_L2_3DFLUX": {
+          "description": "Exploration of Energization and Radiation in Geospace (ERG) Medium-Energy Particle experiments - electron analyzer (MEP-e) Level 2 3D electron flux data - Satoshi Kasahara (The University of Tokyo)",
+          "start_date": "2017-03-23T00:31:13.000Z",
+          "stop_date": "2025-02-28T23:59:56.000Z",
+          "pi_name": "Satoshi Kasahara"
+        }
+      }
+    },
+    "waves": {
+      "name": "Radio and Plasma Waves",
+      "keywords": [
+        "radio",
+        "wave",
+        "plasma wave"
+      ],
+      "datasets": {
+        "ERG_PWE_EFD_L2_POT": {
+          "description": "Plasma Wave Experiment (PWE) Electric Field Detector (EFD) Level 2 potential data, ARASE/ERG - Yoshiya Kasahara (Kanazawa University)",
+          "start_date": "2017-03-23T00:00:15.000Z",
+          "stop_date": "2025-02-28T23:59:44.000Z",
+          "pi_name": "Yoshiya Kasahara"
+        },
+        "ERG_PWE_OFA_L2_SPEC": {
+          "description": "Plasma Wave Experiment (PWE) Onboard Frequency Analyzer (OFA) Level 2 spectrum data, ARASE/ERG - Yoshiya Kasahara (Kanazawa University)",
+          "start_date": "2017-03-23T00:00:08.000Z",
+          "stop_date": "2025-03-01T00:00:07.000Z",
+          "pi_name": "Yoshiya Kasahara"
+        },
+        "ERG_PWE_EFD_L2_E_SPIN": {
+          "description": "Plasma Wave Experiment (PWE) Electric Field Detector (EFD) Level 2 spectrum data, ARASE/ERG - Yoshiya Kasahara (Kanazawa University)",
+          "start_date": "2017-03-03T00:00:17.000Z",
+          "stop_date": "2025-02-27T23:59:49.000Z",
+          "pi_name": "Yoshiya Kasahara"
+        },
+        "ERG_PWE_HFA_L2_SPEC_HIGH": {
+          "description": "Exploration of Energization and Radiation in Geospace (ERG) Plasma Wave Experiment (PWE) Electric Field Data (HFA) Level 2 spectrum data - Yoshiya Kasahara (Kanazawa University)",
+          "start_date": "2017-03-23T00:00:08.000Z",
+          "stop_date": "2025-02-28T23:45:58.000Z",
+          "pi_name": "Yoshiya Kasahara"
+        },
+        "ERG_PWE_HFA_L2_SPEC_MONIT": {
+          "description": "Exploration of Energization and Radiation in Geospace (ERG) Plasma Wave Experiment (PWE) Electric Field Data (HFA) Level 2 spectrum data - Yoshiya Kasahara (Kanazawa University)",
+          "start_date": "2017-03-23T00:00:58.000Z",
+          "stop_date": "2025-02-28T23:44:23.000Z",
+          "pi_name": "Yoshiya Kasahara"
+        },
+        "ERG_PWE_HFA_L2_SPEC_LOW": {
+          "description": "Exploration of Energization and Radiation in Geospace (ERG) Plasma Wave Experiment (PWE) Electric Field Data (HFA) Level 2 spectrum low data - Yoshiya Kasahara (Kanazawa University)",
+          "start_date": "2017-03-23T00:57:54.000Z",
+          "stop_date": "2025-03-01T00:00:07.000Z",
+          "pi_name": "Yoshiya Kasahara"
+        }
+      }
+    },
+    "ephemeris": {
+      "name": "Ephemeris and Attitude",
+      "keywords": [
+        "ephemeris",
+        "orbit",
+        "attitude",
+        "position"
+      ],
+      "datasets": {
+        "ERG_ORB_LPRE_L2": {
+          "description": "Exploration of Energization and Radiation in Geospace (ERG) Level-2 long-term predicted orbit data (JAXA/ISAS)",
+          "start_date": "2018-01-01T00:00:00.000Z",
+          "stop_date": "2028-01-01T00:00:00.000Z"
+        },
+        "ERG_ORB_MPRE_L2": {
+          "description": "Exploration of Energization and Radiation in Geospace (ERG) Level-2 medium-term predicted orbit data (JAXA/ISAS)",
+          "start_date": "2017-12-05T00:00:00.000Z",
+          "stop_date": "2026-06-30T00:00:00.000Z"
+        },
+        "ERG_ORB_SPRE_L2": {
+          "description": "Exploration of Energization and Radiation in Geospace (ERG) Level-2 short-term predicted orbit data (JAXA/ISAS)",
+          "start_date": "2016-12-20T00:00:00.000Z",
+          "stop_date": "2026-03-24T00:00:00.000Z"
+        },
+        "ERG_ORB_PRE_L2": {
+          "description": "Exploration of Energization and Radiation in Geospace (ERG) Level-2 predicted orbit data (JAXA/ISAS)",
+          "start_date": "2016-12-20T00:00:00.000Z",
+          "stop_date": "2026-03-24T00:00:00.000Z"
+        },
+        "ERG_ORB_L2": {
+          "description": "Exploration of Energization and Radiation in Geospace (ERG) Level-2 orbit data (JAXA/ISAS)",
+          "start_date": "2016-10-22T00:40:15.000Z",
+          "stop_date": "2026-03-03T00:00:00.000Z"
+        }
+      }
+    },
+    "mag": {
+      "name": "Magnetic Fields",
+      "keywords": [
+        "magnetic",
+        "field",
+        "mag",
+        "b-field",
+        "imf",
+        "magnetometer"
+      ],
+      "datasets": {
+        "ERG_MGF_L2_8SEC": {
+          "description": "Magnetic Field Experiment (MGF) Level 2 spin-averaged magnetic field data, ARASE/ERG - Ayako Matsuoka (Institute of Space and Astronautical Science, Japan Aerospace Exploration Agency, 3-1-1 Yoshinodai, Chuo-ku, Sagamihara, Kanagawa 252-5210, Japan)",
+          "start_date": "2016-12-22T22:26:46.000Z",
+          "stop_date": "2025-02-28T23:59:44.000Z",
+          "pi_name": "Ayako Matsuoka"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "erg"
+}

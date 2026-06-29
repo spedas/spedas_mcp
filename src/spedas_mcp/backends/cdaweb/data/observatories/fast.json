@@ -1,0 +1,112 @@
+{
+  "id": "fast",
+  "name": "FAST",
+  "profile": {
+    "description": "FAST data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "particles": {
+      "name": "Energetic Particles",
+      "keywords": [
+        "particle",
+        "energetic",
+        "cosmic ray"
+      ],
+      "datasets": {
+        "FA_K0_TMS": {
+          "description": "FAST Energy Angle Mass Spectrograph - 5-s Survey/Key Parameters - E. Lund (UNH)",
+          "start_date": "1996-10-01T01:03:06.000Z",
+          "stop_date": "2009-04-30T10:22:16.000Z",
+          "pi_name": "E. Lund",
+          "doi": "10.48322/78b7-gk94"
+        },
+        "FAST_TEAMS_PA_L2": {
+          "description": "FAST TEAMS Energy-Pitch Angle Distributions - Lynn Kistler (University of New Hampshire)",
+          "start_date": "1996-09-20T04:46:26.000Z",
+          "stop_date": "2009-02-14T09:50:52.000Z",
+          "pi_name": "Lynn Kistler"
+        },
+        "FA_ESA_L2_EEB": {
+          "description": "FAST Electron Burst Distributions - J. P. McFadden (U.C. Berkeley Space Sciences Laboratory)",
+          "start_date": "1996-09-16T22:43:56.000Z",
+          "stop_date": "2009-04-30T08:16:03.000Z",
+          "pi_name": "J. P. McFadden",
+          "doi": "10.48322/m36d-wr84"
+        },
+        "FA_ESA_L2_EES": {
+          "description": "FAST Electron Survey Distributions - J. P. McFadden (U.C. Berkeley Space Sciences Laboratory)",
+          "start_date": "1996-08-30T22:07:59.000Z",
+          "stop_date": "2006-12-31T22:47:44.000Z",
+          "pi_name": "J. P. McFadden",
+          "doi": "10.48322/0ydx-j139"
+        },
+        "FA_ESA_L2_IEB": {
+          "description": "FAST Ion Burst Distributions - J. P. McFadden (U.C. Berkeley Space Sciences Laboratory)",
+          "start_date": "1996-09-16T22:43:56.000Z",
+          "stop_date": "2009-04-30T08:16:03.000Z",
+          "pi_name": "J. P. McFadden",
+          "doi": "10.48322/3chd-sj41"
+        },
+        "FA_ESA_L2_IES": {
+          "description": "FAST Ion Survey Distributions - J. P. McFadden (U.C. Berkeley Space Sciences Laboratory)",
+          "start_date": "1996-08-30T22:08:01.000Z",
+          "stop_date": "2009-04-30T08:19:39.000Z",
+          "pi_name": "J. P. McFadden",
+          "doi": "10.48322/9t9w-1q28"
+        }
+      }
+    },
+    "mag": {
+      "name": "Magnetic Fields",
+      "keywords": [
+        "magnetic",
+        "field",
+        "mag",
+        "b-field",
+        "imf",
+        "magnetometer"
+      ],
+      "datasets": {
+        "FA_K0_ACF": {
+          "description": "FAST AC Fields - Key Parameters - C. Carlson (U.C. Berkeley)",
+          "start_date": "1996-08-30T02:02:17.000Z",
+          "stop_date": "2002-10-25T00:11:32.000Z",
+          "pi_name": "C. Carlson",
+          "doi": "10.48322/23b9-6g23"
+        },
+        "FAST_HR_DCB": {
+          "description": "High-resolution Fluxgate Magnetometer data for the FAST Mission - Robert Strangeway (UCLA)",
+          "start_date": "1996-09-28T00:45:21.000Z",
+          "stop_date": "1998-10-31T23:22:32.000Z",
+          "pi_name": "Robert Strangeway",
+          "doi": "10.48322/86pq-hb06"
+        }
+      }
+    },
+    "ephemeris": {
+      "name": "Ephemeris and Attitude",
+      "keywords": [
+        "ephemeris",
+        "orbit",
+        "attitude",
+        "position"
+      ],
+      "datasets": {
+        "FAST_OR_SSC": {
+          "description": "Orbit parameters from SSCWeb - SSCWeb (SPDF/Goddard)",
+          "start_date": "1996-08-22T00:00:00.000Z",
+          "stop_date": "2009-05-04T00:00:00.000Z",
+          "pi_name": "SSCWeb"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "fast"
+}

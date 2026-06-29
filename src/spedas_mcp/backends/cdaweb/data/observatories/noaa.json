@@ -1,0 +1,111 @@
+{
+  "id": "noaa",
+  "name": "NOAA",
+  "profile": {
+    "description": "NOAA data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "particles": {
+      "name": "Energetic Particles",
+      "keywords": [
+        "particle",
+        "energetic",
+        "cosmic ray"
+      ],
+      "datasets": {
+        "NOAA08_MEPED1MIN_SEM": {
+          "description": "1 minute re-processed particle count rates, fluxes, and model fields, SEM-1 MEPED, NOAA-08 - Shing F. Fung (SPDF, GSFC/NASA)",
+          "start_date": "1983-05-09T17:36:00.000Z",
+          "stop_date": "1985-10-14T12:18:00.000Z",
+          "pi_name": "Shing F. Fung"
+        },
+        "NOAA06_MEPED1MIN_SEM": {
+          "description": "1 minute re-processed particle count rates, fluxes, and model fields, SEM-1 MEPED, NOAA-06 - Shing F. Fung (SPDF, GSFC/NASA)",
+          "start_date": "1979-06-28T01:40:00.000Z",
+          "stop_date": "1986-11-18T02:51:00.000Z",
+          "pi_name": "Shing F. Fung"
+        },
+        "NOAA05_MEPED1MIN_SEM": {
+          "description": "1 minute re-processed particle count rates, fluxes, and model fields, SEM-1 MEPED, NOAA-05/TIROS-N - Shing F. Fung (SPDF, GSFC/NASA)",
+          "start_date": "1978-11-02T14:43:00.000Z",
+          "stop_date": "1979-08-11T00:00:00.000Z",
+          "pi_name": "Shing F. Fung"
+        },
+        "NOAA10_MEPED1MIN_SEM": {
+          "description": "1 minute re-processed particle count rates, fluxes, and model fields, SEM-1 MEPED, NOAA-10 - Shing F. Fung (SPDF, GSFC/NASA)",
+          "start_date": "1986-10-11T00:00:00.000Z",
+          "stop_date": "1991-08-31T23:59:00.000Z",
+          "pi_name": "Shing F. Fung"
+        },
+        "NOAA12_MEPED1MIN_SEM": {
+          "description": "1 minute re-processed particle count rates, fluxes, and model fields, SEM-1 MEPED, NOAA-12 - Shing F. Fung (SPDF, GSFC/NASA)",
+          "start_date": "1991-06-01T00:00:00.000Z",
+          "stop_date": "1999-09-30T23:59:00.000Z",
+          "pi_name": "Shing F. Fung"
+        },
+        "NOAA14_MEPED1MIN_SEM": {
+          "description": "1 minute re-processed particle count rates, fluxes, and model fields, SEM-1 MEPED, NOAA-14 - Shing F. Fung (SPDF, GSFC/NASA)",
+          "start_date": "1995-01-11T00:00:00.000Z",
+          "stop_date": "2004-12-31T23:59:00.000Z",
+          "pi_name": "Shing F. Fung"
+        },
+        "NOAA07_MEPED1MIN_SEM": {
+          "description": "1 minute re-processed particle count rates, fluxes, and model fields, SEM-1 MEPED, NOAA-07 - Shing F. Fung (SPDF, GSFC/NASA)",
+          "start_date": "1981-07-11T00:00:00.000Z",
+          "stop_date": "1985-02-11T00:00:00.000Z",
+          "pi_name": "Shing F. Fung"
+        },
+        "METOP3_POES-SEM2_FLUXES-2SEC": {
+          "description": "POES-SEM2 2-second Particle Precipitation Data, MetOp-C (MetOp-3 launched 07 November 2018) [Important: these data have known contamination problems: please consult Rob Redmon (sem.poes@noaa.gov) for usage recommendations.]  - NCEI (NOAA)",
+          "start_date": "2019-01-01T00:00:01.000Z",
+          "stop_date": "2026-03-05T11:26:14.000Z",
+          "pi_name": "NCEI"
+        },
+        "NOAA19_POES-SEM2_FLUXES-2SEC": {
+          "description": "NOAA19 POES-SEM2 2-second Particle Precipitation Data [Important: these data have known contamination problems: please consult Rob Redmon (sem.poes@noaa.gov) for usage recommendations.]  - NGDC and SWPC (NOAA)",
+          "start_date": "2013-01-01T00:00:54.000Z",
+          "stop_date": "2025-06-16T13:57:57.000Z",
+          "pi_name": "NGDC and SWPC"
+        },
+        "NOAA15_POES-SEM2_FLUXES-2SEC": {
+          "description": "NOAA15 POES-SEM2 2-second Particle Precipitation Data [Important: these data have known contamination problems: please consult Rob Redmon (sem.poes@noaa.gov) for usage recommendations.]  - NGDC and SWPC (NOAA)",
+          "start_date": "2013-01-01T00:02:35.000Z",
+          "stop_date": "2025-06-16T13:21:53.000Z",
+          "pi_name": "NGDC and SWPC"
+        },
+        "METOP1_POES-SEM2_FLUXES-2SEC": {
+          "description": "POES-SEM2 2-second Particle Precipitation Data, MetOp-B (MetOp-1 before Sept2012 launch) [Important: these data have known contamination problems: please consult Rob Redmon (sem.poes@noaa.gov) for usage recommendations.]  - NGDC and SWPC (NOAA)",
+          "start_date": "2012-10-03T00:20:42.000Z",
+          "stop_date": "2026-03-05T12:31:37.000Z",
+          "pi_name": "NGDC and SWPC"
+        },
+        "NOAA16_POES-SEM2_FLUXES-2SEC": {
+          "description": "NOAA16 POES-SEM2 2-second Particle Precipitation Data [Important: these data have known contamination problems: please consult Rob Redmon (sem.poes@noaa.gov) for usage recommendations.]  - NGDC and SWPC (NOAA)",
+          "start_date": "2013-01-01T00:00:49.000Z",
+          "stop_date": "2014-06-06T00:55:13.000Z",
+          "pi_name": "NGDC and SWPC"
+        },
+        "NOAA18_POES-SEM2_FLUXES-2SEC": {
+          "description": "NOAA18 POES-SEM2 2-second Particle Precipitation Data [Important: these data have known contamination problems: please consult Rob Redmon (sem.poes@noaa.gov) for usage recommendations.]  - NGDC and SWPC (NOAA)",
+          "start_date": "2013-01-01T00:01:05.000Z",
+          "stop_date": "2025-06-06T15:56:52.000Z",
+          "pi_name": "NGDC and SWPC"
+        },
+        "METOP2_POES-SEM2_FLUXES-2SEC": {
+          "description": "POES-SEM2 2-second Particle Precipitation Data, MetOp-A (MetOp-2 before Oct2006 launch) [Important: these data have known contamination problems: please consult Rob Redmon (sem.poes@noaa.gov) for usage recommendations.]  - NGDC and SWPC (NOAA)",
+          "start_date": "2012-06-22T00:10:25.000Z",
+          "stop_date": "2021-11-16T00:30:20.000Z",
+          "pi_name": "NGDC and SWPC"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "noaa"
+}

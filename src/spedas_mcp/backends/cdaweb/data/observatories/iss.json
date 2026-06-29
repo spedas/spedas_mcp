@@ -1,0 +1,87 @@
+{
+  "id": "iss",
+  "name": "ISS",
+  "profile": {
+    "description": "ISS data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "particles": {
+      "name": "Energetic Particles",
+      "keywords": [
+        "particle",
+        "energetic",
+        "cosmic ray"
+      ],
+      "datasets": {
+        "ISS_27DAY-AVERAGES_AMS-02": {
+          "description": "AMS-02 proton flux (p), helium flux (He), p/He flux ratio, electron flux (e-), positron flux (e+) and e+/e- flux ratio at Bartels rotation time resolution - Prof. V. Bindi (University of Hawaii at Manoa)",
+          "start_date": "2011-05-20T00:00:00.000Z",
+          "stop_date": "2017-04-13T00:00:00.000Z",
+          "pi_name": "Prof. V. Bindi"
+        },
+        "ISS_DOSANL_TEPC": {
+          "description": "Experiment Data, ISS TEPC  (from ASCII DOS.TXT file) - Edward Semones (NASA Space Radiation Analysis Group/Johnson Space Center)",
+          "start_date": "2010-04-29T03:27:36.000Z",
+          "stop_date": "2018-04-11T23:19:39.000Z",
+          "pi_name": "Edward Semones",
+          "doi": "10.48322/0ba1-1764"
+        }
+      }
+    },
+    "imaging_itm": {
+      "name": "ITM Imaging",
+      "keywords": [
+        "imaging",
+        "ionosphere",
+        "thermosphere",
+        "mesosphere"
+      ],
+      "datasets": {
+        "AWE_L3C_Q20": {
+          "description": "Atmospheric Waves Experiment (AWE) on the ISS - Mesospheric Temperature Mapper - Swaths - Q line Radiance - Ludger Scherliess (Utah State University)",
+          "start_date": "2023-11-22T01:03:45.000Z",
+          "stop_date": "2025-10-01T00:46:49.000Z",
+          "pi_name": "Ludger Scherliess",
+          "doi": "10.48322/f2rs-6508"
+        },
+        "AWE_L3A_TMP": {
+          "description": "Atmospheric Waves Experiment (AWE) on the ISS - Mesospheric Temperature Mapper - Swaths - Ludger Scherliess (Utah State University)",
+          "start_date": "2023-11-22T01:03:45.000Z",
+          "stop_date": "2025-10-01T00:46:49.000Z",
+          "pi_name": "Ludger Scherliess",
+          "doi": "10.48322/61nt-1240"
+        }
+      }
+    },
+    "plasma": {
+      "name": "Plasma and Solar Wind",
+      "keywords": [
+        "plasma",
+        "solar wind",
+        "proton",
+        "density",
+        "velocity",
+        "temperature",
+        "ion",
+        "electron"
+      ],
+      "datasets": {
+        "ISS_SP_FPMU": {
+          "description": "ISS FPMU 1-sec Summary Plasma Densities, Temperatures, Spacecraft Potentials. - E. Willis (NASA Marshall Space Flight Center)",
+          "start_date": "2006-08-03T16:08:07.000Z",
+          "stop_date": "2020-09-14T18:00:58.000Z",
+          "pi_name": "E. Willis",
+          "doi": "10.48322/5xwv-fq85"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "iss"
+}

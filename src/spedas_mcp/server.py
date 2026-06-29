@@ -1318,7 +1318,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
     @_compat_tool
     def browse_observatories() -> str:
         """Compatibility: list CDAWeb observatories. Prefer browse_data_sources(source_type="cdaweb") for new workflows."""
-        from cdawebmcp.catalog import browse_observatories as _browse_observatories
+        from spedas_mcp.backends.cdaweb.catalog import browse_observatories as _browse_observatories
 
         return _json(_browse_observatories())
 
@@ -1326,14 +1326,14 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
     @_safe_tool
     def load_observatory(observatory_id: str) -> str:
         """Compatibility: load CDAWeb observatory context. Prefer load_data_source(source_type="cdaweb", source_id=...)."""
-        from cdawebmcp.prompts import build_observatory_prompt
+        from spedas_mcp.backends.cdaweb.prompts import build_observatory_prompt
 
         return build_observatory_prompt(observatory_id)
 
     @_compat_tool
     def browse_parameters(dataset_id: str, dataset_ids: list[str] | None = None) -> str:
         """Compatibility: browse CDAWeb variables. Prefer browse_data_parameters(source_type="cdaweb", ...)."""
-        from cdawebmcp.metadata import browse_parameters as _browse_parameters
+        from spedas_mcp.backends.cdaweb.metadata import browse_parameters as _browse_parameters
 
         return _json(_browse_parameters(dataset_id=dataset_id, dataset_ids=dataset_ids))
 
@@ -1350,7 +1350,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
     ) -> str:
         """Compatibility: fetch CDAWeb time-series data. Prefer fetch_data_product(source_type="cdaweb", ...)."""
         import pandas as pd
-        from cdawebmcp.fetch import fetch_data as _fetch_data
+        from spedas_mcp.backends.cdaweb.fetch import fetch_data as _fetch_data
 
         time_error = _validate_fetch_time_range(start, stop, source_type="cdaweb")
         if time_error is not None:
@@ -1772,12 +1772,12 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         detail: bool = False,
     ) -> str:
         """Compatibility: manage CDAWeb cache. Prefer manage_data_cache(source_type="cdaweb", ...)."""
-        from cdawebmcp.cache import cache_clean, cache_status, rebuild_catalog, refresh_metadata, refresh_time_ranges
+        from spedas_mcp.backends.cdaweb.cache import cache_clean, cache_status, rebuild_catalog, refresh_metadata, refresh_time_ranges
 
         if action == "status":
             return _json(cache_status(detail=detail))
         if action == "clean":
-            return _json(cache_clean(category=category, observatory=observatory, older_than_days=older_than_days, dry_run=dry_run))
+            return _json(cache_clean(category=category, observatories=[observatory] if observatory else None, older_than_days=older_than_days, dry_run=dry_run))
         if action == "refresh_metadata":
             return _json(refresh_metadata(dataset_ids=dataset_ids, observatory=observatory))
         if action == "refresh_time_ranges":
@@ -2085,7 +2085,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         observatory prompt payload is preserved unchanged.
         """
         try:
-            from cdawebmcp.catalog import load_observatory_json
+            from spedas_mcp.backends.cdaweb.catalog import load_observatory_json
         except Exception:  # pragma: no cover - backend not installed
             return None
         stem = (source_id or "").strip().lower().replace("-", "_")
@@ -3271,7 +3271,7 @@ def serve() -> None:
 
     cdaweb_cache_dir = args.cdaweb_cache_dir or os.environ.get("XHELIO_CDAWEB_CACHE_DIR")
     if cdaweb_cache_dir:
-        from cdawebmcp import configure
+        from spedas_mcp.backends.cdaweb import configure
         configure(cache_dir=cdaweb_cache_dir)
 
     spice_kernel_dir = args.spice_kernel_dir or os.environ.get("XHELIO_SPICE_KERNEL_DIR")

@@ -1,0 +1,118 @@
+{
+  "id": "imp",
+  "name": "IMP (All)",
+  "profile": {
+    "description": "IMP (All) data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "plasma": {
+      "name": "Plasma and Solar Wind",
+      "keywords": [
+        "plasma",
+        "solar wind",
+        "proton",
+        "density",
+        "velocity",
+        "temperature",
+        "ion",
+        "electron"
+      ],
+      "datasets": {
+        "I7_R0_LEPEDEA": {
+          "description": "Link to IMP7 LEPEDEA Energy-Time Spectrograms in GIF format at the University of Iowa. - L. A. Frank (University of Iowa)",
+          "start_date": "2004-08-09T00:00:00.000Z",
+          "stop_date": "2004-08-09T01:00:00.000Z",
+          "pi_name": "L. A. Frank"
+        },
+        "I8_R0_LEPEDEA": {
+          "description": "Link to IMP8 LEPEDEA Energy-Time Spectrograms in GIF format at the University of Iowa. - L. A. Frank (University of Iowa)",
+          "start_date": "2004-08-09T00:00:00.000Z",
+          "stop_date": "2004-08-09T01:00:00.000Z",
+          "pi_name": "L. A. Frank"
+        },
+        "I8_H0_MITPLASMA": {
+          "description": "IMP-8 MIT Plasma Investigation, High Resolution Definitive Data   - A. Lazarus (MIT)",
+          "start_date": "1973-10-31T20:10:27.000Z",
+          "stop_date": "2006-07-26T17:10:35.000Z",
+          "pi_name": "A. Lazarus",
+          "doi": "10.48322/4dhv-w146"
+        }
+      }
+    },
+    "particles": {
+      "name": "Energetic Particles",
+      "keywords": [
+        "particle",
+        "energetic",
+        "cosmic ray"
+      ],
+      "datasets": {
+        "I8_H0_GME": {
+          "description": "IMP-8 GME 30-min Fluxes (SEP optimal bands) - R.E. McGuire (SPDF/Code 612.4, NASA's GSFC)",
+          "start_date": "1973-11-01T00:15:00.000Z",
+          "stop_date": "2001-10-26T14:15:00.000Z",
+          "pi_name": "R.E. McGuire",
+          "doi": "10.48322/m36p-0998"
+        }
+      }
+    },
+    "mag": {
+      "name": "Magnetic Fields",
+      "keywords": [
+        "magnetic",
+        "field",
+        "mag",
+        "b-field",
+        "imf",
+        "magnetometer"
+      ],
+      "datasets": {
+        "I8_15SEC_MAG": {
+          "description": "IMP-8 Fluxgate Magnetometer, 15.36-Second Resolution Data - A. Szabo / R.P. Lepping (NASA GSFC)",
+          "start_date": "1973-10-30T00:00:00.000Z",
+          "stop_date": "2000-06-10T23:59:44.000Z",
+          "pi_name": "A. Szabo / R.P. Lepping",
+          "doi": "10.48322/pxb6-h511"
+        },
+        "I8_320MSEC_MAG": {
+          "description": "IMP-8 Fluxgate Magnetometer, 320 msec Resolution Data - Adam Szabo, Joe King and Natalia Papitashvili (NASA GSFC)",
+          "start_date": "1973-10-30T15:00:40.000Z",
+          "stop_date": "2000-06-10T15:09:24.000Z",
+          "pi_name": "Adam Szabo, Joe King and Natalia Papitashvili",
+          "doi": "10.48322/k2cv-vy73"
+        }
+      }
+    },
+    "ephemeris": {
+      "name": "Ephemeris and Attitude",
+      "keywords": [
+        "ephemeris",
+        "orbit",
+        "attitude",
+        "position"
+      ],
+      "datasets": {
+        "I8_OR_GIFWALK": {
+          "description": "Links to IMP-8 and multi-mission orbit plots - Polar-Wind-Geotail Ground System (NASA GSFC)",
+          "start_date": "2004-08-08T00:00:00.000Z",
+          "stop_date": "2004-08-08T01:00:00.000Z",
+          "pi_name": "Polar-Wind-Geotail Ground System"
+        },
+        "I8_OR_SSC": {
+          "description": "IMP-8 orbital position (multiple coordinate systems, from April 2003 updated I8 orbit model) -  SSC ( SPDF/GSFC)",
+          "start_date": "1973-10-30T00:00:00.000Z",
+          "stop_date": "2004-06-30T23:48:00.000Z",
+          "pi_name": "SSC"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "imp"
+}

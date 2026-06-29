@@ -1,0 +1,219 @@
+{
+  "id": "sounding_rockets",
+  "name": "Sounding Rockets",
+  "profile": {
+    "description": "Sounding Rockets data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "efield": {
+      "name": "Electric Fields",
+      "keywords": [
+        "electric",
+        "e-field"
+      ],
+      "datasets": {
+        "RENU2_H0_VLF": {
+          "description": "H0 - RENU2 COrnell Wire BOom Yo-yo (COWBOY) Electric Field. - Marc Lessard, David Hysell (University of New Hampshire, Cornell University)",
+          "start_date": "2015-12-13T07:40:40.000Z",
+          "stop_date": "2015-12-13T07:45:19.000Z",
+          "pi_name": "Marc Lessard, David Hysell",
+          "doi": "10.48322/7pss-6w70"
+        },
+        "RENU2_H0_EFIELD": {
+          "description": "H0 - RENU2 COrnell Wire BOom Yo-yo (COWBOY) Electric Field. - Marc Lessard, David Hysell (University of New Hampshire, Cornell University)",
+          "start_date": "2015-12-13T07:38:10.000Z",
+          "stop_date": "2015-12-13T07:44:39.000Z",
+          "pi_name": "Marc Lessard, David Hysell",
+          "doi": "10.48322/35v3-c331"
+        },
+        "ENDURANCE_FIELDS_SKINPOT-500US": {
+          "description": "Electric field sphere voltages. - R. Pfaff (NASA GSFC)",
+          "start_date": "2022-05-11T01:32:34.000Z",
+          "stop_date": "2022-05-11T01:45:55.000Z",
+          "pi_name": "R. Pfaff"
+        },
+        "RENU2_H0_FGM": {
+          "description": "H0 - RENU2 Magnetic Field. - Marc Lessard  (University of New Hampshire, Cornell University)",
+          "start_date": "2015-12-13T07:33:59.000Z",
+          "stop_date": "2015-12-13T07:44:59.000Z",
+          "pi_name": "Marc Lessard",
+          "doi": "10.48322/ndrv-ds51"
+        },
+        "ENDURANCE_FIELDS_VLF-33US": {
+          "description": "Electric field differential sphere voltages. - G. Collinson (NASA GSFC / Catholic University)",
+          "start_date": "2022-05-11T01:31:00.000Z",
+          "stop_date": "2022-05-11T01:45:59.000Z",
+          "pi_name": "G. Collinson"
+        }
+      }
+    },
+    "particles": {
+      "name": "Energetic Particles",
+      "keywords": [
+        "particle",
+        "energetic",
+        "cosmic ray"
+      ],
+      "datasets": {
+        "ENDURANCE_L1A_PES": {
+          "description": "Level 1a PES Science and Housekeeping data at 40ms time resolution as downlinked in the Data Matrix - G. Collinson (NASA GSFC / Catholic University of America )",
+          "start_date": "2022-05-11T01:30:28.000Z",
+          "stop_date": "2022-05-11T01:45:54.000Z",
+          "pi_name": "G. Collinson"
+        },
+        "RENU2_H0_IG2": {
+          "description": "H0 - RENU2 ionization gauge  - James Clemmons (University of New Hampshire)",
+          "start_date": "2015-12-13T07:37:39.000Z",
+          "stop_date": "2015-12-13T07:45:25.000Z",
+          "pi_name": "James Clemmons",
+          "doi": "10.48322/k3hd-7y51"
+        },
+        "RENU2_H0_ERPAMAIN": {
+          "description": "H0 - RENU2 ERPA Thermal Electrons. - Marc Lessard (University of New Hampshire)",
+          "start_date": "2015-12-13T07:36:45.000Z",
+          "stop_date": "2015-12-13T07:44:59.000Z",
+          "pi_name": "Marc Lessard",
+          "doi": "10.48322/7hy6-k889"
+        },
+        "RENU2_H0_ERPASUB": {
+          "description": "H0 - RENU2 ERPA Thermal Electrons. - Marc Lessard (University of New Hampshire)",
+          "start_date": "2015-12-13T07:36:45.000Z",
+          "stop_date": "2015-12-13T07:45:29.000Z",
+          "pi_name": "Marc Lessard",
+          "doi": "10.48322/cy19-2944"
+        },
+        "TOOWINDY_E_NE": {
+          "description": "Electron density and electric field measurements during the rocket flight. - D. Hysell (Cornell University)",
+          "start_date": "2019-06-19T11:35:15.000Z",
+          "stop_date": "2019-06-19T11:42:40.000Z",
+          "pi_name": "D. Hysell"
+        },
+        "RENU2_H0_EPLAS": {
+          "description": "H0 - RENU2 EPLAS Electron Flux. - Marc Lessard (University of New Hampshire)",
+          "start_date": "2015-12-13T07:37:50.000Z",
+          "stop_date": "2015-12-13T07:45:48.000Z",
+          "pi_name": "Marc Lessard",
+          "doi": "10.48322/5zvf-1q82"
+        }
+      }
+    },
+    "ephemeris": {
+      "name": "Ephemeris and Attitude",
+      "keywords": [
+        "ephemeris",
+        "orbit",
+        "attitude",
+        "position"
+      ],
+      "datasets": {
+        "ENDURANCE_EPHEMERIS_GPS": {
+          "description": "Endurance GPS Velocity, Position, Altitude, and Magnetic Latitude and Longitude - G. Collinson (NASA GSFC / Catholic University of America)",
+          "start_date": "2022-05-11T01:30:53.000Z",
+          "stop_date": "2022-05-11T01:46:00.000Z",
+          "pi_name": "G. Collinson"
+        },
+        "ENDURANCE_EPHEMERIS_DEF": {
+          "description": "Position and attitude of Endurance during flight - G. Collinson (NASA GSFC / Catholic University of America)",
+          "start_date": "2022-05-11T01:31:00.000Z",
+          "stop_date": "2022-05-11T01:46:06.000Z",
+          "pi_name": "G. Collinson"
+        }
+      }
+    },
+    "plasma": {
+      "name": "Plasma and Solar Wind",
+      "keywords": [
+        "plasma",
+        "solar wind",
+        "proton",
+        "density",
+        "velocity",
+        "temperature",
+        "ion",
+        "electron"
+      ],
+      "datasets": {
+        "DYNAMO-2_DESA_NX02A-ESA-FLUX": {
+          "description": "Standard Resolution (15% DE/E) data (0.5eV to 1keV)  - G. Collinson (NASA GSFC / Catholic University of America)",
+          "start_date": "2021-07-11T17:58:31.000Z",
+          "stop_date": "2021-07-11T18:01:34.000Z",
+          "pi_name": "G. Collinson"
+        },
+        "ENDURANCE_L2_SLP": {
+          "description": "Calibrated L2 thermal plasma measurements from the Sweeping Langmuir Probe (SLP) - A. Barjatya (Embry Riddle Aeronautical University)",
+          "start_date": "2022-05-11T01:32:49.000Z",
+          "stop_date": "2022-05-11T01:45:14.000Z",
+          "pi_name": "A. Barjatya"
+        },
+        "ENDURANCE_L2_SLP_PSD": {
+          "description": "Sweeping Langmuir Probe (SLP) power spectral density. - G. Collinson (NASA GSFC / Catholic University)",
+          "start_date": "2022-05-11T01:32:46.000Z",
+          "stop_date": "2022-05-11T01:45:06.000Z",
+          "pi_name": "G. Collinson"
+        },
+        "ENDURANCE_L1B_PES": {
+          "description": "Uncalibrated L1b raw counts per energy step from the 8 DESA sensors during science portion of mission - G. Collinson (NASA GSFC / Catholic University of America )",
+          "start_date": "2022-05-11T01:32:54.000Z",
+          "stop_date": "2022-05-11T01:45:44.000Z",
+          "pi_name": "G. Collinson"
+        },
+        "ENDURANCE_L2-GF_PES": {
+          "description": "Variation of Geometric Factor of PES during operation - G. Collinson (NASA GSFC / Catholic University of America )",
+          "start_date": "2022-05-11T01:32:54.000Z",
+          "stop_date": "2022-05-11T01:45:54.000Z",
+          "pi_name": "G. Collinson"
+        },
+        "ENDURANCE_L2-RPA_PES": {
+          "description": "High Resolution (0.5% DE/E) data (20.30eV to 25.85eV) - G. Collinson (NASA GSFC / Catholic University of America )",
+          "start_date": "2022-05-11T01:32:54.000Z",
+          "stop_date": "2022-05-11T01:45:44.000Z",
+          "pi_name": "G. Collinson"
+        },
+        "ENDURANCE_L3_PES": {
+          "description": "Electric Potential Drop parallel to Earthâs magnetic Field below Endurance - G. Collinson (NASA GSFC / Catholic University of America )",
+          "start_date": "2022-05-11T01:33:04.000Z",
+          "stop_date": "2022-05-11T01:44:54.000Z",
+          "pi_name": "G. Collinson"
+        },
+        "ENDURANCE_L2-ESA_PES": {
+          "description": "Standard Resolution (15% DE/E) data (10eV to 1keV) - G. Collinson (NASA GSFC / Catholic University of America )",
+          "start_date": "2022-05-11T01:32:54.000Z",
+          "stop_date": "2022-05-11T01:45:44.000Z",
+          "pi_name": "G. Collinson"
+        }
+      }
+    },
+    "imaging_mag": {
+      "name": "Magnetospheric Imaging",
+      "keywords": [
+        "imaging",
+        "remote sensing",
+        "magnetosphere"
+      ],
+      "datasets": {
+        "RENU2_H0_UVPMT": {
+          "description": "H0 - RENU2 UV PMT Counts. - Marc Lessard (University of New Hampshire)",
+          "start_date": "2015-12-13T07:37:50.000Z",
+          "stop_date": "2015-12-13T07:45:55.000Z",
+          "pi_name": "Marc Lessard",
+          "doi": "10.48322/f1c4-b375"
+        },
+        "RENU2_H0_PMT": {
+          "description": "H0 - RENU2 PMT Rayleighs. - Jim Hecht (University of New HampshireAerospace Corporation)",
+          "start_date": "2015-12-13T07:32:09.000Z",
+          "stop_date": "2015-12-13T07:46:12.000Z",
+          "pi_name": "Jim Hecht",
+          "doi": "10.48322/hwz5-q486"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "sounding_rockets"
+}

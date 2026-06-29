@@ -1,0 +1,33 @@
+{
+  "id": "stp",
+  "name": "Geosynchronous Investigations",
+  "profile": {
+    "description": "Geosynchronous Investigations data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "particles": {
+      "name": "Energetic Particles",
+      "keywords": [
+        "particle",
+        "energetic",
+        "cosmic ray"
+      ],
+      "datasets": {
+        "STPSAT-6_FALCON_SEED-L1": {
+          "description": "STPSat-6 Solid-state Electron Detector & Dosimeter (SEED) - G. McHarg (United States Air Force Academy)",
+          "start_date": "2022-01-15T15:59:32.000Z",
+          "stop_date": "2023-02-28T23:59:19.000Z",
+          "pi_name": "G. McHarg"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "stp"
+}

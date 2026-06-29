@@ -1,0 +1,41 @@
+{
+  "id": "sampex",
+  "name": "SAMPEX",
+  "profile": {
+    "description": "SAMPEX data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "particles": {
+      "name": "Energetic Particles",
+      "keywords": [
+        "particle",
+        "energetic",
+        "cosmic ray"
+      ],
+      "datasets": {
+        "SX_K0_POF": {
+          "description": "SAMPEX POLARCAP Averages: 4 Instruments - G.MASON  (JHU/APL )",
+          "start_date": "1992-07-06T00:04:34.000Z",
+          "stop_date": "2004-06-30T12:10:01.000Z",
+          "pi_name": "G.MASON",
+          "doi": "10.48322/m7w8-8d83"
+        },
+        "SX_K0_30F": {
+          "description": "30-s averaged fluxes: 4 Instruments  - Glenn Mason  (JHU/APL )",
+          "start_date": "1992-07-06T00:00:04.000Z",
+          "stop_date": "2004-06-30T12:23:31.000Z",
+          "pi_name": "Glenn Mason",
+          "doi": "10.48322/2x9v-jv02"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "sampex"
+}

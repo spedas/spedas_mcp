@@ -1,0 +1,127 @@
+{
+  "id": "twins",
+  "name": "TWINS",
+  "profile": {
+    "description": "TWINS data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "imaging_mag": {
+      "name": "Magnetospheric Imaging",
+      "keywords": [
+        "imaging",
+        "remote sensing",
+        "magnetosphere"
+      ],
+      "datasets": {
+        "TWINS2_TISTORM_IMAGER": {
+          "description": "Images of plasma sheet ion temperature during storms calculated from ENA measurements - Amy Keesee (West Virginia University)",
+          "start_date": "2008-06-14T18:00:00.000Z",
+          "stop_date": "2013-12-09T03:11:44.000Z",
+          "pi_name": "Amy Keesee",
+          "doi": "10.48322/6g4w-d971"
+        },
+        "TWINS1_L1_IMAGER": {
+          "description": "TWINS Spacecraft 1 - Neutral-atom Spectrometer Level-1 Magnetospheric Images and Image Movies at Full (9 Energy Steps and 15 minute) Resolution - D. McComas (Southwest Research Institute)",
+          "start_date": "2007-04-18T00:01:38.000Z",
+          "stop_date": "2018-12-12T19:00:23.000Z",
+          "pi_name": "D. McComas",
+          "doi": "10.48322/pcsr-8685"
+        },
+        "TWINS_M2_ENA": {
+          "description": "Images of plasma sheet ion temperature during storms calculated from ENA measurements - R. M. Katus (Eastern Michigan University)",
+          "start_date": "2009-04-09T15:10:00.000Z",
+          "stop_date": "2018-09-14T00:00:59.000Z",
+          "pi_name": "R. M. Katus",
+          "doi": "10.48322/grxp-5t19"
+        },
+        "TWINS2_L1_LAD": {
+          "description": "TWINS Spacecraft 2 - Lyman Alpha Detector Level-1 Geocorona Data - D. McComas & H. Fahr (SwRI & U. Bonn, respectively)",
+          "start_date": "2008-05-02T04:45:26.000Z",
+          "stop_date": "2016-10-26T03:56:55.000Z",
+          "pi_name": "D. McComas & H. Fahr",
+          "doi": "10.48322/yvt8-0a64"
+        },
+        "TWINS1_HK_1SEC": {
+          "description": "TWINS Spacecraft 1 - housekeeping - D. McComas & H. Fahr (SwRI & U. Bonn, respectively.)",
+          "start_date": "2007-01-30T19:05:29.000Z",
+          "stop_date": "2018-12-12T23:59:58.000Z",
+          "pi_name": "D. McComas & H. Fahr"
+        },
+        "TWINS1_TISTORM_IMAGER": {
+          "description": "Images of plasma sheet ion temperature during storms calculated from ENA measurements - Amy Keesee (West Virginia University)",
+          "start_date": "2008-06-15T05:31:20.000Z",
+          "stop_date": "2013-12-09T03:10:34.000Z",
+          "pi_name": "Amy Keesee",
+          "doi": "10.48322/cre5-4g28"
+        },
+        "TWINS1_L1_LAD": {
+          "description": "TWINS Spacecraft 1 - Lyman Alpha Detector Level-1 Geocorona Data - D. McComas & H. Fahr (SwRI & U. Bonn, respectively.)",
+          "start_date": "2007-07-06T07:15:10.000Z",
+          "stop_date": "2018-12-12T19:06:33.000Z",
+          "pi_name": "D. McComas & H. Fahr",
+          "doi": "10.48322/3ywd-rq04"
+        },
+        "TWINS2_L1_IMAGER": {
+          "description": "TWINS Spacecraft 2 - Neutral-atom Spectrometer Level-1 Magnetospheric Images and Image Movies at Full (9 Energy Steps and 15 minute) Resolution - D. McComas (Southwest Research Institute)",
+          "start_date": "2008-05-02T04:45:27.000Z",
+          "stop_date": "2016-10-26T03:45:47.000Z",
+          "pi_name": "D. McComas",
+          "doi": "10.48322/1tsg-7729"
+        },
+        "TWINS2_HK_1SEC": {
+          "description": "TWINS Spacecraft 2 - housekeeping - D. McComas & H. Fahr (SwRI & U. Bonn, respectively.)",
+          "start_date": "2008-04-11T07:28:15.000Z",
+          "stop_date": "2017-08-23T23:59:58.000Z",
+          "pi_name": "D. McComas & H. Fahr"
+        }
+      }
+    },
+    "ephemeris": {
+      "name": "Ephemeris and Attitude",
+      "keywords": [
+        "ephemeris",
+        "orbit",
+        "attitude",
+        "position"
+      ],
+      "datasets": {
+        "TWINS2_AT_DEF": {
+          "description": "TWINS2 - Spacecraft Attitude - D. McComas (Southwest Research Institute)",
+          "start_date": "2008-04-14T00:53:59.000Z",
+          "stop_date": "2016-10-27T23:59:59.000Z",
+          "pi_name": "D. McComas",
+          "doi": "10.48322/btg2-gm95"
+        },
+        "TWINS2_OR_DEF": {
+          "description": "TWINS2 - Spacecraft Ephemeris - D. McComas (Southwest Research Institute)",
+          "start_date": "2008-04-11T00:03:22.000Z",
+          "stop_date": "2016-10-27T23:59:59.000Z",
+          "pi_name": "D. McComas",
+          "doi": "10.48322/psgy-3e13"
+        },
+        "TWINS1_AT_DEF": {
+          "description": "TWINS1 - Spacecraft Attitude - D. McComas (Southwest Research Institute)",
+          "start_date": "2007-04-01T00:00:00.000Z",
+          "stop_date": "2018-12-12T23:59:58.000Z",
+          "pi_name": "D. McComas",
+          "doi": "10.48322/ze5g-gm91"
+        },
+        "TWINS1_OR_DEF": {
+          "description": "TWINS1 - Spacecraft Ephemeris - D. McComas (Southwest Research Institute)",
+          "start_date": "2007-04-01T00:01:03.000Z",
+          "stop_date": "2018-12-12T23:55:15.000Z",
+          "pi_name": "D. McComas",
+          "doi": "10.48322/be9m-4f27"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "twins"
+}

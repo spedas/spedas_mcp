@@ -1,0 +1,55 @@
+{
+  "id": "messenger",
+  "name": "MESSENGER",
+  "profile": {
+    "description": "MESSENGER data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "ephemeris": {
+      "name": "Ephemeris and Attitude",
+      "keywords": [
+        "ephemeris",
+        "orbit",
+        "attitude",
+        "position"
+      ],
+      "datasets": {
+        "MESSENGER_HELIO1HR_POSITION": {
+          "description": "Position in heliocentric coordinates from SPDF Helioweb - Natalia Papitashvili (NASA/GSFC/SPDF)",
+          "start_date": "2004-08-04T00:00:00.000Z",
+          "stop_date": "2015-04-30T23:00:00.000Z",
+          "pi_name": "Natalia Papitashvili",
+          "doi": "10.48322/ygb8-6c34"
+        }
+      }
+    },
+    "mag": {
+      "name": "Magnetic Fields",
+      "keywords": [
+        "magnetic",
+        "field",
+        "mag",
+        "b-field",
+        "imf",
+        "magnetometer"
+      ],
+      "datasets": {
+        "MESSENGER_MAG_RTN": {
+          "description": "MESSENGER interplanetary magnetic field (1-second/high resolution) in RTN coordinates - Prof. Sean C. Solomon (Carnegie Institution of Washington)",
+          "start_date": "2004-08-12T17:44:08.000Z",
+          "stop_date": "2015-04-30T15:08:14.000Z",
+          "pi_name": "Prof. Sean C. Solomon",
+          "doi": "10.48322/9wyq-j955"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "messenger"
+}

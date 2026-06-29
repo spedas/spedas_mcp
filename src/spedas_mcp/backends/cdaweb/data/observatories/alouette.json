@@ -1,0 +1,76 @@
+{
+  "id": "alouette",
+  "name": "Alouette",
+  "profile": {
+    "description": "Alouette data from CDAWeb.",
+    "coordinate_systems": [],
+    "typical_cadence": "",
+    "data_caveats": []
+  },
+  "instruments": {
+    "imaging_itm": {
+      "name": "ITM Imaging",
+      "keywords": [
+        "imaging",
+        "ionosphere",
+        "thermosphere",
+        "mesosphere"
+      ],
+      "datasets": {
+        "ALOUETTE2_AV_ULA": {
+          "description": "Alouette-2 Topside Sounder Ionogram over Fairbanks, Alaska (lat/long=65/212) - R.F. Benson (NASA GSFC)",
+          "start_date": "1965-11-29T06:20:12.000Z",
+          "stop_date": "1965-11-29T06:32:44.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/kvy0-3088"
+        },
+        "ALOUETTE2_AV_LIM": {
+          "description": "Alouette-2 Topside Sounder Ionograms over Lima, Peru (Lat=-12, Long=283) - R.F. Benson (NASA GSFC)",
+          "start_date": "1966-11-11T20:34:08.000Z",
+          "stop_date": "1967-01-15T12:59:04.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/bq14-8619"
+        },
+        "ALOUETTE2_NEPROF_TOPS": {
+          "description": "Alouette-2 CRC Electron Density Profiles - J. E. Jackson (Communication Research Centre (CRC), Ottawa)",
+          "start_date": "1965-12-15T09:40:15.000Z",
+          "stop_date": "1972-07-10T22:37:22.000Z",
+          "pi_name": "J. E. Jackson"
+        },
+        "ALOUETTE2_AV_QUI": {
+          "description": "Alouette-2 Topside Sounder Ionogram over Quito, Equador (lat/lon=-1/281) - R.F. Benson (NASA GSFC)",
+          "start_date": "1965-11-29T13:47:39.000Z",
+          "stop_date": "1968-01-01T04:12:17.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/5aep-ew77"
+        },
+        "ALOUETTE2_AV_WNK": {
+          "description": "Alouette-2 Topside Sounder Ionogram over Winkfield, U.K. (lat/lon=51/359) - R.F. Benson (NASA GSFC)",
+          "start_date": "1966-03-30T05:48:19.000Z",
+          "stop_date": "1966-04-06T06:01:10.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/nhht-4411"
+        },
+        "ALOUETTE2_AV_SOL": {
+          "description": "Alouette-2 Topside Sounder Ionogram over Falkland Is., U.K. (lat/lon=-52/302) - R.F. Benson (NASA GSFC)",
+          "start_date": "1965-12-01T01:31:39.000Z",
+          "stop_date": "1966-12-28T03:00:28.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/29p2-h053"
+        },
+        "ALOUETTE2_AV_SNT": {
+          "description": "Alouette-2 Topside Sounder Ionogram over Santiago, Chile (lat/lon=-33/298) - R.F. Benson (NASA GSFC)",
+          "start_date": "1965-11-29T13:42:37.000Z",
+          "stop_date": "1967-01-01T04:19:41.000Z",
+          "pi_name": "R.F. Benson",
+          "doi": "10.48322/bxt1-c896"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "generated_at": "2026-03-12T06:14:15Z",
+    "source": "CDAWeb REST API"
+  },
+  "short_name": "alouette"
+}
