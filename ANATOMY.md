@@ -33,7 +33,7 @@ The SPEDAS Agent Kit core: one package/repo that gives AI agents a unified MCP d
 ## State
 
 - No server-side persistent state. Caches live in the user's home (`~/.cdawebmcp/`, `~/.pdsmcp/`, `~/.xhelio_spice/kernels/`), managed via `manage_data_cache`.
-- Surface gating is runtime, not stored: `[analysis]` importability + `SPEDAS_AGENT_KIT_COMPAT_TOOLS` env flag. In the current lean environment the smoke script advertises 17 base tools and 25 tools with compat enabled; installing `[analysis]` adds the optional analysis group, currently 13 tool names in `ANALYSIS_TOOL_NAMES` (`server.py:34`). Advertised tools also expose `meta.surface` (`primary`, `advanced`, `compat`) plus side-effect hints through MCP `ToolAnnotations`.
+- Surface gating is runtime, not stored: `[analysis]` importability + `SPEDAS_AGENT_KIT_COMPAT_TOOLS` + `SPEDAS_AGENT_KIT_DATASOURCE_TOOLS` env flags. In the current lean environment the smoke script advertises 13 base tools, 21 with compat enabled, and 17 with the datasource flag (the four direct HAPI/FDSN tools, demoted out of the default surface in issue #87); installing `[analysis]` adds the optional analysis group, currently 13 tool names in `ANALYSIS_TOOL_NAMES` (`server.py:34`). Advertised tools also expose `meta.surface` (`primary`, `advanced`, `compat`, `datasource`) plus side-effect hints through MCP `ToolAnnotations`.
 - Analysis/skills are artifact-first: packaged shared skills live under `src/spedas_agent_kit/resources/skills/`; bulk results are written under a `create_spedas_analysis_bundle` directory (`requests/ data/ plots/ provenance/ notes/`).
 
 ## Notes

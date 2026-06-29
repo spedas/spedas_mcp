@@ -19,5 +19,9 @@ source while developing the plugin fixture.
 This in-repo fixture follows `../../../plugins/spedas-agent-kit-compatibility.json`: it
 tracks `spedas_agent_kit` from the `main` ref, bounds the
 MCP protocol package as `mcp>=1.26.0,<2`, and expects the base `list_tools`
-surface to advertise 17 tools. Refresh the manifest, this `.mcp.json`, and the
-Claude fixture together after any server tool-surface change.
+surface to advertise 13 tools. The direct HAPI/FDSN data-source tools are demoted
+out of the default surface (issue #87); reach them via
+`browse_data_sources(source_type='hapi'/'fdsn')` discovery, or set
+`SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1` to advertise the four directly. Refresh the
+manifest, this `.mcp.json`, and the Claude fixture together after any server
+tool-surface change.

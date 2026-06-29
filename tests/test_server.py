@@ -6,7 +6,12 @@ import types
 from pathlib import Path
 
 from spedas_agent_kit import __version__
-from spedas_agent_kit.server import ANALYSIS_TOOL_NAMES, create_server
+from spedas_agent_kit.server import (
+    ANALYSIS_TOOL_NAMES,
+    FDSN_TOOL_NAMES,
+    HAPI_TOOL_NAMES,
+    create_server,
+)
 
 COMPAT_CDAWEB_PDS_TOOLS = {
     "browse_observatories",
@@ -17,6 +22,13 @@ COMPAT_CDAWEB_PDS_TOOLS = {
     "load_pds_mission",
     "browse_pds_parameters",
     "fetch_pds_data",
+}
+
+DATASOURCE_HAPI_FDSN_TOOLS = {
+    "browse_hapi_catalog",
+    "fetch_hapi_data",
+    "browse_fdsn_datasets",
+    "fetch_fdsn_data",
 }
 
 
@@ -33,6 +45,7 @@ def test_version():
 
 def test_server_has_expected_tools(monkeypatch):
     monkeypatch.delenv("SPEDAS_AGENT_KIT_COMPAT_TOOLS", raising=False)
+    monkeypatch.delenv("SPEDAS_AGENT_KIT_DATASOURCE_TOOLS", raising=False)
     server = create_server(include_analysis_tools=True)
     tools = asyncio.run(server.list_tools())
     names = {tool.name for tool in tools}
@@ -63,14 +76,21 @@ def test_server_has_expected_tools(monkeypatch):
         "compute_particle_moments",
         "compute_particle_spectra",
         "render_tplot",
-        "browse_hapi_catalog",
-        "fetch_hapi_data",
-        "browse_fdsn_datasets",
-        "fetch_fdsn_data",
     } <= names
     assert {"manage_cdaweb_cache", "manage_pds_cache", "manage_spice_kernels"}.isdisjoint(names)
     assert {"list_spice_missions", "list_coordinate_frames"}.isdisjoint(names)
     assert names.isdisjoint(COMPAT_CDAWEB_PDS_TOOLS)
+    # Direct HAPI/FDSN tools are demoted out of the default surface (issue #87).
+    assert names.isdisjoint(DATASOURCE_HAPI_FDSN_TOOLS)
+
+
+def test_base_surface_is_thirteen_primary_tools(monkeypatch):
+    monkeypatch.delenv("SPEDAS_AGENT_KIT_COMPAT_TOOLS", raising=False)
+    monkeypatch.delenv("SPEDAS_AGENT_KIT_DATASOURCE_TOOLS", raising=False)
+    server = create_server(include_analysis_tools=False)
+    tools = asyncio.run(server.list_tools())
+    assert len(tools) == 13
+    assert {tool.meta["surface"] for tool in tools} == {"primary"}
 
 
 def test_server_advertises_cdaweb_pds_compat_tools_when_flag_set(monkeypatch):
@@ -79,6 +99,21 @@ def test_server_advertises_cdaweb_pds_compat_tools_when_flag_set(monkeypatch):
     tools = asyncio.run(server.list_tools())
     names = {tool.name for tool in tools}
     assert COMPAT_CDAWEB_PDS_TOOLS <= names
+
+
+def test_server_advertises_hapi_fdsn_tools_when_datasource_flag_set(monkeypatch):
+    monkeypatch.delenv("SPEDAS_AGENT_KIT_COMPAT_TOOLS", raising=False)
+    monkeypatch.setenv("SPEDAS_AGENT_KIT_DATASOURCE_TOOLS", "1")
+    server = create_server(include_analysis_tools=False)
+    tools = {tool.name: tool for tool in asyncio.run(server.list_tools())}
+    assert DATASOURCE_HAPI_FDSN_TOOLS <= set(tools)
+    for name in DATASOURCE_HAPI_FDSN_TOOLS:
+        assert tools[name].meta["surface"] == "datasource"
+    # fetch tools mutate the filesystem; browse tools are read-only.
+    assert tools["browse_hapi_catalog"].annotations.readOnlyHint is True
+    assert tools["fetch_hapi_data"].annotations.readOnlyHint is False
+    assert tools["browse_fdsn_datasets"].annotations.readOnlyHint is True
+    assert tools["fetch_fdsn_data"].annotations.readOnlyHint is False
 
 
 def test_analysis_tools_are_gated_when_analysis_extra_is_absent(monkeypatch):
@@ -113,9 +148,12 @@ def test_optional_backend_availability_metadata_when_base_deps_missing(monkeypat
     monkeypatch.setattr(server_mod, "_analysis_dependencies_available", lambda: False)
     monkeypatch.setattr(server_mod, "_module_available", lambda name: False)
 
+    monkeypatch.delenv("SPEDAS_AGENT_KIT_DATASOURCE_TOOLS", raising=False)
     server = create_server()
     tool_names = {tool.name for tool in asyncio.run(server.list_tools())}
-    assert {"browse_hapi_catalog", "fetch_hapi_data", "browse_fdsn_datasets", "fetch_fdsn_data"} <= tool_names
+    # Direct HAPI/FDSN tools are hidden from the default surface (issue #87), but
+    # their backend availability is still reported via optional_backends below.
+    assert {"browse_hapi_catalog", "fetch_hapi_data", "browse_fdsn_datasets", "fetch_fdsn_data"}.isdisjoint(tool_names)
     assert set(ANALYSIS_TOOL_NAMES).isdisjoint(tool_names)
 
     overview = json.loads(_call_tool(server, "spedas_overview"))
@@ -125,12 +163,18 @@ def test_optional_backend_availability_metadata_when_base_deps_missing(monkeypat
     assert optional["analysis"]["registration"] == "registered_when_available"
     assert optional["hapi"]["available"] is False
     assert optional["hapi"]["requires_extra"] == "hapi"
-    assert optional["hapi"]["registration"] == "always_registered"
+    assert optional["hapi"]["registration"] == "gated_optional"
     assert optional["hapi"]["missing_modules"] == ["hapiclient"]
+    assert optional["hapi"]["env_flag"] == "SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1"
+    assert optional["hapi"]["advertised"] is False
+    assert optional["hapi"]["discover_via"] == "browse_data_sources(source_type='hapi')"
+    assert optional["hapi"]["tools"] == list(HAPI_TOOL_NAMES)
     assert optional["fdsn"]["available"] is False
     assert optional["fdsn"]["requires_extra"] == "fdsn"
-    assert optional["fdsn"]["registration"] == "always_registered"
+    assert optional["fdsn"]["registration"] == "gated_optional"
     assert {"pyspedas", "mth5", "obspy"} == set(optional["fdsn"]["missing_modules"])
+    assert optional["fdsn"]["advertised"] is False
+    assert optional["fdsn"]["discover_via"] == "browse_data_sources(source_type='fdsn')"
     assert "missing_dependency" in optional["hapi"]["call_behavior"]
     assert "missing_dependency" in optional["fdsn"]["call_behavior"]
 
@@ -139,13 +183,18 @@ def test_optional_backend_availability_metadata_when_base_deps_missing(monkeypat
     assert by_type["hapi"]["available"] is False
     assert by_type["hapi"]["requires_extra"] == "hapi"
     assert by_type["hapi"]["install_hint"] == "pip install 'spedas-agent-kit[hapi]'"
+    assert by_type["hapi"]["direct_tool_gate"]["env_flag"] == "SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1"
+    assert by_type["hapi"]["direct_tool_gate"]["advertised"] is False
     assert by_type["fdsn"]["available"] is False
     assert by_type["fdsn"]["requires_extra"] == "fdsn"
     assert by_type["fdsn"]["install_hint"] == "pip install 'spedas-agent-kit[fdsn]'"
+    assert by_type["fdsn"]["direct_tool_gate"]["env_flag"] == "SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1"
+    assert by_type["fdsn"]["direct_tool_gate"]["advertised"] is False
 
 
 def test_overview_is_compact_json(monkeypatch):
     monkeypatch.delenv("SPEDAS_AGENT_KIT_COMPAT_TOOLS", raising=False)
+    monkeypatch.delenv("SPEDAS_AGENT_KIT_DATASOURCE_TOOLS", raising=False)
     server = create_server()
     data = json.loads(_call_tool(server, "spedas_overview"))
     assert data["status"] == "success"
@@ -157,6 +206,23 @@ def test_overview_is_compact_json(monkeypatch):
     assert compat["env_flag"] == "SPEDAS_AGENT_KIT_COMPAT_TOOLS=1"
     assert set(compat["hidden_by_default"]) == COMPAT_CDAWEB_PDS_TOOLS
     assert compat["available_for_existing_clients"] == []
+    datasource = data["capability_groups"]["datasource_optional"]
+    assert datasource["env_flag"] == "SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1"
+    assert set(datasource["hidden_by_default"]) == DATASOURCE_HAPI_FDSN_TOOLS
+    assert datasource["available_directly"] == []
+    assert datasource["discover_via"] == [
+        "browse_data_sources(source_type='hapi')",
+        "browse_data_sources(source_type='fdsn')",
+    ]
+
+
+def test_overview_advertises_hapi_fdsn_directly_when_datasource_flag_set(monkeypatch):
+    monkeypatch.setenv("SPEDAS_AGENT_KIT_DATASOURCE_TOOLS", "1")
+    server = create_server()
+    data = json.loads(_call_tool(server, "spedas_overview"))
+    datasource = data["capability_groups"]["datasource_optional"]
+    assert set(datasource["available_directly"]) == DATASOURCE_HAPI_FDSN_TOOLS
+    assert "SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1" in datasource["status"]
 
 
 def test_overview_advertises_geomagnetic_index_recipe(monkeypatch):
@@ -175,6 +241,7 @@ def test_overview_advertises_geomagnetic_index_recipe(monkeypatch):
 
 def test_base_tools_expose_primary_surface_metadata(monkeypatch):
     monkeypatch.delenv("SPEDAS_AGENT_KIT_COMPAT_TOOLS", raising=False)
+    monkeypatch.delenv("SPEDAS_AGENT_KIT_DATASOURCE_TOOLS", raising=False)
     server = create_server(include_analysis_tools=False)
     tools = {tool.name: tool for tool in asyncio.run(server.list_tools())}
 
@@ -2542,6 +2609,8 @@ def test_browse_data_sources_hapi_points_to_dedicated_tool():
     assert data["status"] == "success"
     assert data["source_type"] == "hapi"
     assert any("browse_hapi_catalog" in t for t in data["next_tools"])
+    assert data["direct_tool_gate"]["env_flag"] == "SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1"
+    assert data["direct_tool_gate"]["advertised"] is False
 
 
 def test_browse_data_sources_fdsn_alias_mth5():
@@ -2549,6 +2618,8 @@ def test_browse_data_sources_fdsn_alias_mth5():
     data = json.loads(_call_tool(server, "browse_data_sources", {"source_type": "mth5"}))
     assert data["status"] == "success"
     assert data["source_type"] == "fdsn"
+    assert data["direct_tool_gate"]["env_flag"] == "SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1"
+    assert data["direct_tool_gate"]["advertised"] is False
 
 
 def test_unified_load_data_source_hapi_routes_to_dedicated_tool():
@@ -2556,6 +2627,9 @@ def test_unified_load_data_source_hapi_routes_to_dedicated_tool():
     data = json.loads(_call_tool(server, "load_data_source", {"source_type": "hapi", "source_id": "x"}))
     assert data["status"] == "error"
     assert data["code"] == "use_dedicated_tool"
+    assert "SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1" in data["hint"]
+    assert data["direct_tool_gate"]["env_flag"] == "SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1"
+    assert data["direct_tool_gate"]["advertised"] is False
     assert "browse_hapi_catalog" in data["recommended_tools"]
 
 
@@ -2566,6 +2640,9 @@ def test_unified_fetch_data_product_fdsn_routes_to_dedicated_tool():
     }))
     assert data["status"] == "error"
     assert data["code"] == "use_dedicated_tool"
+    assert "SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1" in data["hint"]
+    assert data["direct_tool_gate"]["env_flag"] == "SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1"
+    assert data["direct_tool_gate"]["advertised"] is False
     assert "fetch_fdsn_data" in data["recommended_tools"]
 
 
@@ -2711,7 +2788,10 @@ def test_browse_data_parameters_existing_source_type_behavior_preserved():
     assert unknown["code"] == "invalid_argument"
 
 
-def test_browse_hapi_catalog_missing_dep_or_size_safe_success(tmp_path: Path):
+def test_browse_hapi_catalog_missing_dep_or_size_safe_success(tmp_path: Path, monkeypatch):
+    # Direct HAPI/FDSN tools are gated out of the default surface (issue #87);
+    # enable the datasource flag to register and exercise the tool itself.
+    monkeypatch.setenv("SPEDAS_AGENT_KIT_DATASOURCE_TOOLS", "1")
     server = create_server()
     data = json.loads(_call_tool(server, "browse_hapi_catalog", {
         "server_url": "https://cdaweb.gsfc.nasa.gov/hapi",
@@ -2728,7 +2808,8 @@ def test_browse_hapi_catalog_missing_dep_or_size_safe_success(tmp_path: Path):
         assert "response_too_large" not in json.dumps(data)
 
 
-def test_browse_fdsn_datasets_missing_dep_is_clean():
+def test_browse_fdsn_datasets_missing_dep_is_clean(monkeypatch):
+    monkeypatch.setenv("SPEDAS_AGENT_KIT_DATASOURCE_TOOLS", "1")
     server = create_server()
     data = json.loads(_call_tool(server, "browse_fdsn_datasets", {
         "trange": ["2015-06-22", "2015-06-23"],
@@ -2738,7 +2819,8 @@ def test_browse_fdsn_datasets_missing_dep_is_clean():
     assert data["extra"] == "fdsn"
 
 
-def test_browse_fdsn_datasets_bad_trange_validates_before_backend():
+def test_browse_fdsn_datasets_bad_trange_validates_before_backend(monkeypatch):
+    monkeypatch.setenv("SPEDAS_AGENT_KIT_DATASOURCE_TOOLS", "1")
     server = create_server()
     data = json.loads(_call_tool(server, "browse_fdsn_datasets", {"trange": ["only-one"]}))
     assert data["status"] == "error"

@@ -4,7 +4,7 @@
   "spedas_agent_kit_source": "git+https://github.com/spedas/spedas_agent_kit.git@main",
   "mcp_requirement": "mcp>=1.26.0,<2",
   "smoke_command": "uv run --extra mcp python scripts/smoke_mcp_list_tools.py --json",
-  "base_tool_count": 17,
+  "base_tool_count": 13,
   "base_tools": [
     "spedas_overview",
     "search_spedas_data_sources",
@@ -18,7 +18,10 @@
     "load_data_source",
     "browse_data_parameters",
     "fetch_data_product",
-    "manage_data_cache",
+    "manage_data_cache"
+  ],
+  "datasource_env_flag": "SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1",
+  "datasource_tools": [
     "browse_hapi_catalog",
     "fetch_hapi_data",
     "browse_fdsn_datasets",
@@ -27,6 +30,7 @@
   "notes": [
     "Base list_tools excludes optional analysis tools unless spedas-agent-kit[analysis] dependencies are installed.",
     "Legacy CDAWeb/PDS compatibility tools are hidden unless SPEDAS_AGENT_KIT_COMPAT_TOOLS=1 is set.",
+    "Direct HAPI/FDSN data-source tools (datasource_tools) are demoted out of the default surface (issue #87); reach them via browse_data_sources(source_type='hapi'/'fdsn') discovery, or set SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1 to advertise them in list_tools.",
     "The in-repo Claude/Codex plugin fixtures pin the server source to this commit; standalone wrapper repos must update their own pins and expected counts separately."
   ]
 }

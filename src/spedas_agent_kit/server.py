@@ -115,14 +115,19 @@ def _curated_cdaweb_lookup(source_id: str) -> dict[str, Any] | None:
 
 
 
-def _optional_backend_availability(*, include_analysis_tools: bool) -> dict[str, dict[str, Any]]:
+def _optional_backend_availability(
+    *, include_analysis_tools: bool, datasource_tools_enabled: bool | None = None
+) -> dict[str, dict[str, Any]]:
     """Summarize optional backend availability for overview/discovery payloads.
 
-    HAPI/FDSN tools stay registered for backward compatibility, but this metadata
-    lets generic MCP clients distinguish callable-but-missing optional backends
-    from tools that can perform work in the current base install. Analysis tools
-    remain hidden unless their backend is present.
+    HAPI/FDSN tools are gated out of the default surface (issue #87) and advertised
+    only when SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1; this metadata still reports their
+    names and backend availability so generic MCP clients and the unified
+    ``browse_data_sources`` discovery path can route to them. Analysis tools remain
+    hidden unless their backend is present.
     """
+    if datasource_tools_enabled is None:
+        datasource_tools_enabled = _datasource_tools_enabled()
     hapi_modules = ("hapiclient",)
     # Probe only top-level packages here. importlib.find_spec("pyspedas.mth5")
     # imports the pyspedas package as a side effect in some environments, which
@@ -143,17 +148,25 @@ def _optional_backend_availability(*, include_analysis_tools: bool) -> dict[str,
             "available": available,
             "requires_extra": extra,
             "install_hint": f"pip install 'spedas-agent-kit[{extra}]'",
-            "tools": list(tools) if available or registration == "always_registered" else [],
+            "tools": (
+                list(tools)
+                if available or registration in ("always_registered", "gated_optional")
+                else []
+            ),
             "all_tools": list(tools),
             "registration": registration,
         }
+        if registration == "gated_optional":
+            payload["env_flag"] = "SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1"
+            payload["advertised"] = bool(datasource_tools_enabled)
+            payload["discover_via"] = f"browse_data_sources(source_type='{extra}')"
         if missing_modules:
             payload["missing_modules"] = missing_modules
         if not available:
             payload["call_behavior"] = (
                 "tool calls return a structured status='error', "
                 "code='missing_dependency' payload until the extra is installed"
-                if registration == "always_registered"
+                if registration in ("always_registered", "gated_optional")
                 else "tools are not registered in MCP list_tools until the extra is installed"
             )
         return payload
@@ -173,14 +186,14 @@ def _optional_backend_availability(*, include_analysis_tools: bool) -> dict[str,
             available=not hapi_missing,
             extra="hapi",
             tools=HAPI_TOOL_NAMES,
-            registration="always_registered",
+            registration="gated_optional",
             missing_modules=hapi_missing,
         ),
         "fdsn": _entry(
             available=not fdsn_missing,
             extra="fdsn",
             tools=FDSN_TOOL_NAMES,
-            registration="always_registered",
+            registration="gated_optional",
             missing_modules=fdsn_missing,
         ),
     }
@@ -189,6 +202,21 @@ def _optional_backend_availability(*, include_analysis_tools: bool) -> dict[str,
 def _compat_tools_enabled() -> bool:
     """Return true when legacy CDAWeb/PDS compatibility tools should be advertised."""
     return os.environ.get("SPEDAS_AGENT_KIT_COMPAT_TOOLS") == "1"
+
+
+def _datasource_tools_enabled() -> bool:
+    """Return true when the optional direct HAPI/FDSN data-source tools should be advertised.
+
+    HAPI/FDSN are server-/time-range-addressed backends whose call shapes are
+    incompatible with the unified ``dataset_id``-based verbs, so they are hidden
+    from the default surface and reached via
+    ``browse_data_sources(source_type="hapi"/"fdsn")`` discovery. Setting this
+    flag advertises the four dedicated tools directly, symmetric with the compat
+    flag. Direct MCP calls to those tools require the flag; default clients should
+    start from the unified discovery route and enable the gated surface when they
+    need the dedicated HAPI/FDSN calls.
+    """
+    return os.environ.get("SPEDAS_AGENT_KIT_DATASOURCE_TOOLS") == "1"
 
 
 def _json(data: object) -> str:
@@ -1198,8 +1226,10 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
     )
 
     compat_tools_enabled = _compat_tools_enabled()
+    datasource_tools_enabled = _datasource_tools_enabled()
     optional_backends = _optional_backend_availability(
-        include_analysis_tools=include_analysis_tools
+        include_analysis_tools=include_analysis_tools,
+        datasource_tools_enabled=datasource_tools_enabled,
     )
 
     def _register_tool(
@@ -1276,6 +1306,47 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         if func is None:
             return decorate
         return decorate(func)
+
+    def _optional_datasource_tool(
+        func=None,
+        *,
+        read_only: bool = True,
+        destructive: bool = False,
+        idempotent: bool = True,
+        open_world: bool = True,
+    ):
+        # Keep the Python function defined, but only register/advertise the direct
+        # HAPI/FDSN MCP entry point when SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1.
+        # The unified data layer routes by next_tools/use_dedicated_tool hints,
+        # so direct MCP calls require enabling this gated surface. Symmetric with
+        # _compat_tool; uses the "datasource" surface so launchers/agents can
+        # distinguish it from primary/compat/advanced.
+        def decorate(inner):
+            if datasource_tools_enabled:
+                return _register_tool(
+                    surface="datasource",
+                    read_only=read_only,
+                    destructive=destructive,
+                    idempotent=idempotent,
+                    open_world=open_world,
+                )(inner)
+            return inner
+
+        if func is None:
+            return decorate
+        return decorate(func)
+
+    def _datasource_direct_tool_gate(source: str) -> dict[str, Any]:
+        backend = optional_backends[source]
+        return {
+            "env_flag": backend["env_flag"],
+            "advertised": backend["advertised"],
+            "note": (
+                "Direct HAPI/FDSN MCP tools are hidden unless "
+                "SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1; set the flag before "
+                "calling the recommended dedicated tools from list_tools."
+            ),
+        }
 
     @_primary_tool()
     def spedas_overview() -> str:
@@ -1356,6 +1427,44 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                         else []
                     ),
                 },
+                "datasource_optional": {
+                    "status": (
+                        "Direct HAPI/FDSN tools advertised because "
+                        "SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1"
+                        if datasource_tools_enabled
+                        else "Direct HAPI/FDSN tools hidden by default; reach them via "
+                        "browse_data_sources(source_type='hapi'/'fdsn'), or set "
+                        "SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1 to advertise them directly"
+                    ),
+                    "env_flag": "SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1",
+                    "discover_via": [
+                        "browse_data_sources(source_type='hapi')",
+                        "browse_data_sources(source_type='fdsn')",
+                    ],
+                    "hidden_by_default": [
+                        "browse_hapi_catalog",
+                        "fetch_hapi_data",
+                        "browse_fdsn_datasets",
+                        "fetch_fdsn_data",
+                    ],
+                    "available_directly": (
+                        [
+                            "browse_hapi_catalog",
+                            "fetch_hapi_data",
+                            "browse_fdsn_datasets",
+                            "fetch_fdsn_data",
+                        ]
+                        if datasource_tools_enabled
+                        else []
+                    ),
+                    "note": (
+                        "HAPI is server-URL addressed and FDSN is trange/network/station "
+                        "addressed, so they are not consolidated into the unified "
+                        "dataset_id-based verbs; direct MCP calls require the datasource "
+                        "flag and are advertised via browse_data_sources discovery "
+                        "(next_tools hints)."
+                    ),
+                },
             },
             "workflow": [
                 "Start with search_spedas_data_sources or plan_spedas_observation for open-ended science requests.",
@@ -1364,6 +1473,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                 "load_data_source(source_type='cdaweb', ...) enumerates dataset_ids so you can call browse_data_parameters without guessing; pass the science goal to search_spedas_data_sources via question= (query= is accepted as an alias).",
                 "Use unified data-layer tools for new workflows; set SPEDAS_AGENT_KIT_COMPAT_TOOLS=1 only when an existing client requires legacy CDAWeb/PDS browse/load/parameter/fetch tool names; use manage_data_cache for all cache status and maintenance actions.",
                 "Use geometry tools directly when the request is SPICE-specific ephemeris, distance, or transform work; discover SPICE missions/frames via browse_data_sources/load_data_source with source_type='spice'.",
+                "For HAPI or FDSN/MTH5 data, start with browse_data_sources(source_type='hapi'/'fdsn'); follow its next_tools to the dedicated browse_hapi_catalog/fetch_hapi_data or browse_fdsn_datasets/fetch_fdsn_data tools. Those direct tools are hidden from list_tools by default; set SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1 to advertise them directly.",
                 "Use create_spedas_analysis_bundle to preserve request/provenance intent before bulk fetches.",
                 "For bulk data, always provide output_dir/output_file and return paths only.",
             ],
@@ -2656,6 +2766,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                         "registration": optional_backends["hapi"]["registration"],
                         "missing_modules": optional_backends["hapi"].get("missing_modules", []),
                         "next_tools": ["browse_hapi_catalog(server_url=...)", "fetch_hapi_data(server_url=..., dataset_id=..., parameters=[...])"],
+                        "direct_tool_gate": _datasource_direct_tool_gate("hapi"),
                     },
                     {
                         "source_type": "fdsn",
@@ -2668,6 +2779,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                         "registration": optional_backends["fdsn"]["registration"],
                         "missing_modules": optional_backends["fdsn"].get("missing_modules", []),
                         "next_tools": ["browse_fdsn_datasets(trange=[...])", "fetch_fdsn_data(trange=[...], network=..., station=...)"],
+                        "direct_tool_gate": _datasource_direct_tool_gate("fdsn"),
                     },
                 ],
                 "query": query,
@@ -2744,6 +2856,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                     "browse_hapi_catalog(server_url=..., query=...)",
                     "fetch_hapi_data(server_url=..., dataset_id=..., parameters=[...], start=..., stop=..., output_dir=...)",
                 ],
+                "direct_tool_gate": _datasource_direct_tool_gate("hapi"),
                 "optional_extra": "spedas-agent-kit[hapi]",
                 "available": optional_backends["hapi"]["available"],
                 "requires_extra": optional_backends["hapi"]["requires_extra"],
@@ -2765,6 +2878,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                     "browse_fdsn_datasets(trange=[...], network=..., station=..., usa_only=...)",
                     "fetch_fdsn_data(trange=[...], network=..., station=..., output_dir=...)",
                 ],
+                "direct_tool_gate": _datasource_direct_tool_gate("fdsn"),
                 "optional_extra": "spedas-agent-kit[fdsn]",
                 "available": optional_backends["fdsn"]["available"],
                 "requires_extra": optional_backends["fdsn"]["requires_extra"],
@@ -2945,21 +3059,31 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             return _error_response(
                 "use_dedicated_tool",
                 "HAPI source context is a per-server dataset catalog; load_data_source has no server_url argument.",
-                hint="Call browse_hapi_catalog(server_url=...) to list datasets for a specific HAPI server.",
+                hint=(
+                    "Set SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1 to advertise/call the "
+                    "direct HAPI tools, then call browse_hapi_catalog(server_url=...) "
+                    "to list datasets for a specific HAPI server."
+                ),
                 sanitize=False,
                 source_type="hapi",
                 source_id=source_id,
                 recommended_tools=["browse_hapi_catalog", "fetch_hapi_data"],
+                direct_tool_gate=_datasource_direct_tool_gate("hapi"),
             )
         if source == "fdsn":
             return _error_response(
                 "use_dedicated_tool",
                 "FDSN/MTH5 station context is time-range specific; load_data_source has no trange argument.",
-                hint="Call browse_fdsn_datasets(trange=[...], network=..., station=...) to list available stations.",
+                hint=(
+                    "Set SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1 to advertise/call the "
+                    "direct FDSN tools, then call browse_fdsn_datasets(trange=[...], "
+                    "network=..., station=...) to list available stations."
+                ),
                 sanitize=False,
                 source_type="fdsn",
                 source_id=source_id,
                 recommended_tools=["browse_fdsn_datasets", "fetch_fdsn_data"],
+                direct_tool_gate=_datasource_direct_tool_gate("fdsn"),
             )
         return _unknown_source_type_error(source_type, ["cdaweb", "pds", "spice", "hapi", "fdsn"])
 
@@ -3142,21 +3266,31 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             return _error_response(
                 "use_dedicated_tool",
                 "HAPI parameter metadata is part of a server's dataset catalog; use browse_hapi_catalog to discover datasets, then pass parameters to fetch_hapi_data.",
-                hint="Call browse_hapi_catalog(server_url=...) to list datasets; HAPI parameter names are fetched via fetch_hapi_data.",
+                hint=(
+                    "Set SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1 to advertise/call the "
+                    "direct HAPI tools. Then call browse_hapi_catalog(server_url=...) "
+                    "to list datasets; HAPI parameter names are fetched via fetch_hapi_data."
+                ),
                 sanitize=False,
                 source_type="hapi",
                 dataset_id=dataset_id,
                 recommended_tools=["browse_hapi_catalog", "fetch_hapi_data"],
+                direct_tool_gate=_datasource_direct_tool_gate("hapi"),
             )
         if source == "fdsn":
             return _error_response(
                 "use_dedicated_tool",
                 "FDSN/MTH5 datasets expose fixed 3-component magnetic channels (Hx/Hy/Hz); there is no separate parameter catalog.",
-                hint="Use browse_fdsn_datasets(trange=[...]) to find stations/channels, then fetch_fdsn_data.",
+                hint=(
+                    "Set SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1 to advertise/call the "
+                    "direct FDSN tools. Then use browse_fdsn_datasets(trange=[...]) "
+                    "to find stations/channels, then fetch_fdsn_data."
+                ),
                 sanitize=False,
                 source_type="fdsn",
                 dataset_id=dataset_id,
                 recommended_tools=["browse_fdsn_datasets", "fetch_fdsn_data"],
+                direct_tool_gate=_datasource_direct_tool_gate("fdsn"),
             )
         return _unknown_source_type_error(source_type, ["cdaweb", "pds", "spice", "hapi", "fdsn"])
 
@@ -3224,21 +3358,31 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             return _error_response(
                 "use_dedicated_tool",
                 "HAPI fetches need a server_url, which fetch_data_product does not carry. Use fetch_hapi_data.",
-                hint="Call fetch_hapi_data(server_url=..., dataset_id=..., parameters=[...], start=..., stop=..., output_dir=...).",
+                hint=(
+                    "Set SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1 to advertise/call the "
+                    "direct HAPI tools, then call fetch_hapi_data(server_url=..., "
+                    "dataset_id=..., parameters=[...], start=..., stop=..., output_dir=...)."
+                ),
                 sanitize=False,
                 source_type="hapi",
                 dataset_id=dataset_id,
                 recommended_tools=["browse_hapi_catalog", "fetch_hapi_data"],
+                direct_tool_gate=_datasource_direct_tool_gate("hapi"),
             )
         if source == "fdsn":
             return _error_response(
                 "use_dedicated_tool",
                 "FDSN/MTH5 fetches are addressed by trange/network/station, not dataset_id. Use fetch_fdsn_data.",
-                hint="Call fetch_fdsn_data(trange=[...], network=..., station=..., output_dir=...).",
+                hint=(
+                    "Set SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1 to advertise/call the "
+                    "direct FDSN tools, then call fetch_fdsn_data(trange=[...], "
+                    "network=..., station=..., output_dir=...)."
+                ),
                 sanitize=False,
                 source_type="fdsn",
                 dataset_id=dataset_id,
                 recommended_tools=["browse_fdsn_datasets", "fetch_fdsn_data"],
+                direct_tool_gate=_datasource_direct_tool_gate("fdsn"),
             )
         return _unknown_source_type_error(source_type, ["cdaweb", "pds", "spice", "hapi", "fdsn"])
 
@@ -3872,7 +4016,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         # the unified data layer, which routes here.
         # ------------------------------------------------------------------
 
-    @_primary_tool()
+    @_optional_datasource_tool()
     @_safe_tool
     def browse_hapi_catalog(server_url: str, query: str | None = None, max_results: int | None = 500) -> str:
         """Data layer (HAPI): list datasets advertised by any HAPI-compliant server.
@@ -3886,13 +4030,15 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         title_count, datasets}. ``title`` is present only when the server
         provides it. Returns a missing_dependency error (install
         spedas-agent-kit[hapi]) when hapiclient is absent — base install and list_tools
-        still work without it.
+        still work without it. This tool is demoted out of the default surface
+        (issue #87); discover it via browse_data_sources(source_type="hapi") or set
+        SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1 to advertise it directly.
         """
         from spedas_agent_kit.datasources.hapi import browse_hapi_catalog as _impl
 
         return _json(_impl(server_url=server_url, query=query, max_results=max_results))
 
-    @_primary_tool(read_only=False, idempotent=False, open_world=True)
+    @_optional_datasource_tool(read_only=False, idempotent=False, open_world=True)
     @_safe_tool
     def fetch_hapi_data(
         server_url: str,
@@ -3928,7 +4074,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             format=format,
         ))
 
-    @_primary_tool()
+    @_optional_datasource_tool()
     @_safe_tool
     def browse_fdsn_datasets(
         trange: list[str],
@@ -3944,7 +4090,10 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
         'YYYY-MM-DD']; optional network/station code filters and usa_only restrict
         the search. Returns {status, trange, station_count, stations: [{network,
         station, time_range, channels}...]}. Returns a missing_dependency error
-        (install spedas-agent-kit[fdsn]) when mth5/obspy are absent.
+        (install spedas-agent-kit[fdsn]) when mth5/obspy are absent. This tool is
+        demoted out of the default surface (issue #87); discover it via
+        browse_data_sources(source_type="fdsn") or set
+        SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1 to advertise it directly.
         """
         from spedas_agent_kit.datasources.fdsn import browse_fdsn_datasets as _impl
 
@@ -3955,7 +4104,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             usa_only=usa_only,
         ))
 
-    @_primary_tool(read_only=False, idempotent=False, open_world=True)
+    @_optional_datasource_tool(read_only=False, idempotent=False, open_world=True)
     @_safe_tool
     def fetch_fdsn_data(
         trange: list[str],

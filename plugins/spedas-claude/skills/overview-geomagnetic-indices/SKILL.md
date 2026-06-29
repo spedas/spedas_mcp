@@ -21,10 +21,13 @@ Plan first, then use the existing unified data layer and HAPI tools.
    `load_data_source(source_type="cdaweb", source_id=<observatory>)`, then
    `browse_data_parameters(source_type="cdaweb", dataset_id=<dataset_id>)` before
    fetching.
-4. For HAPI OMNI context: use `browse_hapi_catalog(server_url="https://cdaweb.gsfc.nasa.gov/hapi", query="OMNI_HRO")`,
-   then `fetch_hapi_data(...)` with the dataset/parameters below. HAPI support
-   requires the optional `spedas-agent-kit[hapi]` extra; if unavailable, fall back to
-   CDAWeb discovery for the same OMNI dataset IDs.
+4. For HAPI OMNI context: start with `browse_data_sources(source_type="hapi")` and
+   follow its `next_tools` to `browse_hapi_catalog(server_url="https://cdaweb.gsfc.nasa.gov/hapi", query="OMNI_HRO")`,
+   then `fetch_hapi_data(...)` with the dataset/parameters below. The direct HAPI
+   tools are demoted out of the default `list_tools` surface (issue #87); reach
+   them via that discovery route or set `SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1`. HAPI
+   support requires the optional `spedas-agent-kit[hapi]` extra; if unavailable,
+   fall back to CDAWeb discovery for the same OMNI dataset IDs.
 
 ## Geomagnetic-index intent table
 

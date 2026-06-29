@@ -4,6 +4,8 @@
 
 Two opt-in data-source adapters reached through the unified data layer with `source_type="hapi"` / `"fdsn"`. Lazily imported so the base install stays light; absent extras yield a clean `missing_dependency` error rather than a crash.
 
+The four MCP tools below are demoted out of the default `list_tools` surface (issue #87, server `meta["surface"] == "datasource"`): discover and route to them via `browse_data_sources(source_type="hapi"/"fdsn")`, or set `SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1` to advertise them directly. The adapter functions here are unchanged by that gating.
+
 ## Components
 
 - **`hapi.py`** (315) — `browse_hapi_catalog` `:32` (lists datasets from any HAPI server; omits absent titles, exposes `title_count`/truncation), `fetch_hapi_data` `:146` (fetch via hapiclient → artifact). Needs `spedas-agent-kit[hapi]`.

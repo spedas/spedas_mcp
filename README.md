@@ -54,8 +54,8 @@ safe path from a science question to reproducible artifacts.
 | Near-Earth magnetosphere, solar wind, MMS, THEMIS, Cluster, Geotail, Van Allen / RBSP, STEREO, PSP, Solar Orbiter, Ulysses, Voyager heliosphere | `source_type="cdaweb"` | CDAWeb browse/load/fetch tools; SPICE only if geometry is part of the question | Mission names may also appear in planetary archives; keep the science context in the plan. |
 | Planetary mission fields/particles at a planet, e.g. Juno/Jupiter, Cassini/Saturn, MAVEN/Mars, New Horizons/Pluto | `source_type="pds"` | PDS discovery/fetch, plus SPICE geometry when trajectory or observation geometry matters | Generic words like "bow shock", "magnetosphere", "plasma", or "energetic particle" are not enough to choose CDAWeb if the target is planetary. |
 | Ephemeris, distance, trajectory, frame transforms, observer-target geometry | `source_type="spice"` | Browse missions/frames with `browse_data_sources` / `load_data_source`; compute with `get_ephemeris`, `compute_distance`, `transform_coordinates` | SPICE is geometry, not measurement data. Pair it with CDAWeb/PDS when you also need fields or particles. |
-| Any HAPI-compliant server outside the bundled categories | `source_type="hapi"` | `browse_hapi_catalog`, `fetch_hapi_data` | Requires the optional `hapi` extra and an explicit HAPI server URL. |
-| Ground magnetotelluric / FDSN station magnetic data | `source_type="fdsn"` | `browse_fdsn_datasets`, `fetch_fdsn_data` | Requires the optional `fdsn` extra and a time range. |
+| Any HAPI-compliant server outside the bundled categories | `browse_data_sources(source_type="hapi")` | follow `next_tools` to `browse_hapi_catalog`, `fetch_hapi_data` | Direct tools demoted from the default surface (issue #87); reach via discovery or `SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1`. Requires the optional `hapi` extra and an explicit HAPI server URL. |
+| Ground magnetotelluric / FDSN station magnetic data | `browse_data_sources(source_type="fdsn")` | follow `next_tools` to `browse_fdsn_datasets`, `fetch_fdsn_data` | Direct tools demoted from the default surface (issue #87); reach via discovery or `SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1`. Requires the optional `fdsn` extra and a time range. |
 | Local file analysis after data already exists | Analysis tools | Coordinate transforms, FAC/minvar, spectra, field/L-shell, particle moments/spectra, `render_tplot` | Inputs are files; install `spedas-agent-kit[analysis]` for the optional backend. |
 
 ### Minimal MCP call sequence
@@ -141,9 +141,11 @@ When reporting results, include at least:
 - Keep fetches narrow. Public archives can rate-limit or be cold; long intervals
   should be split deliberately and recorded in provenance.
 - Treat optional extras as optional. Analysis tools are not registered or
-  advertised in base installs; HAPI/FDSN tools can return a clear
-  `missing_dependency` response. Install `analysis`, `hapi`, or `fdsn` only
-  when the workflow needs that backend.
+  advertised in base installs; the direct HAPI/FDSN tools are demoted out of the
+  default surface (issue #87) and reached via `browse_data_sources(source_type="hapi"/"fdsn")`
+  discovery, or by setting `SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1`. When their
+  backend extra is missing they return a clear `missing_dependency` response.
+  Install `analysis`, `hapi`, or `fdsn` only when the workflow needs that backend.
 - Validate generated artifacts before interpreting them. Check file existence,
   row/sample counts, time coverage, coordinate frame, and whether the tool returned
   warnings or caveats.
@@ -171,6 +173,8 @@ Supported `source_type` values:
 | `fdsn` | FDSN/MTH5 ground magnetotelluric (MT) magnetic stations from EarthScope | `browse_data_sources(source_type="fdsn")` → `browse_fdsn_datasets` → `fetch_fdsn_data` |
 
 `hapi` and `fdsn` are server/time-range addressed (HAPI needs a `server_url`, FDSN needs a `trange`), so the unified `load_data_source`/`browse_data_parameters`/`fetch_data_product` tools recognize these `source_type` values but route you to the dedicated `browse_hapi_catalog`/`fetch_hapi_data` and `browse_fdsn_datasets`/`fetch_fdsn_data` tools (see section 6). Both require optional extras and degrade to a clear `missing_dependency` error when those are not installed.
+
+> **Surface note (issue #87):** the four direct HAPI/FDSN tools are demoted out of the default `list_tools` surface; start from `browse_data_sources(source_type="hapi"/"fdsn")` and follow its `next_tools` hints. Set `SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1` to advertise the four tools directly in `list_tools` (symmetric with `SPEDAS_AGENT_KIT_COMPAT_TOOLS=1`). They remain callable under that flag and carry surface metadata `meta["surface"] == "datasource"`.
 
 Compact CDAWeb catalog discovery examples:
 
@@ -301,9 +305,15 @@ Two additional data sources reach archives outside the three bundled SPEDAS
 backend families. Like the analysis tools, their backends are **optional** and imported
 lazily: without the extra installed each tool returns a structured
 `status="error"`, `code="missing_dependency"` payload naming the extra to
-install, so the base install and MCP `list_tools` keep working. Bulk data is
-written to `output_dir`; tools return only the file path plus compact metadata
-(artifact-first).
+install. Bulk data is written to `output_dir`; tools return only the file path
+plus compact metadata (artifact-first).
+
+These four tools are **demoted out of the default `list_tools` surface** (issue #87)
+because HAPI is `server_url`-addressed and FDSN is `trange/network/station`-addressed —
+incompatible with the unified `dataset_id`-based verbs. Discover and route to them via
+`browse_data_sources(source_type="hapi"/"fdsn")` (whose `next_tools` hints point here),
+or set `SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1` to advertise the four directly in
+`list_tools`. They carry surface metadata `meta["surface"] == "datasource"`.
 
 HAPI (issue #21, optional `spedas-agent-kit[hapi]`, installs `hapiclient`):
 
@@ -397,7 +407,7 @@ For plugin-style distribution, the canonical standalone wrappers now live in sep
 - <https://github.com/spedas/spedas_codex> — Codex plugin wrapper.
 
 The in-repo `plugins/spedas-claude/` and `.agents/plugins/spedas-codex/` directories remain lightweight development examples and compatibility fixtures; runtime-specific packaging should evolve in the standalone repos while this repository owns the MCP server itself.
-Their shared compatibility contract is recorded in `plugins/spedas-agent-kit-compatibility.json` and validated by `scripts/validate_plugin_packages.py`: current base `list_tools` count is 17 for the Agent Kit `main` ref used by these development fixtures; optional analysis and legacy compatibility tools are intentionally outside that base count.
+Their shared compatibility contract is recorded in `plugins/spedas-agent-kit-compatibility.json` and validated by `scripts/validate_plugin_packages.py`: current base `list_tools` count is 13 for the Agent Kit `main` ref used by these development fixtures; optional analysis tools, legacy compatibility tools, and the direct HAPI/FDSN data-source tools (issue #87, gated by `SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1`) are intentionally outside that base count.
 
 ## Maintainer-facing positioning
 

@@ -45,15 +45,24 @@ BASE_EXPECTED_TOOLS = [
     "get_ephemeris",
     "compute_distance",
     "transform_coordinates",
+]
+
+# Direct HAPI/FDSN data-source tools are demoted out of the default surface
+# (issue #87); advertised only with SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1.
+DATASOURCE_TOOLS = [
     "browse_hapi_catalog",
     "fetch_hapi_data",
     "browse_fdsn_datasets",
     "fetch_fdsn_data",
 ]
 
+# Keep in sync with spedas_agent_kit.server.ANALYSIS_TOOL_NAMES (13 names,
+# including tvector_rotate). Previously omitted tvector_rotate, which tripped the
+# strict ``unexpected`` check when the analysis extra was installed.
 ANALYSIS_EXPECTED_TOOLS = [
     "transform_timeseries_coordinates",
     "generate_fac_matrix",
+    "tvector_rotate",
     "analyze_minvar_coordinates",
     "dynamic_power_spectrum",
     "wavelet_transform",
@@ -123,6 +132,11 @@ def main() -> int:
         action="store_true",
         help="Set SPEDAS_AGENT_KIT_COMPAT_TOOLS=1 and expect legacy CDAWeb/PDS tools",
     )
+    parser.add_argument(
+        "--datasource-tools",
+        action="store_true",
+        help="Set SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1 and expect direct HAPI/FDSN tools",
+    )
     args = parser.parse_args()
 
     with tempfile.TemporaryDirectory(prefix="spedas-agent-kit-smoke-") as tmp:
@@ -134,11 +148,17 @@ def main() -> int:
             env["SPEDAS_AGENT_KIT_COMPAT_TOOLS"] = "1"
         else:
             env.pop("SPEDAS_AGENT_KIT_COMPAT_TOOLS", None)
+        if args.datasource_tools:
+            env["SPEDAS_AGENT_KIT_DATASOURCE_TOOLS"] = "1"
+        else:
+            env.pop("SPEDAS_AGENT_KIT_DATASOURCE_TOOLS", None)
         tools = anyio.run(_list_tools, args.module, env)
 
     expected_tools = list(BASE_EXPECTED_TOOLS)
     if args.compat_tools:
         expected_tools.extend(COMPAT_CDAWEB_PDS_TOOLS)
+    if args.datasource_tools:
+        expected_tools.extend(DATASOURCE_TOOLS)
     analysis_available = _analysis_dependencies_available()
     if analysis_available:
         expected_tools.extend(ANALYSIS_EXPECTED_TOOLS)
@@ -154,6 +174,8 @@ def main() -> int:
         "analysis_extra_detected": analysis_available,
         "compat_tools_enabled": args.compat_tools,
         "compat_env_flag": "SPEDAS_AGENT_KIT_COMPAT_TOOLS=1",
+        "datasource_tools_enabled": args.datasource_tools,
+        "datasource_env_flag": "SPEDAS_AGENT_KIT_DATASOURCE_TOOLS=1",
         "missing": missing,
         "unexpected": unexpected,
         "note": "list_tools only; no CDAWeb/PDS data fetch or SPICE kernel download requested",
