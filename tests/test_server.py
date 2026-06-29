@@ -1468,6 +1468,68 @@ def test_mms_plan_adds_mission_guidance_phase():
     assert any(step["phase"] == "mission_guidance" for step in data["plan"])
 
 
+# --- Issue #146: particle distribution -> moments/spectra path discoverability ---
+
+
+def test_mms_particle_plan_surfaces_dist_candidates_not_only_moms():
+    """A moments/PAD goal must reach the 3D *-DIST products (the in-kit particle
+    tool inputs), not only the precomputed *-MOMS moments product (#146)."""
+    data = _mms_magnetopause_plan()
+    ids = _candidate_dataset_ids(data)
+    # The distribution products that feed build_particle_distribution_artifact.
+    assert "MMS1_FPI_FAST_L2_DIS-DIST" in ids  # ion 3D distribution
+    assert "MMS1_FPI_FAST_L2_DES-DIST" in ids  # electron 3D distribution
+    # The precomputed moments products remain available for users who only want
+    # published moments.
+    assert "MMS1_FPI_FAST_L2_DIS-MOMS" in ids
+    assert "MMS1_FPI_FAST_L2_DES-MOMS" in ids
+
+
+def test_mms_dist_candidate_note_distinguishes_dist_from_moms():
+    """The DIS-DIST candidate note must route to the bridge and warn that
+    *-MOMS is not a valid in-kit distribution input (#146)."""
+    data = _mms_magnetopause_plan()
+    dist = next(
+        c for c in data["mission_dataset_candidates"]
+        if c["dataset_id_pattern"] == "MMS{probe}_FPI_FAST_L2_DIS-DIST"
+    )
+    note = dist["note"].lower()
+    assert "build_particle_distribution_artifact" in note
+    assert "compute_particle_moments" in note or "compute_particle_spectra" in note
+    # MOMS candidate must say it is not a valid distribution-artifact input.
+    moms = next(
+        c for c in data["mission_dataset_candidates"]
+        if c["dataset_id_pattern"] == "MMS{probe}_FPI_FAST_L2_DIS-MOMS"
+    )
+    moms_note = moms["note"].lower()
+    assert "not a valid input" in moms_note or "not a valid distribution-artifact input" in moms_note
+
+
+def test_mms_plan_downstream_guidance_names_bridge_and_spectra():
+    """analysis_availability.downstream_steps must name the prerequisite bridge,
+    the required B-field/magf input, and the spectra/PAD path (#146)."""
+    data = _mms_magnetopause_plan()
+    blob = json.dumps(data["analysis_availability"]["downstream_steps"]).lower()
+    assert "build_particle_distribution_artifact" in blob
+    assert "load_particle_distribution_artifact" in blob
+    assert "compute_particle_spectra" in blob
+    assert "pitch_angle" in blob or "pitch-angle" in blob
+    assert "magf" in blob or "mag_file" in blob or "b-field" in blob
+    # Skill pointers so an agent can find the documented end-to-end pipeline.
+    assert "pitch-angle-distribution" in blob
+
+
+def test_mms_plan_moments_step_carries_dist_prerequisite():
+    """The compute_particle_moments downstream step must carry the *-DIST
+    prerequisite, not silently assume a distribution exists (#146)."""
+    data = _mms_magnetopause_plan()
+    steps = data["analysis_availability"]["downstream_steps"]
+    moments = next(s for s in steps if s["in_kit_tool"] == "compute_particle_moments")
+    pre = moments["prerequisite"].lower()
+    assert "-dist" in pre
+    assert "build_particle_distribution_artifact" in pre
+
+
 def test_generic_plan_has_no_mission_dataset_candidates():
     """A goal with no recognized mission/instrument mapping stays lean and
     backward-compatible: the new keys exist but are empty, and the legacy plan

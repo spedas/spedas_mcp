@@ -89,6 +89,41 @@ Useful variables found:
 
 One important caveat: `browse_data_parameters` advertised `mms1_fgm_b_gse_srvy_l2_clean`, but the downloaded daily CDF did not contain that variable. Agents should be prepared to retry with the non-`_clean` variable when fetch reports a variable-not-found error.
 
+#### `*-MOMS` vs `*-DIST`: which FPI product to fetch
+
+`MMS1_FPI_FAST_L2_DIS-MOMS` (used above) is the **precomputed/published** ion-moments product — it carries `numberdensity`/`bulkv`/etc. directly, which is all you need to read density and velocity jumps across the boundary.
+
+If instead you want to **recompute** moments yourself, or produce **pitch-angle/energy spectra** or a **velocity-space slice**, you need the 3D velocity distribution product `MMS1_FPI_FAST_L2_DIS-DIST` (or `DES-DIST` for electrons). The precomputed `*-MOMS` product is *not* a valid input to the in-kit particle tools — see the next section.
+
+### 5b. Distribution → moments / pitch-angle (the `*-DIST` path)
+
+The in-kit particle tools (`compute_particle_moments`, `compute_particle_spectra`) require a **3D distribution artifact** on disk, built from a mission `*-DIST` product — never from `*-MOMS`. Build it with the `#95` bridge, then compute. The `mag_file` below is a separate small `.npz` B-field reference with key `b` shaped `(T, 3)`; if you do not have that file yet, omit `mag_file` or request only non-PAD spectra and the pitch-angle entry will report `needs_input` rather than blocking energy spectra.
+
+```json
+{"tool":"build_particle_distribution_artifact","args":{
+  "tplot_name":"mms1_dis_dist_fast",
+  "converter":"mms_fpi",
+  "output_file":".t001_artifacts/data/dis_dist.npz",
+  "mag_tplot_name":"mms1_fgm_b_gse_srvy_l2"
+}}
+{"tool":"compute_particle_moments","args":{
+  "dist_file":".t001_artifacts/data/dis_dist.npz",
+  "output_dir":".t001_artifacts/data"
+}}
+{"tool":"compute_particle_spectra","args":{
+  "dist_file":".t001_artifacts/data/dis_dist.npz",
+  "output_dir":".t001_artifacts/data",
+  "spectrum_types":["energy","pitch_angle"],
+  "mag_file":".t001_artifacts/data/b_gse.npz"
+}}
+```
+
+Notes:
+
+- The bridge needs a **B-field input** (`magf` vectors or `mag_tplot_name`); pitch-angle/PAD spectra additionally need `mag_file`. No B → the pitch-angle entry returns `needs_input` (other spectra still compute).
+- Supported bridge converters today are **MMS FPI/HPCA + ERG** only (THEMIS/PSP have no upstream pyspedas Python `*_get_dist` converter yet).
+- For a velocity-space cut (beams/crescents) see the `particle-velocity-slice` skill; for the full PAD pipeline see `pitch-angle-distribution`.
+
 ### 6. Bundle scaffold
 
 ```json

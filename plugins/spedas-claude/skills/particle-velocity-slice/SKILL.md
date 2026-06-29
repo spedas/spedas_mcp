@@ -28,9 +28,12 @@ This skill requires a **real 3D distribution object** (the pyspedas particle
 distribution dict/array, per energy × theta × phi per time), not a tplot spectrogram.
 Produce it first with the **particle-distribution bridge** skill
 (`build_particle_distribution_artifact`, the `#95` bridge): it loads the L2 particle
-product (e.g. MMS FPI `dis-dist`/`des-dist`, THEMIS ESA, PSP SPAN-i) and emits a
-distribution artifact. If you only have a spectrogram, stop — `spd_slice2d` cannot use
-it.
+product (a `*-DIST` 3D distribution, e.g. MMS FPI `dis-dist`/`des-dist`, MMS HPCA, or an
+ERG particle product) and emits a distribution artifact. **Supported bridge converters
+today are MMS FPI/HPCA + ERG only** — THEMIS ESA and PSP SPAN-i have no Python
+`*_get_dist` converter in pyspedas yet, so the bridge returns `code="unsupported"` for
+them; treat them as not-yet-available until upstream pyspedas exposes the converters. If
+you only have a spectrogram, stop — `spd_slice2d` cannot use it.
 
 ## Tool chain (all existing)
 particle-distribution bridge (`build_particle_distribution_artifact`) → small local

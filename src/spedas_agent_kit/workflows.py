@@ -906,19 +906,55 @@ _MISSION_DATASET_PROFILES: dict[str, dict[str, Any]] = {
             },
             {
                 "instrument": "FPI",
-                "role": "ion moments (DIS)",
-                "dataset_id_pattern": "MMS{probe}_FPI_FAST_L2_DIS-MOMS",
+                "role": "ion 3D distribution (DIS) — in-kit moments/spectra input",
+                "dataset_id_pattern": "MMS{probe}_FPI_FAST_L2_DIS-DIST",
                 "frames": ["GSE"],
                 "core": True,
-                "note": "Ion density/velocity/temperature for the plasma jump across the boundary.",
+                "note": (
+                    "Ion 3D velocity distribution. This is the input the in-kit particle "
+                    "tools need: feed it to build_particle_distribution_artifact("
+                    "converter='mms_fpi') -> compute_particle_moments / "
+                    "compute_particle_spectra (pitch-angle needs a magf/B-field input). "
+                    "The DIS-MOMS product below is precomputed moments and is NOT a valid "
+                    "distribution-artifact input."
+                ),
             },
             {
                 "instrument": "FPI",
-                "role": "electron moments (DES)",
+                "role": "electron 3D distribution (DES) — in-kit moments/spectra input",
+                "dataset_id_pattern": "MMS{probe}_FPI_FAST_L2_DES-DIST",
+                "frames": ["GSE"],
+                "core": True,
+                "note": (
+                    "Electron 3D velocity distribution; same bridge path as DIS-DIST "
+                    "(converter='mms_fpi') -> compute_particle_moments / "
+                    "compute_particle_spectra. NOT the precomputed DES-MOMS product."
+                ),
+            },
+            {
+                "instrument": "FPI",
+                "role": "ion moments (DIS) — precomputed/published",
+                "dataset_id_pattern": "MMS{probe}_FPI_FAST_L2_DIS-MOMS",
+                "frames": ["GSE"],
+                "core": True,
+                "note": (
+                    "Precomputed ion density/velocity/temperature for the plasma jump "
+                    "across the boundary. Use directly if you only want published "
+                    "moments; it is NOT a valid input to the in-kit particle tools "
+                    "(those need the DIS-DIST 3D distribution above)."
+                ),
+            },
+            {
+                "instrument": "FPI",
+                "role": "electron moments (DES) — precomputed/published",
                 "dataset_id_pattern": "MMS{probe}_FPI_FAST_L2_DES-MOMS",
                 "frames": ["GSE"],
                 "core": True,
-                "note": "Electron density/velocity/temperature; complements the ion moments.",
+                "note": (
+                    "Precomputed electron density/velocity/temperature; complements the "
+                    "ion moments. Like DIS-MOMS, it is published moments — NOT a "
+                    "distribution-artifact input (use DES-DIST for the in-kit tools)."
+                ),
             },
             {
                 "instrument": "MEC",
@@ -946,7 +982,27 @@ _ANALYSIS_STEP_GUIDANCE: list[dict[str, str]] = [
     {
         "analysis": "particle moments (density / velocity / temperature)",
         "in_kit_tool": "compute_particle_moments",
+        "prerequisite": (
+            "First build the distribution artifact (dist_file) from a *-DIST product, "
+            "not *-MOMS: build_particle_distribution_artifact / "
+            "load_particle_distribution_artifact (needs a mission *-DIST product, e.g. "
+            "MMS{probe}_FPI_FAST_L2_DIS-DIST, plus a magf/B-field input). Supported "
+            "converters: MMS FPI/HPCA + ERG. *-MOMS is precomputed and is not a valid input."
+        ),
         "pyspedas_fallback": "pyspedas.particles.moments.moments_3d",
+        "see_skill": "pitch-angle-distribution",
+    },
+    {
+        "analysis": "particle spectra (energy / phi / theta / pitch-angle / PAD)",
+        "in_kit_tool": "compute_particle_spectra",
+        "prerequisite": (
+            "Same distribution artifact as compute_particle_moments "
+            "(build_particle_distribution_artifact from a *-DIST product). Pitch-angle / "
+            "PAD spectra additionally require mag_file (a B-field reference) — "
+            "spectrum_types=['pitch_angle'], mag_file=<B .npz>."
+        ),
+        "pyspedas_fallback": "pyspedas.particles.spd_pgs_make_*_spec (e_spec / phi_spec / theta_spec)",
+        "see_skill": "pitch-angle-distribution / particle-velocity-slice",
     },
 ]
 

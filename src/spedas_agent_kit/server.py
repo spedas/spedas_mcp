@@ -3788,8 +3788,12 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             [Bx,By,Bz] or one vector per output slice, or pass mag_tplot_name for a
             loaded B-field tplot variable that will be interpolated to distribution
             slice times. Returns only compact shape/range/provenance metadata plus the
-            artifact path. Requires spedas-agent-kit[analysis] and pre-loaded tplot data; it
-            does not itself download CDFs.
+            artifact path. The tplot variable must come from a mission 3D distribution
+            (*-DIST) product — e.g. CDAWeb MMS{probe}_FPI_FAST_L2_DIS-DIST/DES-DIST, MMS
+            HPCA, or ERG — not a precomputed *-MOMS moments product. The resulting
+            artifact is the dist_file consumed by compute_particle_moments /
+            compute_particle_spectra. Requires spedas-agent-kit[analysis] and pre-loaded
+            tplot data; it does not itself download CDFs.
             """
             from spedas_agent_kit.analysis.particles import build_particle_distribution_artifact as _impl
 
@@ -3893,7 +3897,11 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             output_dir/particle_moments.{json,csv} and returns scalar density/velocity/
             temperature summaries plus the pressure-trace summary and path only — full
             pressure/temperature tensors and particle cubes are never returned inline.
-            Requires spedas-agent-kit[analysis].
+            Produce dist_file first with build_particle_distribution_artifact /
+            load_particle_distribution_artifact from a mission 3D *-DIST product (MMS FPI
+            MMS{probe}_FPI_FAST_L2_DIS-DIST/DES-DIST, MMS HPCA, or ERG); the precomputed
+            *-MOMS products are NOT valid distribution inputs. Requires
+            spedas-agent-kit[analysis].
             """
             from spedas_agent_kit.analysis.particles import compute_particle_moments as _impl
 
@@ -3931,7 +3939,12 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             (T,3) (one B vector per slice) or (3,) (broadcast), in the distribution's
             coordinate frame. Each spectrogram is written to
             output_dir/particle_spectra_<type>.npz; only paths/ranges/shapes are
-            returned (artifact-first). Requires spedas-agent-kit[analysis].
+            returned (artifact-first). Produce dist_file first with
+            build_particle_distribution_artifact / load_particle_distribution_artifact
+            from a mission 3D *-DIST product (MMS FPI DIS-DIST/DES-DIST, MMS HPCA, ERG) —
+            the precomputed *-MOMS products are NOT valid inputs. For pitch-angle/PAD,
+            mag_file is the B-field reference; see the pitch-angle-distribution skill.
+            Requires spedas-agent-kit[analysis].
             """
             from spedas_agent_kit.analysis.particles import compute_particle_spectra as _impl
 
