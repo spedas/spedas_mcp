@@ -42,6 +42,7 @@ Low-level / source-specific compat tools exist for maintenance only — skills d
 | Field-aligned pitch-angle distribution (beam/pancake/loss-cone) of particles | `pitch-angle-distribution` | `create_spedas_analysis_bundle` |
 | Coherence + cross-phase between two channels (wave-mode, compressibility, propagation) | `spectral-cross-coherence` | `create_spedas_analysis_bundle` |
 | Multi-spacecraft timing: boundary normal + speed from >=4 s/c crossing times | `dual-spacecraft-timing` | `create_spedas_analysis_bundle` |
+| Pick the right SPICE coordinate frame for a science goal + transform into it | `coordinate-frame-tour` | `create_spedas_analysis_bundle` |
 
 ## Load order
 1. (this index) → 2. one focused skill → 3. that skill's tool chain. Don't pre-read every skill.
