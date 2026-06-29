@@ -7,6 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 COMPATIBILITY = ROOT / "plugins" / "spedas-agent-kit-compatibility.json"
+SERVER_JSON = ROOT / "server.json"
 
 
 def load_json(path: Path) -> dict:
@@ -19,6 +20,33 @@ def load_json(path: Path) -> dict:
 def require(path: Path) -> None:
     if not path.exists():
         raise SystemExit(f"Missing required plugin file: {path.relative_to(ROOT)}")
+
+
+def _server_manifest_env_names() -> set[str]:
+    manifest = load_json(SERVER_JSON)
+    names: set[str] = set()
+    for package in manifest.get("packages", []):
+        for env in package.get("environmentVariables", []):
+            name = env.get("name")
+            if isinstance(name, str):
+                names.add(name)
+    return names
+
+
+def _validate_server_manifest_env_flags() -> None:
+    manifest_env = _server_manifest_env_names()
+    compatibility = load_json(COMPATIBILITY)
+    required_flags = {"SPEDAS_AGENT_KIT_COMPAT_TOOLS"}
+    datasource_flag = compatibility.get("datasource_env_flag")
+    if isinstance(datasource_flag, str) and datasource_flag:
+        required_flags.add(datasource_flag.split("=", 1)[0])
+
+    missing = sorted(required_flags - manifest_env)
+    if missing:
+        raise SystemExit(
+            "server.json: missing environmentVariables for public Agent Kit gate "
+            f"flags: {', '.join(missing)}"
+        )
 
 
 def _expected_mcp_args() -> list[str]:
@@ -89,6 +117,7 @@ def validate_codex() -> None:
 
 
 def main() -> int:
+    _validate_server_manifest_env_flags()
     validate_claude()
     validate_codex()
     print("Plugin package validation: OK")

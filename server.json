@@ -36,6 +36,11 @@
           "name": "SPEDAS_AGENT_KIT_COMPAT_TOOLS",
           "description": "Set to 1 to advertise legacy CDAWeb/PDS compatibility browse/load/parameter/fetch tools; unset by default for the compact unified tool surface.",
           "required": false
+        },
+        {
+          "name": "SPEDAS_AGENT_KIT_DATASOURCE_TOOLS",
+          "description": "Set to 1 to advertise direct HAPI/FDSN data-source tools (browse_hapi_catalog, fetch_hapi_data, browse_fdsn_datasets, fetch_fdsn_data); unset by default because the compact unified discovery route remains preferred.",
+          "required": false
         }
       ]
     }

@@ -93,6 +93,26 @@ def test_base_surface_is_thirteen_primary_tools(monkeypatch):
     assert {tool.meta["surface"] for tool in tools} == {"primary"}
 
 
+def test_public_server_manifest_advertises_gate_env_flags():
+    root = Path(__file__).resolve().parents[1]
+    server_manifest = json.loads((root / "server.json").read_text(encoding="utf-8"))
+    compatibility = json.loads(
+        (root / "plugins" / "spedas-agent-kit-compatibility.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    manifest_env = {
+        env["name"]
+        for package in server_manifest.get("packages", [])
+        for env in package.get("environmentVariables", [])
+    }
+    required = {
+        "SPEDAS_AGENT_KIT_COMPAT_TOOLS",
+        compatibility["datasource_env_flag"].split("=", 1)[0],
+    }
+    assert required <= manifest_env
+
+
 def test_server_advertises_cdaweb_pds_compat_tools_when_flag_set(monkeypatch):
     monkeypatch.setenv("SPEDAS_AGENT_KIT_COMPAT_TOOLS", "1")
     server = create_server()
