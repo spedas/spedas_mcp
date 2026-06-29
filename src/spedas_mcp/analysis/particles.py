@@ -389,6 +389,30 @@ _DIST_LOADERS = {
     "erg_xep": ("pyspedas.projects.erg", "xep", {"datatype": "omniflux", "level": "l2", "get_support_data": True}),
 }
 
+# Default B-field loaders used only when load_particle_distribution_artifact needs
+# to populate magf automatically. The selected tplot variable is still extracted
+# by name and interpolated to distribution-slice times before writing the artifact.
+# Keep these mappings conservative and overrideable: mission loaders vary by
+# pyspedas release and archive product.
+_DIST_MAG_LOADERS = {
+    "mms_fpi": (
+        "pyspedas.projects.mms",
+        "mms_load_fgm",
+        {"datatype": "", "data_rate": "srvy", "level": "l2", "get_support_data": True},
+    ),
+    "mms_hpca": (
+        "pyspedas.projects.mms",
+        "mms_load_fgm",
+        {"datatype": "", "data_rate": "srvy", "level": "l2", "get_support_data": True},
+    ),
+    "erg_lepi": ("pyspedas.projects.erg", "mgf", {"datatype": "8sec", "level": "l2"}),
+    "erg_lepe": ("pyspedas.projects.erg", "mgf", {"datatype": "8sec", "level": "l2"}),
+    "erg_mepi": ("pyspedas.projects.erg", "mgf", {"datatype": "8sec", "level": "l2"}),
+    "erg_mepe": ("pyspedas.projects.erg", "mgf", {"datatype": "8sec", "level": "l2"}),
+    "erg_hep": ("pyspedas.projects.erg", "mgf", {"datatype": "8sec", "level": "l2"}),
+    "erg_xep": ("pyspedas.projects.erg", "mgf", {"datatype": "8sec", "level": "l2"}),
+}
+
 
 def _merge_loader_kwargs(defaults: dict[str, Any], overrides: dict[str, Any] | None) -> dict[str, Any]:
     merged = dict(defaults)
@@ -432,6 +456,196 @@ def _guess_distribution_tplot_name(loaded: list[str], converter: str) -> str | N
                 return name
     return loaded[0]
 
+
+
+def _guess_mag_tplot_name(loaded: list[str], converter: str) -> str | None:
+    """Pick a likely B-field tplot variable from loader-returned names."""
+    if not loaded:
+        return None
+    lowered = [(name, name.lower()) for name in loaded]
+    # Prefer names that look like magnetic-field vectors rather than magnitudes,
+    # status flags, or particle moments. MMS commonly exposes
+    # mms1_fgm_b_gse_srvy_l2 with 4 columns (Bx, By, Bz, |B|); ERG MGF names
+    # contain mgf/mag plus coordinate labels.
+    preferred_groups = [
+        ("fgm", "_b_"),
+        ("fgm", "b_gse"),
+        ("fgm", "b_gsm"),
+        ("mgf",),
+        ("mag",),
+        ("_b_",),
+    ]
+    for hints in preferred_groups:
+        for name, low in lowered:
+            if all(hint in low for hint in hints) and not any(bad in low for bad in ("btotal", "b_total", "flag", "status")):
+                return name
+    # Last resort: any vector-looking B name.
+    for name, low in lowered:
+        if low.startswith("b_") or "_b" in low or "mag" in low:
+            return name
+    return None
+
+
+def _extract_tplot_time_values(payload: Any, tplot_name: str) -> tuple[Any | None, Any]:
+    """Return (times, values) from common pyspedas/pytplot get_data shapes."""
+    times = None
+    values = None
+    if isinstance(payload, dict):
+        for key in ("times", "time", "x"):
+            if key in payload:
+                times = payload[key]
+                break
+        for key in ("y", "data", "values", "b"):
+            if key in payload:
+                values = payload[key]
+                break
+    else:
+        for key in ("times", "time", "x"):
+            if hasattr(payload, key):
+                times = getattr(payload, key)
+                break
+        for key in ("y", "data", "values", "b"):
+            if hasattr(payload, key):
+                values = getattr(payload, key)
+                break
+        if (times is None or values is None) and isinstance(payload, (list, tuple)) and len(payload) >= 2:
+            times = payload[0]
+            values = payload[1]
+    if values is None:
+        raise ValueError(
+            f"tplot variable '{tplot_name}' did not expose numeric y/data values via get_data"
+        )
+    return times, values
+
+
+def _coerce_mag_values(values: Any, tplot_name: str, n_source_times: int | None = None) -> Any:
+    import numpy as np
+
+    arr = np.asarray(values, dtype="float64")
+    if arr.size == 0:
+        raise ValueError(f"magnetic tplot variable '{tplot_name}' is empty")
+    if arr.ndim > 2:
+        arr = arr.reshape(arr.shape[0], -1)
+    if arr.ndim == 1:
+        if arr.shape == (3,):
+            return arr.reshape(1, 3)
+        raise ValueError(
+            f"magnetic tplot variable '{tplot_name}' must provide vector B data; got 1D length {arr.shape[0]}"
+        )
+    if arr.ndim != 2:
+        raise ValueError(f"magnetic tplot variable '{tplot_name}' has unsupported ndim {arr.ndim}")
+    if n_source_times is not None:
+        if arr.shape[0] == n_source_times and arr.shape[1] >= 3:
+            return arr[:, :3]
+        if arr.shape[1] == n_source_times and arr.shape[0] >= 3:
+            return arr[:3, :].T
+    if arr.shape[1] >= 3:
+        return arr[:, :3]
+    if arr.shape[0] >= 3:
+        return arr[:3, :].T
+    raise ValueError(
+        f"magnetic tplot variable '{tplot_name}' must have at least 3 vector components; got shape {arr.shape}"
+    )
+
+
+def _magf_from_tplot(tplot_name: str, target_times: Any) -> tuple[Any, dict[str, Any]]:
+    """Extract/interpolate a tplot B variable to distribution-slice times."""
+    import numpy as np
+
+    try:
+        from pyspedas import get_data
+    except Exception as exc:  # pragma: no cover - exercised through dependency gate
+        raise ParticleBackendError(
+            f"pyspedas get_data is unavailable; cannot read magnetic tplot variable '{tplot_name}'"
+        ) from exc
+
+    payload = get_data(tplot_name)
+    if payload is None or (isinstance(payload, (int, float)) and payload == 0):
+        raise ValueError(
+            f"mag_tplot_name '{tplot_name}' is not loaded or has no retrievable tplot data"
+        )
+    raw_times, raw_values = _extract_tplot_time_values(payload, tplot_name)
+    source_times = None
+    if raw_times is not None:
+        source_times = np.asarray(raw_times, dtype="float64").reshape(-1)
+        if source_times.size == 0:
+            source_times = None
+        elif not np.all(np.isfinite(source_times)):
+            raise ValueError(f"mag_tplot_name '{tplot_name}' has non-finite time values")
+
+    mag = _coerce_mag_values(
+        raw_values,
+        tplot_name,
+        n_source_times=None if source_times is None else int(source_times.size),
+    )
+    if not np.all(np.isfinite(mag)):
+        raise ValueError(f"mag_tplot_name '{tplot_name}' contains non-finite B values")
+
+    target = np.asarray(target_times, dtype="float64").reshape(-1)
+    if target.size == 0:
+        raise ValueError("cannot interpolate magnetic field for zero distribution slices")
+    if not np.all(np.isfinite(target)):
+        raise ValueError("distribution times contain non-finite values; cannot align magnetic field")
+
+    meta: dict[str, Any] = {
+        "mode": "tplot",
+        "tplot_name": tplot_name,
+        "target_time_range": _finite_range(target),
+    }
+
+    if source_times is None:
+        if mag.shape[0] == 1:
+            out = np.broadcast_to(mag[0], (target.size, 3)).copy()
+            meta.update({"n_source_samples": 1, "interpolated": False, "broadcast": True})
+            return out, meta
+        if mag.shape[0] != target.size:
+            raise ValueError(
+                f"mag_tplot_name '{tplot_name}' has {mag.shape[0]} B samples and no time axis; "
+                f"expected 1 or {target.size} samples"
+            )
+        meta.update({"n_source_samples": int(mag.shape[0]), "interpolated": False, "matched_by_index": True})
+        return mag, meta
+
+    if source_times.size != mag.shape[0]:
+        raise ValueError(
+            f"mag_tplot_name '{tplot_name}' has {source_times.size} times but {mag.shape[0]} B samples"
+        )
+    if source_times.size == 1:
+        out = np.broadcast_to(mag[0], (target.size, 3)).copy()
+        meta.update({
+            "n_source_samples": 1,
+            "source_time_range": _finite_range(source_times),
+            "interpolated": False,
+            "broadcast": True,
+        })
+        return out, meta
+
+    order = np.argsort(source_times)
+    source_times = source_times[order]
+    mag = mag[order]
+    keep = np.concatenate(([True], np.diff(source_times) > 0))
+    source_times = source_times[keep]
+    mag = mag[keep]
+    if source_times.size == 1:
+        out = np.broadcast_to(mag[0], (target.size, 3)).copy()
+        meta.update({
+            "n_source_samples": 1,
+            "source_time_range": _finite_range(source_times),
+            "interpolated": False,
+            "broadcast": True,
+        })
+        return out, meta
+
+    out = np.column_stack([np.interp(target, source_times, mag[:, i]) for i in range(3)])
+    outside = bool(np.any((target < source_times[0]) | (target > source_times[-1])))
+    same_grid = source_times.size == target.size and bool(np.allclose(source_times, target, rtol=0.0, atol=1e-9))
+    meta.update({
+        "n_source_samples": int(source_times.size),
+        "source_time_range": _finite_range(source_times),
+        "interpolated": not same_grid,
+        "outside_source_time_range": outside,
+    })
+    return out, meta
 
 
 def _as_float_array(value: Any, field: str) -> Any:
@@ -501,6 +715,7 @@ def build_particle_distribution_artifact(
     trange: list[str] | None = None,
     single_time: str | None = None,
     magf: list[float] | list[list[float]] | None = None,
+    mag_tplot_name: str | None = None,
     max_slices: int | None = 32,
 ) -> dict[str, Any]:
     """Bridge pyspedas mission distribution converters into ``DIST_SCHEMA_DOC``.
@@ -512,10 +727,10 @@ def build_particle_distribution_artifact(
     and :func:`compute_particle_spectra`. Bulk arrays are written to disk; the
     return value contains paths, shapes, ranges, and provenance only.
 
-    ``magf`` is required because the downstream distribution schema requires a
-    magnetic-field vector for moments. Supply either one ``[Bx,By,Bz]`` vector or
-    one vector per output slice, in the same coordinate frame as the distribution
-    look directions.
+    The downstream distribution schema requires ``magf``. Supply it directly as
+    one ``[Bx,By,Bz]`` vector or one vector per output slice, or pass
+    ``mag_tplot_name`` for an already-loaded B-field tplot variable that will be
+    interpolated to the output slice times.
     """
     import numpy as np
 
@@ -529,10 +744,10 @@ def build_particle_distribution_artifact(
         return _error("tplot_name is required")
     if max_slices is not None and max_slices <= 0:
         return _error("max_slices must be positive or null")
-    if magf is None:
+    if magf is None and not mag_tplot_name:
         return _error(
-            "magf is required to write a valid particle distribution artifact",
-            hint="Pass magf=[Bx,By,Bz] to broadcast one magnetic-field vector, or magf=[[...], ...] with one vector per slice.",
+            "magf or mag_tplot_name is required to write a valid particle distribution artifact",
+            hint="Pass magf=[Bx,By,Bz], magf=[[...], ...] with one vector per slice, or mag_tplot_name='...' for a loaded B-field tplot variable.",
         )
 
     try:
@@ -568,18 +783,22 @@ def build_particle_distribution_artifact(
                 raise ValueError(f"converter field '{field}' shape {arr.shape} does not match data shape {shape}")
 
         times = np.asarray([r.get("start_time", r.get("time", i)) for i, r in enumerate(records)], dtype="float64")
-        mag = np.asarray(magf, dtype="float64")
-        if mag.ndim == 1:
-            if mag.shape != (3,):
-                raise ValueError(f"magf must be a (3,) vector or (T,3) array; got {mag.shape}")
-            mag = np.broadcast_to(mag, (len(records), 3)).copy()
-        elif mag.ndim == 2:
-            if mag.shape != (len(records), 3):
-                raise ValueError(f"magf must have one (Bx,By,Bz) vector per slice; got {mag.shape}, expected {(len(records), 3)}")
+        if magf is None:
+            mag, magf_source = _magf_from_tplot(str(mag_tplot_name), times)
         else:
-            raise ValueError(f"magf must be a (3,) vector or (T,3) array; got ndim {mag.ndim}")
-        if not np.all(np.isfinite(mag)):
-            raise ValueError("magf contains non-finite values")
+            mag = np.asarray(magf, dtype="float64")
+            if mag.ndim == 1:
+                if mag.shape != (3,):
+                    raise ValueError(f"magf must be a (3,) vector or (T,3) array; got {mag.shape}")
+                mag = np.broadcast_to(mag, (len(records), 3)).copy()
+            elif mag.ndim == 2:
+                if mag.shape != (len(records), 3):
+                    raise ValueError(f"magf must have one (Bx,By,Bz) vector per slice; got {mag.shape}, expected {(len(records), 3)}")
+            else:
+                raise ValueError(f"magf must be a (3,) vector or (T,3) array; got ndim {mag.ndim}")
+            if not np.all(np.isfinite(mag)):
+                raise ValueError("magf contains non-finite values")
+            magf_source = {"mode": "argument", "broadcast": bool(np.asarray(magf).ndim == 1)}
 
         out_path = Path(output_file)
         if out_path.suffix.lower() != ".npz":
@@ -611,6 +830,7 @@ def build_particle_distribution_artifact(
             "output_file": str(out_path),
             "schema": "DIST_SCHEMA_DOC",
             "schema_keys": ["times", *fields, "magf", "charge", "mass"],
+            "magf_source": magf_source,
             "truncated_to_max_slices": bool(max_slices is not None and original_n_records > len(records)),
             "converter_kwargs": kwargs,
         }
@@ -719,6 +939,10 @@ def load_particle_distribution_artifact(
     loader_module: str | None = None,
     loader_function: str | None = None,
     loader_kwargs: dict[str, Any] | None = None,
+    mag_tplot_name: str | None = None,
+    mag_loader_module: str | None = None,
+    mag_loader_function: str | None = None,
+    mag_loader_kwargs: dict[str, Any] | None = None,
     index: int | list[int] | None = None,
     probe: str | None = None,
     data_rate: str | None = None,
@@ -737,12 +961,6 @@ def load_particle_distribution_artifact(
         )
     if max_slices is not None and max_slices <= 0:
         return _error("max_slices must be positive or null")
-    if magf is None:
-        return _error(
-            "magf is required to write a valid particle distribution artifact",
-            hint="Pass magf=[Bx,By,Bz] to broadcast one magnetic-field vector, or magf=[[...], ...] with one vector per slice.",
-        )
-
     try:
         require_pyspedas()
         if loader_module is None or loader_function is None:
@@ -777,6 +995,44 @@ def load_particle_distribution_artifact(
                 "explicitly or adjust loader_kwargs/varformat/varnames"
             )
 
+        selected_mag_tplot = mag_tplot_name
+        loaded_mag_tplot_names: list[str] = []
+        mag_loader_backend = None
+        effective_mag_loader_kwargs: dict[str, Any] = {}
+        if magf is None and selected_mag_tplot is None:
+            selected_mag_tplot = _guess_mag_tplot_name(loaded_tplot_names, converter)
+        if magf is None and selected_mag_tplot is None:
+            if mag_loader_module is None or mag_loader_function is None:
+                if converter in _DIST_MAG_LOADERS:
+                    mag_loader_module, mag_loader_function, mag_defaults = _DIST_MAG_LOADERS[converter]
+                    mag_defaults = dict(mag_defaults)
+                else:
+                    mag_defaults = {}
+            else:
+                mag_defaults = {}
+            if mag_loader_module and mag_loader_function:
+                mag_load_fn = _require_attr(mag_loader_module, mag_loader_function)
+                effective_mag_loader_kwargs = _merge_loader_kwargs(mag_defaults, mag_loader_kwargs)
+                if trange is not None:
+                    effective_mag_loader_kwargs["trange"] = trange
+                effective_mag_loader_kwargs = _merge_loader_kwargs(
+                    effective_mag_loader_kwargs,
+                    {"probe": probe, "level": level},
+                )
+                effective_mag_loader_kwargs = _converter_kwargs(mag_load_fn, effective_mag_loader_kwargs)
+                loaded_mag_result = mag_load_fn(**effective_mag_loader_kwargs)
+                loaded_mag_tplot_names = _coerce_loaded_tplot_names(loaded_mag_result)
+                selected_mag_tplot = _guess_mag_tplot_name(loaded_mag_tplot_names, converter)
+                mag_loader_backend = f"{mag_loader_module}.{mag_loader_function}"
+        if magf is None and selected_mag_tplot is None:
+            return _error(
+                "no magnetic-field tplot variable was available to populate magf",
+                code="needs_input",
+                hint="Pass magf, mag_tplot_name, or mag_loader_module/mag_loader_function/mag_loader_kwargs so the bridge can write the required magf field.",
+                loaded_tplot_names=loaded_tplot_names,
+                loaded_mag_tplot_names=loaded_mag_tplot_names,
+            )
+
         bridge = build_particle_distribution_artifact(
             selected_tplot,
             output_file,
@@ -790,6 +1046,7 @@ def load_particle_distribution_artifact(
             trange=trange,
             single_time=single_time,
             magf=magf,
+            mag_tplot_name=selected_mag_tplot,
             max_slices=max_slices,
         )
         provenance = {
@@ -797,6 +1054,10 @@ def load_particle_distribution_artifact(
             "loader_kwargs": effective_loader_kwargs,
             "loaded_tplot_names": loaded_tplot_names,
             "selected_tplot_name": selected_tplot,
+            "mag_loader_backend": mag_loader_backend,
+            "mag_loader_kwargs": effective_mag_loader_kwargs,
+            "loaded_mag_tplot_names": loaded_mag_tplot_names,
+            "selected_mag_tplot_name": selected_mag_tplot,
         }
         if bridge.get("status") != "success":
             return {**bridge, **provenance}

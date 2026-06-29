@@ -155,7 +155,8 @@ def _install_fake_pyspedas(monkeypatch, *, include_fac=True, **overrides):
         mods[name] = m
         return m
 
-    _mod("pyspedas")
+    pyspedas_mod = _mod("pyspedas")
+    pyspedas_mod.get_data = overrides.get("get_data", lambda name: None)
     _mod("pyspedas.particles")
     _mod("pyspedas.particles.moments")
     _mod("pyspedas.particles.spd_part_products")
@@ -1002,3 +1003,143 @@ def test_load_particle_distribution_artifact_uses_explicit_tplot_name(tmp_path, 
     assert out["status"] == "success"
     assert out["selected_tplot_name"] == "explicit_dist_tplot"
     assert calls == ["explicit_dist_tplot"]
+
+
+
+def test_build_particle_distribution_reads_mag_tplot(tmp_path, monkeypatch):
+    base = 1_700_000_000.0
+
+    def fake_get_data(name):
+        assert name == "mms1_fgm_b_gse_srvy_l2"
+        # Four-column FGM-like payload (Bx, By, Bz, |B|); only first three are used.
+        return types.SimpleNamespace(
+            times=np.array([base, base + 2.0]),
+            y=np.array([[1.0, 2.0, 3.0, 9.0], [3.0, 4.0, 5.0, 12.0]]),
+        )
+
+    _install_fake_pyspedas(monkeypatch, get_data=fake_get_data)
+    mod = types.ModuleType("fake_dist_converter_mag")
+
+    def fake_get_dist(tname):
+        assert tname == "mms1_dis_dist_fast"
+        return _fake_converter_records(2)
+
+    mod.fake_get_dist = fake_get_dist
+    monkeypatch.setitem(sys.modules, "fake_dist_converter_mag", mod)
+    monkeypatch.setitem(
+        particles._DIST_CONVERTERS,
+        "fake_mag",
+        ("fake_dist_converter_mag", "fake_get_dist"),
+    )
+
+    out_file = tmp_path / "dist_from_tplot_b.npz"
+    out = particles.build_particle_distribution_artifact(
+        "mms1_dis_dist_fast",
+        str(out_file),
+        converter="fake_mag",
+        mag_tplot_name="mms1_fgm_b_gse_srvy_l2",
+    )
+
+    assert out["status"] == "success"
+    assert out["magf_source"]["mode"] == "tplot"
+    assert out["magf_source"]["interpolated"] is True
+    with np.load(out_file) as npz:
+        assert npz["magf"].shape == (2, 3)
+        np.testing.assert_allclose(npz["magf"], [[1.0, 2.0, 3.0], [2.0, 3.0, 4.0]])
+
+
+def test_load_particle_distribution_artifact_auto_loads_mag_tplot(tmp_path, monkeypatch):
+    base = 1_700_000_000.0
+    calls = {"loader": [], "mag_loader": [], "converter": []}
+
+    def fake_get_data(name):
+        assert name == "mms1_fgm_b_gse_srvy_l2"
+        return types.SimpleNamespace(
+            times=np.array([base, base + 1.0]),
+            y=np.array([[0.0, 0.0, 5.0, 5.0], [0.0, 1.0, 5.0, 5.1]]),
+        )
+
+    _install_fake_pyspedas(monkeypatch, get_data=fake_get_data)
+    loader_mod = types.ModuleType("fake_particle_loader_auto_mag")
+    mag_loader_mod = types.ModuleType("fake_mag_loader_auto_mag")
+    converter_mod = types.ModuleType("fake_converter_auto_mag")
+
+    def fake_load(trange=None, probe=None, datatype=None):
+        calls["loader"].append({"trange": trange, "probe": probe, "datatype": datatype})
+        return ["mms1_dis_dist_fast"]
+
+    def fake_load_mag(trange=None, probe=None, datatype=None, level=None):
+        calls["mag_loader"].append({
+            "trange": trange,
+            "probe": probe,
+            "datatype": datatype,
+            "level": level,
+        })
+        return ["mms1_fgm_b_gse_srvy_l2"]
+
+    def fake_get_dist(tname, probe=None):
+        calls["converter"].append({"tname": tname, "probe": probe})
+        return _fake_converter_records(2)
+
+    loader_mod.fake_load = fake_load
+    mag_loader_mod.fake_load_mag = fake_load_mag
+    converter_mod.fake_get_dist = fake_get_dist
+    monkeypatch.setitem(sys.modules, "fake_particle_loader_auto_mag", loader_mod)
+    monkeypatch.setitem(sys.modules, "fake_mag_loader_auto_mag", mag_loader_mod)
+    monkeypatch.setitem(sys.modules, "fake_converter_auto_mag", converter_mod)
+    monkeypatch.setitem(particles._DIST_CONVERTERS, "fake_auto_mag", ("fake_converter_auto_mag", "fake_get_dist"))
+    monkeypatch.setitem(particles._DIST_LOADERS, "fake_auto_mag", ("fake_particle_loader_auto_mag", "fake_load", {"datatype": "dist"}))
+    monkeypatch.setitem(particles._DIST_MAG_LOADERS, "fake_auto_mag", ("fake_mag_loader_auto_mag", "fake_load_mag", {"datatype": "fgm", "level": "l2"}))
+
+    out_file = tmp_path / "loaded_auto_mag.npz"
+    out = particles.load_particle_distribution_artifact(
+        str(out_file),
+        converter="fake_auto_mag",
+        trange=["2020-01-01", "2020-01-01/00:01"],
+        probe="1",
+    )
+
+    assert out["status"] == "success"
+    assert out["selected_tplot_name"] == "mms1_dis_dist_fast"
+    assert out["selected_mag_tplot_name"] == "mms1_fgm_b_gse_srvy_l2"
+    assert out["mag_loader_backend"] == "fake_mag_loader_auto_mag.fake_load_mag"
+    assert calls["loader"] == [{"trange": ["2020-01-01", "2020-01-01/00:01"], "probe": "1", "datatype": "dist"}]
+    assert calls["mag_loader"] == [{
+        "trange": ["2020-01-01", "2020-01-01/00:01"],
+        "probe": "1",
+        "datatype": "fgm",
+        "level": "l2",
+    }]
+    assert calls["converter"] == [{"tname": "mms1_dis_dist_fast", "probe": "1"}]
+    with np.load(out_file) as npz:
+        np.testing.assert_allclose(npz["magf"], [[0.0, 0.0, 5.0], [0.0, 1.0, 5.0]])
+
+
+def test_load_particle_distribution_artifact_reports_missing_mag_source(tmp_path, monkeypatch):
+    _install_fake_pyspedas(monkeypatch)
+    loader_mod = types.ModuleType("fake_particle_loader_no_mag")
+    converter_mod = types.ModuleType("fake_converter_no_mag")
+
+    def fake_load(**kwargs):
+        return ["mms1_dis_dist_fast"]
+
+    def fake_get_dist(tname):
+        return _fake_converter_records(1)
+
+    loader_mod.fake_load = fake_load
+    converter_mod.fake_get_dist = fake_get_dist
+    monkeypatch.setitem(sys.modules, "fake_particle_loader_no_mag", loader_mod)
+    monkeypatch.setitem(sys.modules, "fake_converter_no_mag", converter_mod)
+    monkeypatch.setitem(particles._DIST_CONVERTERS, "fake_no_mag", ("fake_converter_no_mag", "fake_get_dist"))
+    monkeypatch.setitem(particles._DIST_LOADERS, "fake_no_mag", ("fake_particle_loader_no_mag", "fake_load", {}))
+    monkeypatch.delitem(particles._DIST_MAG_LOADERS, "fake_no_mag", raising=False)
+
+    out = particles.load_particle_distribution_artifact(
+        str(tmp_path / "missing_mag.npz"),
+        converter="fake_no_mag",
+    )
+
+    assert out["status"] == "error"
+    assert out["code"] == "needs_input"
+    assert "magnetic-field" in out["message"]
+    assert out["loaded_tplot_names"] == ["mms1_dis_dist_fast"]
