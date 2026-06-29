@@ -47,11 +47,9 @@ def test_server_has_expected_tools(monkeypatch):
         "plan_spedas_observation",
         "compare_cdaweb_pds_spice",
         "create_spedas_analysis_bundle",
-        "list_spice_missions",
         "get_ephemeris",
         "compute_distance",
         "transform_coordinates",
-        "list_coordinate_frames",
         "transform_timeseries_coordinates",
         "generate_fac_matrix",
         "tvector_rotate",
@@ -70,6 +68,7 @@ def test_server_has_expected_tools(monkeypatch):
         "fetch_fdsn_data",
     } <= names
     assert {"manage_cdaweb_cache", "manage_pds_cache", "manage_spice_kernels"}.isdisjoint(names)
+    assert {"list_spice_missions", "list_coordinate_frames"}.isdisjoint(names)
     assert names.isdisjoint(COMPAT_CDAWEB_PDS_TOOLS)
 
 
@@ -284,11 +283,12 @@ def test_browse_observatories_uses_cdaweb_catalog(monkeypatch):
     assert any(obs.get("id") == "ace" for obs in data)
 
 
-def test_list_spice_missions_uses_xhelio_spice_registry():
+def test_unified_spice_browse_uses_xhelio_spice_registry():
     server = create_server()
-    data = json.loads(_call_tool(server, "list_spice_missions"))
-    assert isinstance(data, list)
-    assert any(mission.get("mission_key") == "PSP" for mission in data)
+    data = json.loads(_call_tool(server, "browse_data_sources", {"source_type": "spice"}))
+    assert data["status"] == "success"
+    assert isinstance(data["payload"], list)
+    assert any(mission.get("mission_key") == "PSP" for mission in data["payload"])
 
 
 def test_browse_pds_missions_uses_xhelio_pds_catalog(monkeypatch):
@@ -1508,7 +1508,7 @@ def test_spice_keyerror_classified_as_geometry_error():
     # KeyError -> invalid_argument mapping (issue #27 should-fix #3).
     code, hint = _classify_exception(KeyError("Cannot resolve body name 'NOPE'"))
     assert code == "geometry_error"
-    assert hint and "list_spice_missions" in hint
+    assert hint and "browse_data_sources(source_type='spice')" in hint
     # A frame-resolution KeyError too.
     code_f, _ = _classify_exception(KeyError("frame 'BOGUS' is not recognized"))
     assert code_f == "geometry_error"
@@ -1532,7 +1532,7 @@ def test_get_ephemeris_invalid_body_now_unsupported_spice_target():
     payload = json.loads(raw)
     assert payload["status"] == "error"
     assert payload["code"] == "unsupported_spice_target"
-    assert "list_spice_missions" in payload["hint"]
+    assert "browse_data_sources(source_type='spice')" in payload["hint"]
     assert "/Users/" not in raw
 
 
@@ -1635,7 +1635,7 @@ def test_get_ephemeris_unsupported_target_is_structured(bad_target, no_backend_d
     assert payload["code"] == "unsupported_spice_target"
     assert payload["spice_target"] == bad_target
     # Routes the agent to alternatives and CDAWeb for MMS, no raw traceback/path.
-    assert "list_spice_missions" in payload["hint"]
+    assert "browse_data_sources(source_type='spice')" in payload["hint"]
     assert "cdaweb" in payload["hint"].lower()
     assert payload["supported_targets_sample"]
     assert "Cannot resolve body name" not in raw
@@ -1696,7 +1696,7 @@ def _assert_clean_unknown_frame_error(payload, raw, *, frame, role, tool):
     assert payload["frame"] == frame
     assert payload["role"] == role
     assert payload["message"] == f"unknown frame '{frame}'"
-    assert "list_coordinate_frames" in payload["hint"]
+    assert "load_data_source(source_type='spice'" in payload["hint"]
     assert "J2000" in payload["supported_frames"]
     assert "GSE" in payload["supported_frames"]
     assert "CSPICE" not in raw
@@ -1737,9 +1737,9 @@ def test_transform_coordinates_unknown_frame_is_clean_structured_error(no_backen
 
 def test_supported_frame_catalog_for_errors_includes_coordinate_frames():
     server = create_server()
-    listed = json.loads(_call_tool(server, "list_coordinate_frames"))
+    listed = json.loads(_call_tool(server, "load_data_source", {"source_type": "spice", "source_id": "PSP"}))
     supported = _spice_supported_frames()
-    for entry in listed:
+    for entry in listed["payload"]:
         assert entry["frame"] in supported
     # Backend aliases are also accepted/surfaced when available.
     assert "ECLIPTIC" in supported

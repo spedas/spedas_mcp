@@ -46,7 +46,7 @@ Recommended sequence:
    load_data_source(source_type="pds", source_id="JUNO_PPI")
    browse_data_parameters(source_type="pds", dataset_id="...")
    load_data_source(source_type="spice", source_id="JUNO")
-   list_coordinate_frames(mission="JUNO")
+   browse_data_parameters(source_type="spice", dataset_id="JUNO")
    ```
 
 5. Scaffold a provenance bundle before fetching:

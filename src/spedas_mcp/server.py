@@ -610,8 +610,8 @@ _EXCEPTION_CODES: tuple[tuple[type[BaseException], str, str | None], ...] = (
 
 # Hint shared by every geometry/SPICE classification path.
 _GEOMETRY_HINT = (
-    "Check body/frame names against list_spice_missions and "
-    "list_coordinate_frames; not every body has loaded kernels."
+    "Check body/frame names with browse_data_sources(source_type='spice') "
+    "and load_data_source(source_type='spice', source_id=...); not every body has loaded kernels."
 )
 
 # Substrings that mark a ``KeyError`` as a geometry lookup failure (unresolvable
@@ -784,8 +784,8 @@ def _spice_supported_targets_sample(limit: int = 12) -> list[str]:
     """Return a small sample of supported SPICE mission keys for error hints.
 
     Kept compact so the ``unsupported_spice_target`` envelope stays well under
-    the stdio size limit; the agent is pointed at ``list_spice_missions`` for the
-    full catalog.
+    the stdio size limit; the agent is pointed at
+    ``browse_data_sources(source_type='spice')`` for the full catalog.
     """
     try:
         from xhelio_spice import list_supported_missions
@@ -806,7 +806,7 @@ def _unsupported_spice_target_error(target: str, *, role: str = "target") -> str
     suggestions = _suggest_spice_targets(target)
     hint = (
         "This name is not a SPICE-supported body/mission. "
-        "Use list_spice_missions to see supported targets. "
+        "Use browse_data_sources(source_type='spice') to see supported targets. "
         "For MMS/Cluster-style magnetospheric missions, SPICE has no kernels — "
         "use the CDAWeb data layer (e.g. load_data_source(source_type='cdaweb', "
         "source_id='mms')) for orbit/position products, or THEMIS A–E for "
@@ -848,8 +848,8 @@ def _suggest_spice_targets(name: str, limit: int = 5) -> list[str]:
 def _spice_supported_frames() -> list[str]:
     """Return supported SPICE coordinate frame names for validation/errors.
 
-    Uses the same xhelio_spice frame catalog exposed by ``list_coordinate_frames``
-    so geometry tools can reject unknown frame arguments before SPICE emits a raw
+    Uses the same xhelio_spice frame catalog exposed through
+    ``load_data_source(source_type='spice', ...)`` so geometry tools can reject unknown frame arguments before SPICE emits a raw
     multi-line CSPICE banner (issue #77).
     """
     try:
@@ -877,8 +877,8 @@ def _unknown_spice_frame_error(frame: str, *, role: str, tool: str) -> str:
         "invalid_argument",
         f"unknown frame '{frame}'",
         hint=(
-            "Use one of supported_frames, or call list_coordinate_frames for "
-            "descriptions and usage notes."
+            "Use one of supported_frames, or call load_data_source(source_type='spice', source_id=...) "
+            "for descriptions and usage notes."
         ),
         tool=tool,
         frame=frame,
@@ -1122,11 +1122,9 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                     "create_spedas_analysis_bundle",
                 ],
                 "geometry": [
-                    "list_spice_missions",
                     "get_ephemeris",
                     "compute_distance",
                     "transform_coordinates",
-                    "list_coordinate_frames",
                 ],
                 "analysis": {
                     "status": (
@@ -1185,7 +1183,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                 "Use load_data_source, browse_data_parameters, fetch_data_product, and manage_data_cache for the unified data layer.",
                 "load_data_source(source_type='cdaweb', ...) enumerates dataset_ids so you can call browse_data_parameters without guessing; pass the science goal to search_spedas_data_sources via question= (query= is accepted as an alias).",
                 "Use unified data-layer tools for new workflows; set SPEDAS_MCP_COMPAT_TOOLS=1 only when an existing client requires legacy CDAWeb/PDS browse/load/parameter/fetch tool names; use manage_data_cache for all cache status and maintenance actions.",
-                "Use geometry tools directly when the request is SPICE-specific ephemeris, frame, distance, or transform work.",
+                "Use geometry tools directly when the request is SPICE-specific ephemeris, distance, or transform work; discover SPICE missions/frames via browse_data_sources/load_data_source with source_type='spice'.",
                 "Use create_spedas_analysis_bundle to preserve request/provenance intent before bulk fetches.",
                 "For bulk data, always provide output_dir/output_file and return paths only.",
             ],
@@ -1571,7 +1569,6 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             "parameters": param_meta,
         })
 
-    @mcp.tool()
     @_safe_tool
     def list_spice_missions() -> str:
         """List supported SPICE spacecraft/body missions with NAIF IDs and kernel status."""
@@ -1757,7 +1754,6 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             "spacecraft": spacecraft,
         })
 
-    @mcp.tool()
     @_safe_tool
     def list_coordinate_frames() -> str:
         """List supported SPICE coordinate frames and usage notes."""
