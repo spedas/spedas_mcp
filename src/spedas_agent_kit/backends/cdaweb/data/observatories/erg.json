@@ -2,10 +2,19 @@
   "id": "erg",
   "name": "Arase (ERG)",
   "profile": {
-    "description": "Arase (ERG) data from CDAWeb.",
-    "coordinate_systems": [],
-    "typical_cadence": "",
-    "data_caveats": []
+    "description": "Arase (ERG) satellite data from CDAWeb: magnetic field, plasma waves, energetic particles, orbit, and attitude context for inner-magnetosphere / radiation-belt / wave-particle studies.",
+    "coordinate_systems": [
+      "GSM/GSE magnetic-field and orbit variables where supplied by CDAWeb/PySPEDAS",
+      "instrument- and product-native particle/wave axes; inspect variable metadata before analysis",
+      "ground-conjugate MLAT/MLT/footpoint mapping is not in this CDAWeb profile and must be derived separately"
+    ],
+    "typical_cadence": "Product-dependent: MGF 8 s spin-averaged field; PWE OFA/HFA spectra are mode- and frequency-grid dependent; particle omniflux/3D flux products are instrument/cadence dependent; orbit products are lower-cadence context. Always inspect variable metadata and time stamps.",
+    "data_caveats": [
+      "This CDAWeb profile is satellite-only. ERG/Arase ground-conjugate routes such as ISEE fluxgate/induction, MAGDAS, MM210, STEL, OMTI ASI, VLF, and SuperDARN are loaded through pyspedas.erg.* helpers rather than load_data_source/CDAWeb dataset IDs.",
+      "MEP-e/HEP/XEP/LEP omniflux browse plots are not PSD, loss-cone, pitch-angle, or acceleration/loss proof without calibrated energy-channel, pitch-angle, and orbit/L-shell handling.",
+      "Raw PWE OFA/HFA spectra are route/context products; UHR/electron-density, wave-normal, polarization, and coherence results require explicit derived analysis and provenance.",
+      "Ground-conjugate science claims require station/cadence/filter metadata plus footpoint/conjunction mapping; do not infer mapped auroral or EMIC events from satellite + ground quick-look plots alone."
+    ]
   },
   "instruments": {
     "particles": {
