@@ -1,0 +1,123 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "spedas-agent-kit://schemas/reproduction_provenance.schema.json",
+  "title": "SPEDAS Agent Kit reproduction provenance",
+  "description": "Canonical, machine-readable shape for the paper-reproduction `provenance.json` record. This mirrors the human-readable template embedded in resources/skills/paper-reproduction/SKILL.md. Validation checks shape only (required keys, allowed status labels, parseable increasing trange_utc); it does not assert that a reproduction is scientifically correct or paper-quality.",
+  "type": "object",
+  "required": [
+    "paper",
+    "target",
+    "event_assumption",
+    "data_plan",
+    "environment",
+    "status"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "paper": {
+      "type": "object",
+      "description": "Citation metadata for the paper or figure under reproduction.",
+      "properties": {
+        "title": {"type": "string"},
+        "authors": {"type": "string"},
+        "journal": {"type": "string"},
+        "year": {"type": "integer"},
+        "doi": {"type": "string"}
+      }
+    },
+    "target": {
+      "type": "object",
+      "description": "The science target and an honest quality label for the attempt.",
+      "required": ["status_label"],
+      "properties": {
+        "science_question": {"type": "string"},
+        "figure_or_result": {"type": "string"},
+        "status_label": {
+          "type": "string",
+          "description": "One of the documented quality labels. See ALLOWED_STATUS_LABELS in resources/provenance.py.",
+          "enum": [
+            "paper_quality",
+            "proxy",
+            "candidate_interval",
+            "partial_success"
+          ]
+        }
+      }
+    },
+    "event_assumption": {
+      "type": "object",
+      "description": "The assumed event interval and platform; note which parts are exact vs inferred.",
+      "required": ["trange_utc"],
+      "properties": {
+        "trange_utc": {
+          "type": "array",
+          "description": "Two UTC timestamps [start, stop]. The validator checks this is a 2-element list of parseable UTC timestamps and that stop is after start. Accepted timestamp styles include YYYY-MM-DD/hh:mm:ss and ISO-8601 UTC strings.",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {"type": "string"}
+        },
+        "mission": {"type": "string"},
+        "spacecraft": {"type": "string"},
+        "note": {"type": "string"}
+      }
+    },
+    "data_plan": {
+      "type": "object",
+      "description": "The planned data route before fetching.",
+      "properties": {
+        "source_type": {
+          "type": "string",
+          "enum": ["cdaweb", "pds", "spice", "pyspedas", "mixed"]
+        },
+        "datasets_or_products": {"type": "array", "items": {"type": "string"}},
+        "variables_or_parameters": {"type": "array", "items": {"type": "string"}},
+        "output_dir": {"type": "string"}
+      }
+    },
+    "environment": {
+      "type": "object",
+      "description": "Runtime environment captured so the attempt can be rerun.",
+      "properties": {
+        "python": {"type": "string"},
+        "spedas_agent_kit_version_or_commit": {"type": "string"},
+        "cache_dir": {"type": "string"}
+      }
+    },
+    "selected_variables": {
+      "type": "object",
+      "description": "Map of logical_name -> actual_loaded_name."
+    },
+    "derived_diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string"},
+          "formula": {"type": "string"},
+          "units": {"type": "string"},
+          "quality": {"type": "string"},
+          "coordinate_assumption": {"type": "string"}
+        }
+      }
+    },
+    "artifacts": {"type": "object"},
+    "validation": {
+      "type": "object",
+      "properties": {
+        "visual_sanity": {
+          "type": "string",
+          "enum": ["pass", "fail", "not_checked"]
+        },
+        "known_caveats": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "agent_kit_feedback": {"type": "array", "items": {"type": "string"}},
+    "errors": {"type": "array"},
+    "caveats": {"type": "array"},
+    "status": {
+      "type": "string",
+      "description": "Overall run status. See ALLOWED_RUN_STATUS in resources/provenance.py.",
+      "enum": ["success", "partial-success", "failed"]
+    }
+  }
+}

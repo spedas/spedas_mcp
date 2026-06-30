@@ -19,6 +19,7 @@ import logging
 import math
 import os
 import re
+from importlib import resources
 from pathlib import Path
 from typing import Any, Literal
 
@@ -28,6 +29,16 @@ from .resources.skill_catalog import (
     list_packaged_skills,
     read_packaged_skill,
     render_skill_index_markdown,
+)
+from .resources.event_presets import (
+    SPEDAS_PRESET_INDEX_URI,
+    SPEDAS_PRESET_URI_PREFIX,
+    list_event_presets,
+    render_event_preset_index_markdown,
+    render_event_preset_json,
+)
+from .resources.provenance import (
+    REQUIRED_TOP_LEVEL_KEYS as PROVENANCE_REQUIRED_KEYS,
 )
 from .optional_backends import (
     ANALYSIS_REQUIRED_IMPORTS as _ANALYSIS_REQUIRED_IMPORTS,
@@ -41,6 +52,9 @@ try:
     from mcp.types import ToolAnnotations
 except ImportError as exc:  # pragma: no cover - exercised by entrypoint guard
     raise ImportError("Install MCP support with: pip install 'spedas-agent-kit[mcp]'") from exc
+
+#: MCP resource URI for the canonical reproduction-provenance JSON schema.
+SPEDAS_PROVENANCE_SCHEMA_URI = "spedas-preset://schemas/reproduction_provenance"
 
 logger = logging.getLogger(__name__)
 
@@ -1273,6 +1287,68 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
 
     _register_packaged_skill_resources()
 
+    def _register_event_preset_resources() -> None:
+        """Expose packaged solar-wind event presets through MCP resources.
+
+        Mirrors the packaged-skill resource pattern: presets are exposed as
+        read-only resources (not tools) so the default primary tool surface stays
+        compact. The canonical provenance schema is exposed the same way so an
+        agent can read the machine-readable shape it should validate against.
+        """
+
+        @mcp.resource(
+            SPEDAS_PRESET_INDEX_URI,
+            name="spedas-event-presets-index",
+            title="SPEDAS Agent Kit solar-wind event presets index",
+            description="Index of packaged solar-wind event preset seeds and their resource URIs.",
+            mime_type="text/markdown",
+            meta={"surface": "spedas_preset", "kind": "index"},
+        )
+        def spedas_event_presets_index_resource() -> str:
+            return render_event_preset_index_markdown()
+
+        def make_preset_reader(preset_id: str):
+            def read_spedas_preset_resource() -> str:
+                return render_event_preset_json(preset_id)
+
+            safe_id = re.sub(r"[^0-9A-Za-z_]", "_", preset_id)
+            read_spedas_preset_resource.__name__ = f"read_spedas_preset_{safe_id}"
+            return read_spedas_preset_resource
+
+        for preset in list_event_presets():
+            mcp.resource(
+                preset.resource_uri,
+                name=preset.id,
+                title=f"SPEDAS event preset: {preset.id}",
+                description=preset.event,
+                mime_type="application/json",
+                meta={
+                    "surface": "spedas_preset",
+                    "kind": "preset",
+                    "preset_id": preset.id,
+                },
+            )(make_preset_reader(preset.id))
+
+        @mcp.resource(
+            SPEDAS_PROVENANCE_SCHEMA_URI,
+            name="spedas-reproduction-provenance-schema",
+            title="SPEDAS Agent Kit reproduction provenance schema",
+            description=(
+                "Canonical machine-readable JSON schema for paper-reproduction "
+                "provenance records. Shape-only; does not assert reproduction quality."
+            ),
+            mime_type="application/json",
+            meta={"surface": "spedas_preset", "kind": "schema"},
+        )
+        def spedas_provenance_schema_resource() -> str:
+            return (
+                resources.files("spedas_agent_kit.resources.schemas")
+                .joinpath("reproduction_provenance.schema.json")
+                .read_text(encoding="utf-8")
+            )
+
+    _register_event_preset_resources()
+
     def _register_tool(
         *,
         surface: str,
@@ -1393,6 +1469,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
     def spedas_overview() -> str:
         """Describe available SPEDAS Agent Kit capabilities and the recommended workflow."""
         packaged_skills = list_packaged_skills()
+        event_presets = list_event_presets()
         return _json({
             "status": "success",
             "server": "spedas-agent-kit",
@@ -1407,6 +1484,24 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
                     "Bundled SPEDAS Agent Kit skills are exposed as MCP resources, "
                     "not extra tools, so the default 13-tool surface stays compact. "
                     "Use MCP list_resources/read_resource to load the index or a full SKILL.md."
+                ),
+            },
+            "preset_resources": {
+                "status": "available_as_mcp_resources",
+                "count": len(event_presets),
+                "index_resource": SPEDAS_PRESET_INDEX_URI,
+                "uri_pattern": f"{SPEDAS_PRESET_URI_PREFIX}{{preset_id}}",
+                "provenance_schema_resource": SPEDAS_PROVENANCE_SCHEMA_URI,
+                "provenance_required_keys": list(PROVENANCE_REQUIRED_KEYS),
+                "note": (
+                    "Solar-wind event preset seeds and the canonical "
+                    "reproduction-provenance JSON schema are exposed as MCP "
+                    "resources, not tools, so the default 13-tool surface stays "
+                    "compact. Read spedas-preset://index for the preset list and "
+                    "spedas-preset://schemas/reproduction_provenance for the "
+                    "machine-readable provenance shape. Presets are seeds, not a "
+                    "curated catalog; honor each preset's quality_labels/notes and "
+                    "the rules in docs/examples/solar_wind_event_presets.md."
                 ),
             },
             "capability_groups": {
@@ -1524,6 +1619,7 @@ def create_server(*, include_analysis_tools: bool | None = None) -> FastMCP:
             "workflow": [
                 "Start with search_spedas_data_sources or plan_spedas_observation for open-ended science requests.",
                 "If the MCP client supports resources, read spedas-skill://index or list_resources to discover packaged SPEDAS skills such as spedas-workflow, overview-geomagnetic-indices, wave-polarization, and particle-velocity-slice without adding extra tools to list_tools.",
+                "For paper-reproduction work, read spedas-preset://index for solar-wind event preset seeds and spedas-preset://schemas/reproduction_provenance for the machine-readable provenance schema; both are MCP resources, not tools. Treat preset starting intervals as seeds (not paper-quality) and record exact paper intervals plus the documented quality_labels in provenance.",
                 "Use browse_data_sources(source_type='all') to inspect SPEDAS data-source categories.",
                 "Use load_data_source, browse_data_parameters, fetch_data_product, and manage_data_cache for the unified data layer.",
                 "load_data_source(source_type='cdaweb', ...) enumerates dataset_ids so you can call browse_data_parameters without guessing; pass the science goal to search_spedas_data_sources via question= (query= is accepted as an alias).",

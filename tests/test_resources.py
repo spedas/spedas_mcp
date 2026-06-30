@@ -123,6 +123,17 @@ def test_solar_wind_turbulence_intermittency_skill_is_packaged_and_indexed() -> 
     assert "solar-wind-turbulence-intermittency" in index
 
 
+def test_provenance_schema_and_presets_are_packaged_resources() -> None:
+    schema = resources.files("spedas_agent_kit.resources").joinpath(
+        "schemas", "reproduction_provenance.schema.json"
+    )
+    assert schema.is_file()
+    presets = resources.files("spedas_agent_kit.resources").joinpath(
+        "presets", "solar_wind_event_presets.json"
+    )
+    assert presets.is_file()
+
+
 def test_multispacecraft_insitu_example_documents_batch004_routes() -> None:
     from pathlib import Path
 

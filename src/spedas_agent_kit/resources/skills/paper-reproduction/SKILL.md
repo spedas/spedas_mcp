@@ -51,6 +51,13 @@ Write an artifact bundle under an explicit `output_dir` containing at least:
 
 ## Minimal provenance schema
 
+This template is the human-readable copy. The canonical, machine-readable schema
+ships at `spedas_agent_kit/resources/schemas/reproduction_provenance.schema.json`
+(MCP resource `spedas-preset://schemas/reproduction_provenance`) and is validated
+by `spedas_agent_kit.resources.provenance.validate_reproduction_provenance`, which
+checks *shape only* (required keys, allowed labels, parseable increasing
+`trange_utc`) and does not assert scientific reproduction quality.
+
 Keep `provenance.json` stable enough that future tools can validate or migrate it.
 Add domain-specific fields as needed, but keep these top-level keys:
 

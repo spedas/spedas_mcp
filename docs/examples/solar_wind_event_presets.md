@@ -1,7 +1,14 @@
 # Solar-wind event preset seeds
 
-These are documentation-only preset seeds for Agent Kit skills. They are not yet
-API-level event presets: use them to plan narrow, artifact-first paper
+> The machine-readable source of truth for these rows ships at
+> `spedas_agent_kit/resources/presets/solar_wind_event_presets.json` (MCP resource
+> `spedas-preset://index`, individual presets at `spedas-preset://events/<id>`)
+> and is loaded via `spedas_agent_kit.resources.event_presets`. This Markdown
+> table is the human-readable mirror; keep DOIs in sync (a test asserts they
+> match in both directions).
+
+These are seed presets for Agent Kit skills, not a curated event catalog or
+paper-quality endorsement. Use them to plan narrow, artifact-first paper
 reproductions, then record exact paper/supplement intervals in provenance.
 
 | Event / paper family | DOI | Starting interval | Data route | Quality label until paper interval confirmed | Skill |

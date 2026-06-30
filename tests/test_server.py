@@ -3793,3 +3793,73 @@ def test_overview_advertises_skill_resources(monkeypatch):
     assert "spedas-workflow" in resources["names"]
     assert "default 13-tool surface stays compact" in resources["note"]
     assert any("spedas-skill://index" in step for step in overview["workflow"])
+
+
+def test_server_exposes_event_presets_and_schema_as_mcp_resources(monkeypatch):
+    monkeypatch.delenv("SPEDAS_AGENT_KIT_COMPAT_TOOLS", raising=False)
+    monkeypatch.delenv("SPEDAS_AGENT_KIT_DATASOURCE_TOOLS", raising=False)
+    server = create_server(include_analysis_tools=False)
+    # Adding presets/schema as resources must NOT change the default tool count.
+    tools = asyncio.run(server.list_tools())
+    assert len(tools) == 13
+    assert {tool.meta["surface"] for tool in tools} == {"primary"}
+
+    resources = asyncio.run(server.list_resources())
+    by_uri = {str(resource.uri): resource for resource in resources}
+    assert "spedas-preset://index" in by_uri
+    assert "spedas-preset://schemas/reproduction_provenance" in by_uri
+    assert by_uri["spedas-preset://index"].mimeType == "text/markdown"
+    assert by_uri["spedas-preset://index"].meta["surface"] == "spedas_preset"
+    schema_meta = by_uri["spedas-preset://schemas/reproduction_provenance"]
+    assert schema_meta.mimeType == "application/json"
+    assert schema_meta.meta["kind"] == "schema"
+
+    # At least one individual preset resource is registered with JSON mime type.
+    preset_uris = [u for u in by_uri if u.startswith("spedas-preset://events/")]
+    assert len(preset_uris) >= 30
+    sample = by_uri[preset_uris[0]]
+    assert sample.mimeType == "application/json"
+    assert sample.meta["kind"] == "preset"
+
+
+def test_event_preset_and_schema_resources_read(monkeypatch):
+    monkeypatch.delenv("SPEDAS_AGENT_KIT_COMPAT_TOOLS", raising=False)
+    monkeypatch.delenv("SPEDAS_AGENT_KIT_DATASOURCE_TOOLS", raising=False)
+    server = create_server(include_analysis_tools=False)
+
+    index_contents = asyncio.run(server.read_resource("spedas-preset://index"))
+    assert "SPEDAS Agent Kit solar-wind event presets" in index_contents[0].content
+
+    schema_contents = asyncio.run(
+        server.read_resource("spedas-preset://schemas/reproduction_provenance")
+    )
+    schema = json.loads(schema_contents[0].content)
+    assert schema["title"] == "SPEDAS Agent Kit reproduction provenance"
+
+    preset_contents = asyncio.run(
+        server.read_resource(
+            "spedas-preset://events/psp-e1-bale-2019-structured-slow-wind"
+        )
+    )
+    preset = json.loads(preset_contents[0].content)
+    assert preset["id"] == "psp-e1-bale-2019-structured-slow-wind"
+    assert preset["quality_labels"] == ["candidate_interval"]
+
+
+def test_overview_advertises_preset_resources(monkeypatch):
+    monkeypatch.delenv("SPEDAS_AGENT_KIT_COMPAT_TOOLS", raising=False)
+    monkeypatch.delenv("SPEDAS_AGENT_KIT_DATASOURCE_TOOLS", raising=False)
+    server = create_server(include_analysis_tools=False)
+    overview = json.loads(_call_tool(server, "spedas_overview"))
+    presets = overview["preset_resources"]
+    assert presets["status"] == "available_as_mcp_resources"
+    assert presets["index_resource"] == "spedas-preset://index"
+    assert presets["uri_pattern"] == "spedas-preset://events/{preset_id}"
+    assert (
+        presets["provenance_schema_resource"]
+        == "spedas-preset://schemas/reproduction_provenance"
+    )
+    assert presets["count"] >= 30
+    assert "paper" in presets["provenance_required_keys"]
+    assert "default 13-tool surface stays compact" in presets["note"]
+    assert any("spedas-preset://index" in step for step in overview["workflow"])
