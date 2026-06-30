@@ -23,8 +23,8 @@ Low-level / source-specific compat tools exist for maintenance only — skills d
 | If the user wants… | Use skill | First call |
 |---|---|---|
 | Reproduce a published paper, figure, event, or DOI with artifact/provenance output | `paper-reproduction` | `spedas_overview` then `search_spedas_data_sources` / `plan_spedas_observation` |
-| Parker Solar Probe Encounter-1 structured slow wind, switchbacks, or Alfvénic velocity spikes | `psp-solar-wind-switchbacks` | `spedas_overview` then `search_spedas_data_sources` / `plan_spedas_observation` |
-| Solar-wind storm, ICME, magnetic cloud, or extreme-speed event overview (OMNI/Wind/ACE/STEREO) | `solar-wind-icme-storm` | `spedas_overview` then `search_spedas_data_sources` / `plan_spedas_observation` |
+| Parker Solar Probe / Solar Orbiter switchbacks, Alfvénic impulses, or radial-alignment in-situ comparisons | `psp-solar-wind-switchbacks` | `spedas_overview` then `search_spedas_data_sources` / `plan_spedas_observation`; load `spice-conjunction-finder` when geometry matters |
+| Solar-wind storm, ICME, magnetic cloud, stream interaction, or multi-spacecraft in-situ overview (OMNI/Wind/ACE/STEREO/PSP/SolO) | `solar-wind-icme-storm` | `spedas_overview` then `search_spedas_data_sources` / `plan_spedas_observation`; compose scalar OMNI vectors and start STEREO multi-day runs at 1-minute cadence |
 | The turbulence/wave power spectrum of a field interval | `solar-wind-turbulence-spectrum` | `create_spedas_analysis_bundle` |
 | Solar-wind intermittency, PVI, vector increments, thresholded event tables, or proxy-labelled energy-transfer / third-order-law workflow | `solar-wind-turbulence-intermittency` | `create_spedas_analysis_bundle` |
 | Wave polarization (whistler/EMIC/chorus: degpol, wave-normal angle, ellipticity) | `wave-polarization` | `create_spedas_analysis_bundle` |

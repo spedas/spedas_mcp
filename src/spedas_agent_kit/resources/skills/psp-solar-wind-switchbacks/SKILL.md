@@ -20,6 +20,9 @@ a narrow FIELDS + SWEAP data plan, an artifact bundle, and explicit proxy labels
 | Horbury et al. 2020 sharp Alfvénic impulses, DOI `10.3847/1538-4365/ab5b15` | PSP E1 paper interval or smoke window such as `2018-11-06/00:00:00`–`06:00:00` | FIELDS MAG RTN + SWEAP/SPC | matched-cadence B/V rotations, deflection angle, candidate velocity-jump/Alfvénicity proxy |
 | Chhiber et al. 2020 PVI/intermittent structures, DOI `10.3847/1538-4365/ab53d2` | PSP E1 short windows around perihelion, e.g. `2018-11-06/00:00:00`–`03:00:00` for cache-friendly smoke | FIELDS MAG RTN, optional SWEAP/SPC context | PVI by explicit lag, thresholded intermittent-structure candidates, event table |
 | PSP E1 turbulence / cascade papers, DOIs `10.3847/1538-4365/ab60a3` and `10.3847/1538-4365/ab5dae` | PSP E1 statistically quiet sub-intervals; keep smoke windows narrow until paper windows are confirmed | FIELDS MAG RTN + SWEAP/SPC, preferably high cadence for real analysis | PSD/PVI/increment breadcrumbs first; escalate to `solar-wind-turbulence-spectrum` or a documented cascade workflow |
+| Solar Orbiter first results: magnetic switchbacks, DOI `10.1051/0004-6361/202140972` | June 2020 SolO MAG smoke intervals; verify exact figure intervals before science claims | Solar Orbiter MAG `rtn-normal` (`B_RTN`), optional SWA/PAS when available | MAG-only switchback/deflection panels with explicit SWA fallback caveat |
+| PSP/Solar Orbiter radial-alignment switchback or stream-interaction papers, DOI `10.1051/0004-6361/202140570` | 2020-09-24–2020-10-02 reduced in-situ window | PSP FIELDS/SWEAP + SolO MAG + optional OMNI | in-situ-first comparison; use `spice-conjunction-finder` for geometry/context before source mapping |
+| Solar-source switchback studies, DOI `10.1007/s11207-022-02022-4` | 2020-09-27 PSP/SolO smoke intervals before remote-sensing attribution | PSP/SolO in-situ first, remote-sensing only with explicit caveats | separate switchback detection from solar-source attribution and magnetic mapping |
 | Magnetic field line switchbacks near the Sun, DOI `10.3847/1538-4365/ab4da7` | PSP E1 perihelion windows such as `2018-11-05/00:00:00`–`06:00:00` for smoke | FIELDS MAG RTN + SWEAP/SPC | field-line polarity/deflection proxy, speed overlay, threshold-sensitivity follow-up |
 
 Treat these intervals as **candidate intervals** unless the user supplies an exact
@@ -75,6 +78,28 @@ Agent Kit grows dedicated, validated operations, keep the workflow explicit:
   or `cached_smoke`), `cadence_choice`, `fill_value_warnings`, and
   `derived_normalization` so a reviewer can tell what is science-ready and what
   is only a workflow smoke test.
+
+## Batch-004 Solar Orbiter and radial-alignment notes
+
+Batch 004 showed that PSP/SolO switchback papers are best handled as an
+**in-situ-first** extension of this skill, not a new skill:
+
+- **Solar Orbiter MAG route:** first try MAG `rtn-normal`; the tplot variable seen
+  in the smoke reproduction was `B_RTN`. Record product/cadence and coordinate
+  basis before comparing with PSP RTN panels.
+- **SWA/PAS fallback:** `solo.swa` / `pas-grnd-mom` may return no matching CDAWeb
+  files for some June 2020 switchback windows. If plasma moments are absent,
+  produce a MAG-only artifact and label velocity/plasma comparisons as
+  unavailable rather than silently dropping panels.
+- **Radial alignment:** for PSP+SolO stream-interaction or switchback alignment
+  papers, load `spice-conjunction-finder` for geometry/conjunction context, then
+  keep the first pass to a reduced in-situ panel (PSP MAG/SWEAP, SolO MAG, OMNI
+  context if relevant). Do not claim mapped solar-source timing until propagation,
+  connectivity, and remote-sensing assumptions are explicit.
+- **Source attribution:** papers such as `10.1007/s11207-022-02022-4` need two
+  layers in provenance: (1) in-situ switchback/event detection, and (2) mapping /
+  remote-sensing interpretation. The first can be reproduced with this skill; the
+  second is a caveated context product unless the paper method is matched.
 
 ## Caveats to state in the report
 
