@@ -153,3 +153,43 @@ def test_batch007_stereo_icme_sep_guardrails_are_indexed():
     assert "DOI unresolved in Batch 007" in doc
     assert "metadata_unresolved" in presets
     assert "HI/J-map" in doc
+
+
+def test_batch008_magnetotail_guardrails_are_indexed():
+    workflow = (ROOT / "plugins/spedas-claude/skills/spedas-workflow/SKILL.md").read_text(encoding="utf-8")
+    index = (ROOT / "plugins/spedas-claude/skills/spedas-skills-index/SKILL.md").read_text(encoding="utf-8")
+    gradients = (ROOT / "plugins/spedas-claude/skills/multi-spacecraft-gradients/SKILL.md").read_text(encoding="utf-8")
+    doc = (ROOT / "docs/examples/cluster_geotail_themis_magnetotail_multispacecraft.md").read_text(encoding="utf-8")
+    presets = (ROOT / "docs/examples/solar_wind_event_presets.md").read_text(encoding="utf-8")
+
+    assert "Magnetotail / multi-spacecraft boundary events (Batch 008 guardrail)" in workflow
+    assert "cluster_geotail_themis_magnetotail_multispacecraft.md" in workflow
+    assert "single_spacecraft_cis" in workflow
+    assert "fgm_route_empty" in workflow
+    assert "not_paper_exact" in workflow
+    assert "four-spacecraft magnetic fields" in workflow
+
+    assert "cluster_geotail_themis_magnetotail_multispacecraft.md" in index
+    assert "fgm_route_empty" in index
+    assert "not_paper_exact" in index
+
+    assert "Batch 008 magnetotail guardrail" in gradients
+    assert "single_spacecraft_cis" in gradients
+    assert "fgm_route_empty" in gradients
+    assert "not_paper_exact" in gradients
+
+    for expected in [
+        "10.1038/nature02799",
+        "10.1038/nphys574",
+        "10.1002/jgra.50247",
+    ]:
+        assert expected in doc
+        assert expected in presets
+    assert "single_spacecraft_cis" in doc and "single_spacecraft_cis" in presets
+    assert "fgm_route_empty" in doc and "fgm_route_empty" in presets
+    assert "metadata_unresolved" in doc and "metadata_unresolved" in presets
+    assert "not_paper_exact" in doc and "not_paper_exact" in presets
+    assert "10.1126/science.1160495" in doc
+    assert "10.1029/2009GL038980" in doc
+    assert presets.count("10.1126/science.1160495") == 1
+    assert presets.count("10.1029/2009GL038980") == 1

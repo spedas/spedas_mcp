@@ -58,6 +58,23 @@ overclaim prevention. Do not promote shock/sheath/cloud boundaries,
 SEP onset/fluence, or SECCHI/HI J-map context to paper-quality outputs unless
 those products and methods are explicitly loaded and documented.
 
+## Magnetotail / multi-spacecraft boundary events (Batch 008 guardrail)
+
+For Cluster, Geotail, or THEMIS magnetotail/boundary papers, use
+`paper-reproduction` as the artifact contract and
+`docs/examples/cluster_geotail_themis_magnetotail_multispacecraft.md` as the
+first-pass recipe. Discover sources with `search_spedas_data_sources`, plan the
+field/plasma/state products with `plan_spedas_observation`, and create a bundle
+before plotting. Batch 008 showed that Cluster C1 CIS can load while the tested
+Cluster FGM UP route returns no files; label those overviews
+`single_spacecraft_cis` and `fgm_route_empty` instead of implying
+four-spacecraft science. Keep the Geotail Nagai 2013 route scout labelled
+`not_paper_exact` / `metadata_unresolved` until the actual event list and
+methods are verified. Do not claim curlometer current density, gradients,
+timing normals, KH-vortex morphology, shock normals, FTEs, or reconnection rates
+without four-spacecraft magnetic fields, positions, cadence/frame checks, and
+paper-interval provenance.
+
 ## Guardrails
 
 - Do not fetch large intervals until source_type, dataset_id, parameters, time range, output_dir, and provenance plan are clear.

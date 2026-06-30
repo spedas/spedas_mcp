@@ -22,6 +22,18 @@ Do **not** use this for a single spacecraft, for mixed coordinate frames, or whe
 spacecraft form a nearly flat/linear tetrahedron unless the result is explicitly
 reported as low confidence.
 
+## Batch 008 magnetotail guardrail
+
+Cluster, Geotail, and THEMIS magnetotail/boundary overview plots are not enough
+for this skill. Batch 008 found useful Cluster C1 CIS proxies but an empty
+Cluster FGM route; label those cases `single_spacecraft_cis` and
+`fgm_route_empty`, not four-spacecraft gradients. Do not run or cite curlometer,
+linear-gradient, timing-normal, KH-vortex, shock-normal, or reconnection-rate
+results until all four magnetic-field vectors and all four positions are loaded
+in one frame/cadence with provenance. Geotail route scouts labelled
+`not_paper_exact` / `metadata_unresolved` are discovery evidence, not validation
+for gradient tooling.
+
 ## Tool chain (all existing; no new MCP tools)
 
 `search_spedas_data_sources` → `plan_spedas_observation` →
