@@ -226,3 +226,31 @@ def test_batch009_storm_context_guardrails_are_indexed():
     assert "10.1186/BF03351958" not in presets
     assert presets.count("10.1029/2004JA010494") == 1
     assert presets.count("10.1029/2001GL014136") == 1
+
+
+def test_batch010_erg_arase_guardrails_are_indexed():
+    skill = (ROOT / "plugins/spedas-claude/skills/erg-arase-radiation-belt-waves/SKILL.md").read_text(encoding="utf-8")
+    index = (ROOT / "plugins/spedas-claude/skills/spedas-skills-index/SKILL.md").read_text(encoding="utf-8")
+
+    assert "name: erg-arase-radiation-belt-waves" in skill
+    for expected in [
+        "pyspedas.erg.mgf",
+        "pyspedas.erg.pwe_ofa",
+        "pyspedas.erg.pwe_hfa",
+        "omniflux",
+        "gmag_isee_fluxgate",
+        "camera_omti_asi",
+        "OMTI",
+        "PySPEDAS-only",
+        "instrument/data-route anchor",
+        "not PSD",
+        "10.1038/nature25505",
+        "10.1186/s40623-018-0854-0",
+        "10.1186/s40623-018-0853-1",
+        "10.1186/s40623-018-0800-1",
+        "10.1029/2024JA032617",
+    ]:
+        assert expected in skill
+
+    assert "erg-arase-radiation-belt-waves" in index
+    assert "ISEE/OMTI/MAGDAS" in index
