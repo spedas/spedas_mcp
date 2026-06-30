@@ -7,6 +7,8 @@ from pathlib import Path
 
 import pytest
 
+from spedas_agent_kit.resources.skill_catalog import list_packaged_skills
+
 from spedas_agent_kit.resources.event_presets import (
     SPEDAS_PRESET_INDEX_URI,
     SPEDAS_PRESET_URI_PREFIX,
@@ -82,6 +84,22 @@ def test_quality_labels_are_from_documented_set() -> None:
             assert label in _ALLOWED_QUALITY_LABELS, (
                 f"{preset.id} carries undocumented quality label {label!r}"
             )
+
+
+def test_preset_skills_reference_packaged_skills() -> None:
+    packaged_skills = {skill.name for skill in list_packaged_skills()}
+    presets = list_event_presets()
+
+    chhiber = {p.id: p for p in presets}[
+        "psp-e1-chhiber-2020-pvi-intermittent-structures"
+    ]
+    assert "solar-wind-turbulence-intermittency" in chhiber.skills
+
+    for preset in presets:
+        missing = sorted(set(preset.skills) - packaged_skills)
+        assert not missing, (
+            f"{preset.id} references unknown packaged skills: {missing}"
+        )
 
 
 def test_get_event_preset_roundtrips_and_rejects_unknown_and_traversal() -> None:

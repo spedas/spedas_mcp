@@ -72,7 +72,7 @@
       "trange_utc": ["2018-11-06/00:00:00", "2018-11-06/03:00:00"],
       "data_route": "PSP FIELDS MAG RTN, optional SWEAP/SPC context",
       "quality_labels": ["cached_smoke"],
-      "skills": ["psp-solar-wind-switchbacks", "solar-wind-turbulence-spectrum"],
+      "skills": ["psp-solar-wind-switchbacks", "solar-wind-turbulence-intermittency", "solar-wind-turbulence-spectrum"],
       "notes": "Smoke interval; cached_smoke until lag/cadence/threshold match the paper."
     },
     {
