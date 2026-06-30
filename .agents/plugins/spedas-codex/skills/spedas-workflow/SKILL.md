@@ -44,6 +44,20 @@ curlometer diagnostics are all verified. If the paper/supplement interval cannot
 be verified, record `candidate_interval` or `availability_failure` instead of
 widening the fetch or claiming reproduction.
 
+## Heliospheric ICME/SEP multi-spacecraft events (Batch 007 guardrail)
+
+For Wind/ACE/STEREO/OMNI ICME, magnetic-cloud, CME-CME, or SEP papers, use
+`paper-reproduction` as the outer artifact contract and treat
+`docs/examples/stereo_icme_multispacecraft.md` as the reduced first-pass recipe.
+Start with STEREO MAG `1min` + PLASTIC proton moments for multi-day events, add
+Wind/ACE/OMNI only with explicit source/propagation labels, and keep SEP products
+as `reduced_sep_proxy` until telescope/species/energy-channel metadata are
+verified. Batch 007 confirmed that STEREO/PLASTIC/SEPT routing already exists;
+the repeated gap is discoverability, event seeds, variable-alias provenance, and
+overclaim prevention. Do not promote shock/sheath/cloud boundaries,
+SEP onset/fluence, or SECCHI/HI J-map context to paper-quality outputs unless
+those products and methods are explicitly loaded and documented.
+
 ## Guardrails
 
 - Do not fetch large intervals until source_type, dataset_id, parameters, time range, output_dir, and provenance plan are clear.

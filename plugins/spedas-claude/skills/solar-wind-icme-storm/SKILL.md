@@ -72,6 +72,30 @@ reduced in-situ passes. Keep these data-route lessons resident:
   radial-alignment context, then keep this skill responsible for the in-situ
   overview panels and timing/provenance.
 
+## Batch-007 heliospheric ICME / SEP guardrails
+
+Batch 007 extended the solar-wind event workflow from single-event ICME overviews
+into multi-spacecraft STEREO/Wind/ACE and reduced SEP reproductions:
+
+- **STEREO A/B first pass:** for 2007 May and 2010 August multi-day events, start
+  with STEREO MAG `1min` plus PLASTIC proton moments. Record spacecraft (`sta` /
+  `stb`), coordinate labels, cadence, and whether MAG appears as generic
+  `BFIELD` before comparing rotations or `|B|`.
+- **Time-shifted comparisons are manual unless documented:** a panel aligning
+  STEREO, Wind, ACE, and OMNI is a timing-context artifact, not a propagation or
+  boundary-fit result. Record whether boundaries are not identified,
+  event-list-supplied, or paper-supplied.
+- **SEP profiles are reduced proxies:** STEREO SEPT/LET/HET, ACE, and Wind
+  particle channels require telescope, species, energy band, units, and sector
+  metadata before onset, fluence, anisotropy, or longitudinal-spread claims. If
+  those choices are not reproduced, label the output `reduced_sep_proxy`.
+- **HI/J-map scope boundary:** CME-CME interaction papers may depend on SECCHI/HI
+  J-maps or arrival-time fitting. A SPEDAS in-situ overview can support the event
+  route, but it is not a remote-sensing reproduction unless those products are
+  explicitly loaded and cited.
+- **Use the example doc:** `docs/examples/stereo_icme_multispacecraft.md` carries
+  Batch 007 seed rows and a provenance snippet for these cases.
+
 ## Caveats to state in the report
 
 - OMNI is propagated to the bow shock / near-Earth context; it is not a raw Wind or

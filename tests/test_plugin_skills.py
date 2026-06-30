@@ -120,3 +120,36 @@ def test_batch006_mms_reconnection_guardrails_are_indexed():
     assert "MMS asymmetric magnetopause electron-current/heating proxy" in presets
     assert "MMS electron-only reconnection availability scout" in presets
     assert "availability_failure" in presets
+
+
+
+def test_batch007_stereo_icme_sep_guardrails_are_indexed():
+    workflow = (ROOT / "plugins/spedas-claude/skills/spedas-workflow/SKILL.md").read_text(encoding="utf-8")
+    storm = (ROOT / "plugins/spedas-claude/skills/solar-wind-icme-storm/SKILL.md").read_text(encoding="utf-8")
+    index = (ROOT / "plugins/spedas-claude/skills/spedas-skills-index/SKILL.md").read_text(encoding="utf-8")
+    doc = (ROOT / "docs/examples/stereo_icme_multispacecraft.md").read_text(encoding="utf-8")
+    presets = (ROOT / "docs/examples/solar_wind_event_presets.md").read_text(encoding="utf-8")
+
+    assert "Heliospheric ICME/SEP multi-spacecraft events (Batch 007 guardrail)" in workflow
+    assert "reduced_sep_proxy" in workflow
+    assert "SECCHI/HI J-map" in workflow
+
+    assert "Batch-007 heliospheric ICME / SEP guardrails" in storm
+    assert "STEREO MAG `1min` plus PLASTIC" in storm
+    assert "telescope, species, energy band" in storm
+    assert "docs/examples/stereo_icme_multispacecraft.md" in storm
+
+    assert "SEP reduced proxy" in index
+    assert "channel metadata" in index
+
+    for expected in [
+        "10.5194/angeo-27-4491-2009",
+        "10.1007/s11207-009-9360-7",
+        "10.1029/2001GL014136",
+        "10.1007/s11207-012-0049-y",
+    ]:
+        assert expected in doc
+        assert expected in presets
+    assert "DOI unresolved in Batch 007" in doc
+    assert "metadata_unresolved" in presets
+    assert "HI/J-map" in doc
