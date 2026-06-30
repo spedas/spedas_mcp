@@ -57,8 +57,14 @@ reduced in-situ passes. Keep these data-route lessons resident:
 
 - **OMNI scalar components:** OMNI HRO may expose vector fields as separate
   scalar variables such as `BX_GSE`, `BY_GSE`, and `BZ_GSE` rather than one vector
-  array. Compose them explicitly, preserve the coordinate label, and record the
-  component names in provenance before plotting `|B|` or vector panels.
+  array. Fetch the three components together in one `fetch_data_product(...,
+  parameters=["BX_GSE", "BY_GSE", "BZ_GSE"])` call so Agent Kit writes one
+  time-aligned artifact; scalar CDF columns are named with a `.1` suffix
+  (`BX_GSE.1`, `BY_GSE.1`, `BZ_GSE.1`). Pass those exact names to vector tools as
+  `vector_cols=["BX_GSE.1", "BY_GSE.1", "BZ_GSE.1"]`, preserve `coord_in="gse"`
+  from the returned `source_frame`/provenance, and record the original component
+  names before plotting `|B|` or vector panels. Do not separately fetch and
+  silently join different-cadence components.
 - **STEREO cadence/data volume:** for multi-day events such as Rouillard et al.
   2009 (`10.1029/2008JA014034`), avoid starting with high-rate MAG (`8hz`) over
   a week-long window. Use STEREO MAG `1min` plus PLASTIC for the first artifact,

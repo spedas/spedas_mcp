@@ -11,8 +11,12 @@ for a first Agent Kit run.
   MAG-only artifact and record that fallback.
 - **PSP + SolO radial alignment:** use `spice-conjunction-finder` for geometry,
   then make a reduced in-situ panel before attempting source mapping.
-- **OMNI context:** compose scalar components `BX_GSE`, `BY_GSE`, `BZ_GSE` when
-  OMNI does not expose a ready vector. Preserve coordinate labels.
+- **OMNI context:** when OMNI does not expose a ready vector, fetch scalar
+  components `BX_GSE`, `BY_GSE`, and `BZ_GSE` together in one `fetch_data_product`
+  call. The combined artifact uses scalar-column names `BX_GSE.1`, `BY_GSE.1`,
+  and `BZ_GSE.1`; pass those exact names as `vector_cols` to coordinate/MVA/FAC
+  tools and keep `coord_in="gse"` from the artifact provenance. Do not silently
+  join separately fetched or different-cadence components.
 - **STEREO multi-day events:** start with MAG `1min` plus PLASTIC; reserve high
   cadence such as `8hz` for short sub-intervals.
 

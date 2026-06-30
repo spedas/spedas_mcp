@@ -337,6 +337,33 @@ def test_load_time_and_vectors_accepts_datetime_string_dtype(tmp_path, monkeypat
     assert vectors.tolist() == [[1.0, 3.0, 5.0], [2.0, 4.0, 6.0]]
 
 
+def test_load_time_and_vectors_accepts_omni_scalar_component_suffixes(tmp_path):
+    """OMNI scalar components fetched together become `{param}.1` columns."""
+    input_path = tmp_path / "omni_gse_components.csv"
+    frame = pd.DataFrame(
+        {
+            "time": ["2003-10-29T00:00:00Z", "2003-10-29T00:01:00Z"],
+            "BX_GSE.1": [1.0, 2.0],
+            "BY_GSE.1": [-1.5, -2.5],
+            "BZ_GSE.1": [0.25, 0.5],
+        }
+    )
+    frame.to_csv(input_path, index=False)
+
+    unix_time, vectors, resolved = coords._load_time_and_vectors(
+        str(input_path), vector_cols=["BX_GSE.1", "BY_GSE.1", "BZ_GSE.1"]
+    )
+
+    assert resolved == ["BX_GSE.1", "BY_GSE.1", "BZ_GSE.1"]
+    assert unix_time[1] > unix_time[0]
+    assert vectors.tolist() == [[1.0, -1.5, 0.25], [2.0, -2.5, 0.5]]
+
+    with pytest.raises(ValueError, match="vector_cols not found"):
+        coords._load_time_and_vectors(
+            str(input_path), vector_cols=["BX_GSE", "BY_GSE", "BZ_GSE"]
+        )
+
+
 def test_transform_handles_cotrans_failure(vector_csv, tmp_path, monkeypatch):
     _install_fake_pyspedas(monkeypatch, cotrans=lambda **kw: 0)
     out = coords.transform_timeseries_coordinates(
