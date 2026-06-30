@@ -85,8 +85,12 @@ def test_solar_wind_paper_reproduction_skills_are_packaged_and_indexed() -> None
     assert "Bale" in psp and "Dudok de Wit" in psp
     assert "Horbury" in psp and "Chhiber" in psp
     assert "interval_quality" in psp
+    assert "rtn-normal" in psp
+    assert "spice-conjunction-finder" in psp
     assert "name: solar-wind-icme-storm" in storm
     assert "AE_INDEX" in storm
+    assert "BX_GSE" in storm and "BZ_GSE" in storm
+    assert "8hz" in storm and "1min" in storm
     assert "STEREO" in storm
 
     index = read_packaged_skill("spedas-skills-index")
@@ -117,3 +121,13 @@ def test_solar_wind_turbulence_intermittency_skill_is_packaged_and_indexed() -> 
 
     index = read_packaged_skill("spedas-skills-index")
     assert "solar-wind-turbulence-intermittency" in index
+
+
+def test_multispacecraft_insitu_example_documents_batch004_routes() -> None:
+    from pathlib import Path
+
+    text = (Path(__file__).resolve().parents[1] / "docs/examples/stereo_psp_solo_multispacecraft_insitu.md").read_text(encoding="utf-8")
+    assert "B_RTN" in text
+    assert "BX_GSE" in text and "BZ_GSE" in text
+    assert "1min" in text
+    assert "spice-conjunction-finder" in text

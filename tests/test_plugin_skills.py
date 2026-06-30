@@ -54,3 +54,15 @@ def test_solar_wind_turbulence_intermittency_skill_is_indexed():
 
     index = (ROOT / "plugins/spedas-claude/skills/spedas-skills-index/SKILL.md").read_text(encoding="utf-8")
     assert "solar-wind-turbulence-intermittency" in index
+
+
+def test_batch004_multispacecraft_guardrails_are_indexed():
+    psp = (ROOT / "plugins/spedas-claude/skills/psp-solar-wind-switchbacks/SKILL.md").read_text(encoding="utf-8")
+    storm = (ROOT / "plugins/spedas-claude/skills/solar-wind-icme-storm/SKILL.md").read_text(encoding="utf-8")
+    index = (ROOT / "plugins/spedas-claude/skills/spedas-skills-index/SKILL.md").read_text(encoding="utf-8")
+    assert "rtn-normal" in psp
+    assert "spice-conjunction-finder" in psp
+    assert "BX_GSE" in storm and "BY_GSE" in storm and "BZ_GSE" in storm
+    assert "8hz" in storm and "1min" in storm
+    assert "Solar Orbiter" in index
+    assert "scalar OMNI vectors" in index

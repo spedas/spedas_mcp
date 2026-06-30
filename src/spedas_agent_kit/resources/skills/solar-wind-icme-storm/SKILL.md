@@ -16,6 +16,7 @@ OMNI/Wind/ACE/STEREO data route and overview panel set.
 |---|---|---|---|
 | Skoug et al. 2004 Halloween high-speed solar wind, DOI `10.1029/2004JA010494` | `2003-10-29/00:00:00`–`2003-10-31/00:00:00` | OMNI HRO 1-min plus Wind/ACE context when needed | speed, Bz GSM, density, temperature, dynamic pressure, SYM-H/AE |
 | Liu et al. 2014 July 2012 extreme ICME, DOI `10.1038/ncomms4481` | `2012-07-23/00:00:00`–`2012-07-25/00:00:00` | STEREO-A MAG + PLASTIC | `|B|`, B components, speed, density, temperature |
+| Rouillard et al. 2009 Sun-to-Venus storm, DOI `10.1029/2008JA014034` | `2007-11-14/00:00:00`–`2007-11-21/00:00:00` | STEREO-A/B MAG `1min` + PLASTIC first; SECCHI/J-map and VEX/MESSENGER only as caveated context | multi-spacecraft in-situ overview, data-volume guardrails, remote-sensing/non-SPEDAS caveats |
 | Bastille Day / other Wind-ACE clouds | paper interval or event-list interval | Wind/ACE MFI/SWE plus OMNI for geomagnetic response | shock/sheath/cloud overview with source-specific timing caveats |
 
 Treat event windows as starting points. Exact shock, sheath, ejecta, or magnetic
@@ -48,6 +49,28 @@ cloud boundaries require paper/event-list confirmation.
    `candidate_interval` or `proxy`.
 6. **Record reusable event feedback.** If manual code was needed, name the missing
    preset/alias/overview capability rather than only the single paper.
+
+## Batch-004 multi-spacecraft data-route guardrails
+
+Batch 004 extended this skill from Earth/ICME overviews into STEREO + PSP/SolO
+reduced in-situ passes. Keep these data-route lessons resident:
+
+- **OMNI scalar components:** OMNI HRO may expose vector fields as separate
+  scalar variables such as `BX_GSE`, `BY_GSE`, and `BZ_GSE` rather than one vector
+  array. Compose them explicitly, preserve the coordinate label, and record the
+  component names in provenance before plotting `|B|` or vector panels.
+- **STEREO cadence/data volume:** for multi-day events such as Rouillard et al.
+  2009 (`10.1029/2008JA014034`), avoid starting with high-rate MAG (`8hz`) over
+  a week-long window. Use STEREO MAG `1min` plus PLASTIC for the first artifact,
+  then escalate cadence only for narrow sub-intervals.
+- **Remote-sensing and non-SPEDAS context:** SECCHI/J-map, Venus Express, and
+  MESSENGER context may be essential to the paper but are not automatically
+  reproduced by a reduced SPEDAS in-situ panel. State this as a source-boundary
+  caveat instead of implying full Sun-to-planet reproduction.
+- **PSP/SolO radial alignment:** when a storm/stream-interaction paper depends on
+  spacecraft geometry, cross-load `spice-conjunction-finder` for conjunction or
+  radial-alignment context, then keep this skill responsible for the in-situ
+  overview panels and timing/provenance.
 
 ## Caveats to state in the report
 
