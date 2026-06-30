@@ -42,6 +42,8 @@ def test_packaged_skill_catalog_lists_research_skill_resources() -> None:
         "wave-polarization",
         "particle-velocity-slice",
         "paper-reproduction",
+        "psp-solar-wind-switchbacks",
+        "solar-wind-icme-storm",
     } <= names
     assert all(skill.resource_uri == f"{SPEDAS_SKILL_URI_PREFIX}{skill.name}" for skill in skills)
     assert all(skill.description for skill in skills)
@@ -54,6 +56,8 @@ def test_packaged_skill_index_markdown_points_to_resource_uris() -> None:
     assert "spedas-skill://skills/spedas-workflow" in index
     assert "spedas-skill://skills/wave-polarization" in index
     assert "spedas-skill://skills/paper-reproduction" in index
+    assert "spedas-skill://skills/psp-solar-wind-switchbacks" in index
+    assert "spedas-skill://skills/solar-wind-icme-storm" in index
 
 
 def test_paper_reproduction_skill_is_packaged_with_provenance_template() -> None:
@@ -70,3 +74,18 @@ def test_read_packaged_skill_by_name_and_reject_path_traversal() -> None:
     assert "SPEDAS Agent Kit workflow" in text
     with pytest.raises(KeyError):
         read_packaged_skill("../spedas-workflow")
+
+
+def test_solar_wind_paper_reproduction_skills_are_packaged_and_indexed() -> None:
+    psp = read_packaged_skill("psp-solar-wind-switchbacks")
+    storm = read_packaged_skill("solar-wind-icme-storm")
+    assert "name: psp-solar-wind-switchbacks" in psp
+    assert "deflection angle" in psp
+    assert "Bale" in psp and "Dudok de Wit" in psp
+    assert "name: solar-wind-icme-storm" in storm
+    assert "AE_INDEX" in storm
+    assert "STEREO" in storm
+
+    index = read_packaged_skill("spedas-skills-index")
+    assert "psp-solar-wind-switchbacks" in index
+    assert "solar-wind-icme-storm" in index

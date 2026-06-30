@@ -23,6 +23,8 @@ Low-level / source-specific compat tools exist for maintenance only — skills d
 | If the user wants… | Use skill | First call |
 |---|---|---|
 | Reproduce a published paper, figure, event, or DOI with artifact/provenance output | `paper-reproduction` | `spedas_overview` then `search_spedas_data_sources` / `plan_spedas_observation` |
+| Parker Solar Probe Encounter-1 structured slow wind, switchbacks, or Alfvénic velocity spikes | `psp-solar-wind-switchbacks` | `spedas_overview` then `search_spedas_data_sources` / `plan_spedas_observation` |
+| Solar-wind storm, ICME, magnetic cloud, or extreme-speed event overview (OMNI/Wind/ACE/STEREO) | `solar-wind-icme-storm` | `spedas_overview` then `search_spedas_data_sources` / `plan_spedas_observation` |
 | The turbulence/wave power spectrum of a field interval | `solar-wind-turbulence-spectrum` | `create_spedas_analysis_bundle` |
 | Wave polarization (whistler/EMIC/chorus: degpol, wave-normal angle, ellipticity) | `wave-polarization` | `create_spedas_analysis_bundle` |
 | A boundary normal / LMN frame for a crossing | `boundary-minimum-variance` | `create_spedas_analysis_bundle` |
