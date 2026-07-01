@@ -9,7 +9,13 @@ scientific workflow logic independently.
 
 The packaged skills are one half of the runtime-neutral Agent Kit contract. The
 other half is the MCP server and resource surface. Runtime wrappers should follow
-the workflow in [`docs/examples/agent_kit_integration_workflow.md`](/docs/examples/agent_kit_integration_workflow.md):
+the workflow in [`docs/examples/agent_kit_integration_workflow.md`](/docs/examples/agent_kit_integration_workflow.md). To materialize the canonical skill set into a runtime wrapper, use:
+
+```bash
+python scripts/export_packaged_skills.py --target <runtime-plugin>/skills --clean
+```
+
+Then:
 
 1. connect the Agent Kit MCP server;
 2. discover the shared skill catalog through `spedas-skill://index` and

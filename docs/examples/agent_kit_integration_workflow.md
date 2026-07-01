@@ -31,6 +31,10 @@ Runtime wrappers may mirror these files for packaging, but the package resource
 copy is the source of truth. Wrapper-specific copies must stay synchronized and
 should not introduce independent scientific behavior.
 
+Use `scripts/export_packaged_skills.py --target <runtime-plugin>/skills --clean`
+to materialize the canonical package-resource skill set into a wrapper directory
+without hand-copying skills.
+
 ## Integration workflow for a new runtime
 
 ### 1. Connect the MCP server
