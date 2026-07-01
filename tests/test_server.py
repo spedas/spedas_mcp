@@ -3827,6 +3827,7 @@ def test_server_exposes_packaged_skills_as_mcp_resources(monkeypatch):
     assert "spedas-skill://skills/omni-kyoto-noaa-smoke-workflows" in by_uri
     assert "spedas-skill://skills/themis-workflows" in by_uri
     assert "spedas-skill://skills/mms-basic-workflows" in by_uri
+    assert "spedas-skill://skills/psp-solo-heliophysics-workflows" in by_uri
     assert by_uri["spedas-skill://index"].mimeType == "text/markdown"
     assert by_uri["spedas-skill://index"].meta["surface"] == "spedas_skill"
     assert by_uri["spedas-skill://skills/spedas-workflow"].meta["skill_name"] == "spedas-workflow"
@@ -3835,6 +3836,10 @@ def test_server_exposes_packaged_skills_as_mcp_resources(monkeypatch):
     ].meta["skill_name"] == "omni-kyoto-noaa-smoke-workflows"
     assert by_uri["spedas-skill://skills/themis-workflows"].meta["skill_name"] == "themis-workflows"
     assert by_uri["spedas-skill://skills/mms-basic-workflows"].meta["skill_name"] == "mms-basic-workflows"
+    assert (
+        by_uri["spedas-skill://skills/psp-solo-heliophysics-workflows"].meta["skill_name"]
+        == "psp-solo-heliophysics-workflows"
+    )
 
     index_contents = asyncio.run(server.read_resource("spedas-skill://index"))
     assert "spedas-skill://skills/spedas-workflow" in index_contents[0].content
@@ -3859,6 +3864,19 @@ def test_server_exposes_packaged_skills_as_mcp_resources(monkeypatch):
     assert "pyspedas.projects.mms.mms_pad_fpi" not in mms_contents[0].content
     assert "pyspedas.projects.mms.mms_load_fpi_calc_pad" not in mms_contents[0].content
     assert "external_runtime_route.not_an_mcp_tool: true" in mms_contents[0].content
+    psp_solo_contents = asyncio.run(
+        server.read_resource("spedas-skill://skills/psp-solo-heliophysics-workflows")
+    )
+    assert "name: psp-solo-heliophysics-workflows" in psp_solo_contents[0].content
+    assert "pyspedas.projects.psp.fields" in psp_solo_contents[0].content
+    assert "pyspedas.projects.psp.spc" in psp_solo_contents[0].content
+    assert "pyspedas.projects.solo.mag" in psp_solo_contents[0].content
+    assert "pyspedas.projects.solo.swa" in psp_solo_contents[0].content
+    assert "PSP_FLD_L2_MAG_RTN_1MIN" in psp_solo_contents[0].content
+    assert "SOLO_L2_MAG-RTN-NORMAL" in psp_solo_contents[0].content
+    assert "pyspedas.projects.psp.psp_fields" not in psp_solo_contents[0].content
+    assert "pyspedas.projects.solo.solo_mag" not in psp_solo_contents[0].content
+    assert "external_runtime_route.not_an_mcp_tool: true" in psp_solo_contents[0].content
 
 
 def test_overview_advertises_skill_resources(monkeypatch):

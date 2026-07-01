@@ -442,3 +442,57 @@ def test_systematic_batch004_mms_workflows_are_indexed_and_guarded() -> None:
         "pyspedas.projects.mms.mms_part_slice2d",
     ]:
         assert forbidden not in skill
+
+
+
+def test_systematic_batch005_psp_solo_workflows_are_indexed_and_guarded() -> None:
+    skill_root = ROOT / "plugins/spedas-claude/skills"
+    source_root = ROOT / "src/spedas_agent_kit/resources/skills"
+    index = (skill_root / "spedas-skills-index/SKILL.md").read_text(encoding="utf-8")
+    skill = (source_root / "psp-solo-heliophysics-workflows/SKILL.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "psp-solo-heliophysics-workflows" in index
+    for expected in [
+        "PSP_FLD_L2_MAG_RTN_1MIN",
+        "PSP_FLD_L2_MAG_RTN",
+        "PSP_SWP_SPC_L3I",
+        "SOLO_L2_MAG-RTN-NORMAL-1-MINUTE",
+        "SOLO_L2_MAG-RTN-NORMAL",
+        "B_RTN",
+        "pyspedas.projects.psp.fields",
+        "pyspedas.projects.psp.spc",
+        "pyspedas.projects.psp.spi",
+        "pyspedas.projects.psp.spe",
+        "pyspedas.projects.psp.rfs",
+        "pyspedas.projects.psp.epihi",
+        "pyspedas.projects.psp.epilo",
+        "pyspedas.projects.psp.epi",
+        "pyspedas.projects.solo.mag",
+        "pyspedas.projects.solo.swa",
+        "pyspedas.projects.solo.rpw",
+        "pyspedas.projects.solo.epd",
+        "not_an_mcp_tool",
+        "external_runtime_route.not_an_mcp_tool: true",
+        "downloadonly=True",
+        "notplot=True",
+        "no_update=True",
+        "time_clip=True",
+        "spice-conjunction-finder",
+        "coordinate-frame-tour",
+        "psp-solar-wind-switchbacks",
+        "solar-wind-turbulence-spectrum",
+        "solar-wind-turbulence-intermittency",
+        "Do not paste arrays",
+        "create_spedas_analysis_bundle",
+    ]:
+        assert expected in skill
+
+    for forbidden in [
+        "pyspedas.projects.psp.psp_fields",
+        "pyspedas.projects.solo.solo_mag",
+        "mcp__spedas__pyspedas.projects.psp.fields",
+        "mcp__spedas__pyspedas.projects.solo.mag",
+    ]:
+        assert forbidden not in skill

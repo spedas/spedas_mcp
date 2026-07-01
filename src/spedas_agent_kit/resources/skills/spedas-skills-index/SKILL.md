@@ -23,6 +23,7 @@ Low-level / source-specific compat tools exist for maintenance only — skills d
 | If the user wants… | Use skill | First call |
 |---|---|---|
 | Reproduce a published paper, figure, event, or DOI with artifact/provenance output | `paper-reproduction` | `spedas_overview` then `search_spedas_data_sources` / `plan_spedas_observation` |
+| PSP/Solar Orbiter heliospheric load-plan bridge, FIELDS/SWEAP/SolO MAG/SWA/RPW/EPD product selection, radial-alignment route scout, or inner-heliosphere in-situ comparison | `psp-solo-heliophysics-workflows` | `spedas_overview` then `search_spedas_data_sources` / `plan_spedas_observation`; load `spice-conjunction-finder` when geometry matters |
 | Parker Solar Probe / Solar Orbiter switchbacks, Alfvénic impulses, or radial-alignment in-situ comparisons | `psp-solar-wind-switchbacks` | `spedas_overview` then `search_spedas_data_sources` / `plan_spedas_observation`; load `spice-conjunction-finder` when geometry matters |
 | Solar-wind storm, ICME, magnetic cloud, stream interaction, SEP reduced proxy, or multi-spacecraft in-situ overview (OMNI/Wind/ACE/STEREO/PSP/SolO) | `solar-wind-icme-storm` | `spedas_overview` then `search_spedas_data_sources` / `plan_spedas_observation`; compose scalar OMNI vectors, start STEREO multi-day runs at 1-minute cadence, and keep SEP onset/fluence claims gated on channel metadata |
 | The turbulence/wave power spectrum of a field interval | `solar-wind-turbulence-spectrum` | `create_spedas_analysis_bundle` |

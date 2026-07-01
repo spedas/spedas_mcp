@@ -237,3 +237,39 @@ def test_systematic_batch004_mms_workflows_skill_is_packaged_and_indexed() -> No
         "pyspedas.projects.mms.mms_load_fpi_calc_pad",
     ]:
         assert forbidden not in skill
+
+
+
+def test_systematic_batch005_psp_solo_workflows_skill_is_packaged_and_indexed() -> None:
+    skill_name = "psp-solo-heliophysics-workflows"
+    skill = read_packaged_skill(skill_name)
+    index = read_packaged_skill("spedas-skills-index")
+    rendered = render_skill_index_markdown()
+
+    assert f"{SPEDAS_SKILL_URI_PREFIX}{skill_name}" in rendered
+    assert skill_name in index
+    for expected in [
+        "PSP_FLD_L2_MAG_RTN_1MIN",
+        "PSP_SWP_SPC_L3I",
+        "SOLO_L2_MAG-RTN-NORMAL",
+        "B_RTN",
+        "pyspedas.projects.psp.fields",
+        "pyspedas.projects.psp.spc",
+        "pyspedas.projects.solo.mag",
+        "pyspedas.projects.solo.swa",
+        "pyspedas.projects.solo.rpw",
+        "pyspedas.projects.solo.epd",
+        "external_runtime_route.not_an_mcp_tool: true",
+        "downloadonly=True",
+        "notplot=True",
+        "no_update=True",
+        "time_clip=True",
+        "spice-conjunction-finder",
+    ]:
+        assert expected in skill
+
+    for forbidden in [
+        "pyspedas.projects.psp.psp_fields",
+        "pyspedas.projects.solo.solo_mag",
+    ]:
+        assert forbidden not in skill
