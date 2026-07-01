@@ -52,7 +52,7 @@ Citations look like `src/spedas_agent_kit/server.py:1072`. Keep them current —
 - **Add/rename/move a tool** → update `src/spedas_agent_kit/ANATOMY.md` (and root if the surface count changes). New capability lands as a unified `source_type` or a **skill**, NOT a new top-level tool, unless it truly cannot be either (the consolidation goal: keep the advertised base surface small; verify the current count with `scripts/smoke_mcp_list_tools.py`).
 - **Add an analysis function** → put it in `analysis/`, register it in `create_server()`, add its backend to `_ANALYSIS_REQUIRED_IMPORTS` at the **submodule** path (`server.py:55`; a package-level probe silently hides ALL analysis tools), and update `analysis/ANATOMY.md`.
 - **Add a data source** → `datasources/` with a precise `require_*` guard; update `datasources/ANATOMY.md`.
-- **Add a skill** → one dir under `plugins/spedas-claude/skills/`, follow the existing SKILL.md shape (When to use / Tool chain / Backend with VERIFIED contract / Procedure / Guardrails / Example), index it in `spedas-skills-index`, and reference only the unified tools.
+- **Add a skill** → create or edit the canonical dir under `src/spedas_agent_kit/resources/skills/`, follow the existing SKILL.md shape (When to use / Tool chain / Backend with VERIFIED contract / Procedure / Guardrails / Example), index it in `spedas-skills-index`, reference only the unified tools, then refresh runtime fixtures with `scripts/export_packaged_skills.py --target <wrapper>/skills --clean`.
 
 ## Non-negotiable disciplines (hard-won)
 

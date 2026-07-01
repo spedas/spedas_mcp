@@ -17,7 +17,7 @@ The optional `[analysis]` layer: file-in / file-out functions wrapping pyspedas/
 
 - **In:** `server.py` tool closures call these with validated args + an `output_dir`.
 - **Out:** import pyspedas submodules (cotrans_tools, analysis.wavelet/twavpol, geopack, particles.*, tplot_tools); PyWavelets; matplotlib (Agg).
-- Artifacts chain: `fetch_data_product` CSV → these → `.npz`/`.csv` → `render_tplot` PNG. The **skills** (`plugins/spedas-claude/skills/`) encode these chains.
+- Artifacts chain: `fetch_data_product` CSV → these → `.npz`/`.csv` → `render_tplot` PNG. The **canonical packaged skills** (`src/spedas_agent_kit/resources/skills/`, exported into runtime wrappers) encode these chains.
 
 ## Composition
 

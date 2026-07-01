@@ -128,9 +128,9 @@ Use this checklist when polishing Agent Kit for a new runtime or workflow:
 
 - [ ] The change keeps MCP implementation, shared skills, and runtime adapter
       packaging separate.
-- [ ] Any skill content changed in `plugins/spedas-claude/skills/` also changed
-      in `src/spedas_agent_kit/resources/skills/`, or a sync helper/test explains
-      why not.
+- [ ] Any skill-content change started from the canonical packaged source in
+      `src/spedas_agent_kit/resources/skills/`, and runtime fixture/wrapper
+      copies were refreshed with the export helper or covered by a sync test.
 - [ ] Runtime docs point to `spedas-skill://index` or the packaged skill catalog
       instead of copying the full skill library into prose.
 - [ ] Golden workflow instructions follow the sequence:
