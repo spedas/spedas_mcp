@@ -89,8 +89,10 @@ def test_base_surface_is_thirteen_primary_tools(monkeypatch):
     monkeypatch.delenv("SPEDAS_AGENT_KIT_DATASOURCE_TOOLS", raising=False)
     server = create_server(include_analysis_tools=False)
     tools = asyncio.run(server.list_tools())
+    names = {tool.name for tool in tools}
     assert len(tools) == 13
     assert {tool.meta["surface"] for tool in tools} == {"primary"}
+    assert {"load_omni", "kyoto_dst", "load_ae", "noaa_load_kp"}.isdisjoint(names)
 
 
 def test_public_server_manifest_advertises_gate_env_flags():
@@ -3820,14 +3822,23 @@ def test_server_exposes_packaged_skills_as_mcp_resources(monkeypatch):
     assert "spedas-skill://index" in by_uri
     assert "spedas-skill://skills/spedas-workflow" in by_uri
     assert "spedas-skill://skills/wave-polarization" in by_uri
+    assert "spedas-skill://skills/omni-kyoto-noaa-smoke-workflows" in by_uri
     assert by_uri["spedas-skill://index"].mimeType == "text/markdown"
     assert by_uri["spedas-skill://index"].meta["surface"] == "spedas_skill"
     assert by_uri["spedas-skill://skills/spedas-workflow"].meta["skill_name"] == "spedas-workflow"
+    assert by_uri[
+        "spedas-skill://skills/omni-kyoto-noaa-smoke-workflows"
+    ].meta["skill_name"] == "omni-kyoto-noaa-smoke-workflows"
 
     index_contents = asyncio.run(server.read_resource("spedas-skill://index"))
     assert "spedas-skill://skills/spedas-workflow" in index_contents[0].content
     workflow_contents = asyncio.run(server.read_resource("spedas-skill://skills/spedas-workflow"))
     assert "name: spedas-workflow" in workflow_contents[0].content
+    batch2_contents = asyncio.run(
+        server.read_resource("spedas-skill://skills/omni-kyoto-noaa-smoke-workflows")
+    )
+    assert "name: omni-kyoto-noaa-smoke-workflows" in batch2_contents[0].content
+    assert "external_runtime_route.not_an_mcp_tool: true" in batch2_contents[0].content
 
 
 def test_overview_advertises_skill_resources(monkeypatch):

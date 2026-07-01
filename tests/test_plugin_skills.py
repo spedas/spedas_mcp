@@ -331,3 +331,31 @@ def test_batch001_pyspedas_foundation_skills_are_indexed_and_guarded() -> None:
         "PySPEDAS/PyTplot functions are source evidence or external runtime routes",
     ]:
         assert expected in heritage
+
+def test_batch002_omni_kyoto_noaa_smoke_workflow_is_indexed_and_guarded() -> None:
+    skill_root = ROOT / "plugins/spedas-claude/skills"
+    source_root = ROOT / "src/spedas_agent_kit/resources/skills"
+    index = (skill_root / "spedas-skills-index/SKILL.md").read_text(encoding="utf-8")
+    skill = (source_root / "omni-kyoto-noaa-smoke-workflows/SKILL.md").read_text(encoding="utf-8")
+
+    assert "omni-kyoto-noaa-smoke-workflows" in index
+    for expected in [
+        "OMNI_HRO_1MIN",
+        "OMNI_HRO2_1MIN",
+        "OMNI2_H0_MRG1HR",
+        "AE_INDEX",
+        "SYM_H",
+        "Kp",
+        "pyspedas.projects.omni.data",
+        "pyspedas.projects.kyoto.load_geomagnetic_indices",
+        "pyspedas.projects.noaa.noaa_load_kp",
+        "not_an_mcp_tool",
+        "external_runtime_route.not_an_mcp_tool: true",
+        "downloadonly=True",
+        "notplot=True",
+        "no_update=True",
+        "cache-only",
+        "Do not paste arrays",
+        "provenance/run.json",
+    ]:
+        assert expected in skill
