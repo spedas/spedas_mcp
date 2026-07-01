@@ -77,7 +77,33 @@ For a first golden workflow, follow the runtime-agnostic sequence from
    the science question, time range, source, variables, and output directory are
    explicit, then keep the seeded `provenance/run.json` updated as tool calls
    and artifacts accumulate. Read `spedas-preset://schemas/analysis_bundle_run`
-   for the run-record shape.
+   for the run-record shape. A minimal update should be compact and path-first:
+
+   ```json
+   {
+     "tool_calls": [
+       {
+         "tool": "fetch_data_product",
+         "status": "success",
+         "output_paths": ["data/example.cdf"],
+         "warnings": []
+       }
+     ],
+     "artifacts": [
+       {
+         "path": "data/example.cdf",
+         "role": "source_data",
+         "source_tool": "fetch_data_product"
+       }
+     ],
+     "caveats": [
+       {
+         "scope": "data_access",
+         "message": "cache-only smoke; no archive refresh"
+       }
+     ]
+   }
+   ```
 4. **Fetch/compute only after the plan is explicit**: use
    `fetch_data_product(...)` and any specialized analysis tools only after the
    runtime can explain the selected source and parameters.

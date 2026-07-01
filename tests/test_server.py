@@ -512,6 +512,16 @@ def test_create_spedas_analysis_bundle_writes_plan_files(tmp_path: Path):
         "data_sources": ["pds", "spice"],
     }))
     assert data["status"] == "success"
+    readme_text = Path(data["paths"]["readme"]).read_text(encoding="utf-8")
+    provenance_note_text = Path(data["paths"]["provenance_note"]).read_text(
+        encoding="utf-8"
+    )
+    assert "spedas-preset://schemas/analysis_bundle_run" in readme_text
+    assert "provenance/run.json" in readme_text
+    assert "tool_calls" in readme_text
+    assert "spedas-preset://schemas/analysis_bundle_run" in provenance_note_text
+    assert "Minimal entry shapes" in provenance_note_text
+    assert "source_tool" in provenance_note_text
     assert Path(data["paths"]["readme"]).exists()
     assert Path(data["paths"]["request_plan"]).exists()
     run_provenance_path = Path(data["paths"]["run_provenance"])

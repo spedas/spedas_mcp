@@ -20,6 +20,11 @@ def test_agent_kit_integration_workflow_doc_names_runtime_contract():
         "create_spedas_analysis_bundle",
         "fetch_data_product",
         "artifact/provenance summary",
+        "spedas-preset://schemas/analysis_bundle_run",
+        "tool_calls",
+        "artifacts",
+        "caveats",
+        "source_tool",
     ]
     for phrase in required:
         assert phrase in text
