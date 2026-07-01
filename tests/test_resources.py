@@ -273,3 +273,33 @@ def test_systematic_batch005_psp_solo_workflows_skill_is_packaged_and_indexed() 
         "pyspedas.projects.solo.solo_mag",
     ]:
         assert forbidden not in skill
+
+
+def test_systematic_batch007_pytplot_plotting_options_skill_is_packaged_and_indexed() -> None:
+    skill_name = "pytplot-plotting-options"
+    skill = read_packaged_skill(skill_name)
+    index = read_packaged_skill("spedas-skills-index")
+    rendered = render_skill_index_markdown()
+
+    assert f"{SPEDAS_SKILL_URI_PREFIX}{skill_name}" in rendered
+    assert skill_name in index
+    for expected in [
+        "pyspedas.options",
+        "pyspedas.tplot_options",
+        "pyspedas.tplot",
+        "external_runtime_route.not_an_mcp_tool: true",
+        "spec_dim_to_plot",
+        "spec_slices_to_use",
+        "save_png",
+        "save_svg",
+        "display=False",
+        "plot_options.json",
+        "provenance/run.json",
+    ]:
+        assert expected in skill
+
+    for forbidden in [
+        "mcp__spedas__pyspedas.options",
+        "mcp__spedas__tplot_options",
+    ]:
+        assert forbidden not in skill

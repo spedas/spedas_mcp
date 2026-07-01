@@ -558,3 +558,50 @@ def test_systematic_batch006_coordinate_transform_recipes_are_indexed_and_guarde
         "transform_timeseries_coordinates(... from_frame=",
     ]:
         assert forbidden not in skill
+
+
+def test_systematic_batch007_pytplot_plotting_options_are_indexed_and_guarded() -> None:
+    skill_root = ROOT / "plugins/spedas-claude/skills"
+    source_root = ROOT / "src/spedas_agent_kit/resources/skills"
+    index = (skill_root / "spedas-skills-index/SKILL.md").read_text(encoding="utf-8")
+    skill = (source_root / "pytplot-plotting-options/SKILL.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "pytplot-plotting-options" in index
+    for expected in [
+        "pyspedas.options",
+        "pyspedas.tplot_options",
+        "pyspedas.tplot",
+        "pyspedas.ylim",
+        "pyspedas.zlim",
+        "pyspedas.xlim",
+        "pyspedas.tlimit",
+        "pyspedas.timebar",
+        "pyspedas.databar",
+        "highlight",
+        "annotate",
+        "external_runtime_route.not_an_mcp_tool: true",
+        "not_an_mcp_tool",
+        "spec_dim_to_plot",
+        "spec_slices_to_use",
+        "save_png",
+        "save_svg",
+        "save_pdf",
+        "display=False",
+        "plot_options.json",
+        "provenance/run.json",
+        "Do not paste arrays",
+        "tplot-data-lifecycle",
+        "pyspedas-load-planning",
+        "coordinate-transform-recipes",
+        "render_tplot",
+    ]:
+        assert expected in skill
+
+    for forbidden in [
+        "mcp__spedas__pyspedas.options",
+        "mcp__spedas__tplot_options",
+        "use_dedicated_tool: pyspedas.tplot",
+    ]:
+        assert forbidden not in skill

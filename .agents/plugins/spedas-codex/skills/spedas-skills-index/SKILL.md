@@ -50,6 +50,7 @@ Low-level / source-specific compat tools exist for maintenance only — skills d
 | To know what data/sources exist at all | `spedas-workflow` | `spedas_overview` |
 | Plan a PySPEDAS mission/product/time data load with `time_clip=True`, cache, `downloadonly`, `notplot`, and provenance hygiene | `pyspedas-load-planning` | `create_spedas_analysis_bundle` |
 | Manage tplot variables from load through inspect, derive, plot/export, and cleanup without raw-array chat output | `tplot-data-lifecycle` | `create_spedas_analysis_bundle` |
+| Choose PyTplot/SPEDAS plotting options for line plots, spectrograms, legends, limits, event bars, annotations, and saved figure artifacts | `pytplot-plotting-options` | `create_spedas_analysis_bundle`; use `[analysis]` `render_tplot` only when that extra is enabled |
 | Translate IDL SPEDAS / PySPEDAS / plugin vocabulary into Agent Kit skills/resources while marking external routines as `not_an_mcp_tool` | `spedas-heritage-vocabulary` | `spedas_overview` |
 
 | Trace a spacecraft to its ionospheric footpoint / magnetic-equator (conjugacy, L-shell) | `field-line-footpoint` | `create_spedas_analysis_bundle` |
