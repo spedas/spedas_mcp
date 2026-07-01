@@ -40,6 +40,7 @@ Low-level / source-specific compat tools exist for maintenance only — skills d
 | Distance from a spacecraft to the magnetotail neutral sheet | `neutral-sheet-distance` | `create_spedas_analysis_bundle` |
 | Model (Shue) LMN boundary-normal frame for a magnetopause crossing | `model-lmn-boundary` | `create_spedas_analysis_bundle` |
 | Clean/condition a messy time-series before analysis (despike, deflag, smooth, gap-fill) | `timeseries-cleaning` | `create_spedas_analysis_bundle` |
+| Build or validate a 3D particle distribution artifact for moments, spectra, PAD, or velocity-space slices | `particle-distribution-recipes` | `create_spedas_analysis_bundle`; `[analysis]` `build_particle_distribution_artifact` / `load_particle_distribution_artifact` when enabled |
 | 2D velocity-space slice of a particle distribution (beams/crescents) | `particle-velocity-slice` | `create_spedas_analysis_bundle` |
 | Just fetch & plot a time series | `spedas-workflow` | `plan_spedas_observation` |
 | ERG/Arase radiation-belt, wave-particle, PWE/MGF/particle, or ground-conjugate ISEE/OMTI/MAGDAS route scout | `erg-arase-radiation-belt-waves` | `spedas_overview`; use this skill to choose `pyspedas.erg.*` / CDAWeb satellite routes, and keep ground routes labeled PySPEDAS-only |
