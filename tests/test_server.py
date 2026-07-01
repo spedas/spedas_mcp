@@ -3894,6 +3894,17 @@ def test_server_exposes_packaged_skills_as_mcp_resources(monkeypatch):
     assert "external_runtime_route.not_an_mcp_tool: true" in plotting_contents[0].content
     assert "mcp__spedas__pyspedas.options" not in plotting_contents[0].content
 
+    particle_dist_contents = asyncio.run(
+        server.read_resource("spedas-skill://skills/particle-distribution-recipes")
+    )
+    assert "name: particle-distribution-recipes" in particle_dist_contents[0].content
+    assert "build_particle_distribution_artifact" in particle_dist_contents[0].content
+    assert "compute_particle_spectra" in particle_dist_contents[0].content
+    assert "MMS1_FPI_FAST_L2_DIS-DIST" in particle_dist_contents[0].content
+    assert "distribution_artifact_magf" in particle_dist_contents[0].content
+    assert "external_runtime_route.not_an_mcp_tool: true" in particle_dist_contents[0].content
+    assert "mcp__spedas__pyspedas" not in particle_dist_contents[0].content
+
 
 def test_overview_advertises_skill_resources(monkeypatch):
     monkeypatch.delenv("SPEDAS_AGENT_KIT_COMPAT_TOOLS", raising=False)

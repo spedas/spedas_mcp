@@ -303,3 +303,35 @@ def test_systematic_batch007_pytplot_plotting_options_skill_is_packaged_and_inde
         "mcp__spedas__tplot_options",
     ]:
         assert forbidden not in skill
+
+
+def test_systematic_batch008_particle_distribution_recipes_skill_is_packaged_and_indexed() -> None:
+    skill_name = "particle-distribution-recipes"
+    skill = read_packaged_skill(skill_name)
+    index = read_packaged_skill("spedas-skills-index")
+    rendered = render_skill_index_markdown()
+
+    assert f"{SPEDAS_SKILL_URI_PREFIX}{skill_name}" in rendered
+    assert skill_name in index
+    for expected in [
+        "build_particle_distribution_artifact",
+        "load_particle_distribution_artifact",
+        "compute_particle_moments",
+        "compute_particle_spectra",
+        "MMS1_FPI_FAST_L2_DIS-DIST",
+        "MMS1_FPI_FAST_L2_DES-DIST",
+        "*-MOMS",
+        "magf",
+        "distribution_artifact_magf",
+        "external_runtime_route.not_an_mcp_tool: true",
+        "particle-velocity-slice",
+        "pitch-angle-distribution",
+    ]:
+        assert expected in skill
+
+    for forbidden in [
+        "mcp__spedas__pyspedas",
+        "mcp__spedas__mms_fpi",
+        "use_dedicated_tool: pyspedas",
+    ]:
+        assert forbidden not in skill

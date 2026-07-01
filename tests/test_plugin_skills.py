@@ -605,3 +605,55 @@ def test_systematic_batch007_pytplot_plotting_options_are_indexed_and_guarded() 
         "use_dedicated_tool: pyspedas.tplot",
     ]:
         assert forbidden not in skill
+
+
+def test_systematic_batch008_particle_distribution_recipes_are_indexed_and_guarded() -> None:
+    skill_root = ROOT / "plugins/spedas-claude/skills"
+    source_root = ROOT / "src/spedas_agent_kit/resources/skills"
+    index = (skill_root / "spedas-skills-index/SKILL.md").read_text(encoding="utf-8")
+    skill = (source_root / "particle-distribution-recipes/SKILL.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "particle-distribution-recipes" in index
+    for expected in [
+        "build_particle_distribution_artifact",
+        "load_particle_distribution_artifact",
+        "compute_particle_moments",
+        "compute_particle_spectra",
+        "spectrum_types=[\"energy\", \"pitch_angle\", \"azimuth\", \"elevation\"]",
+        "particle-velocity-slice",
+        "pitch-angle-distribution",
+        "pytplot-plotting-options",
+        "MMS1_FPI_FAST_L2_DIS-DIST",
+        "MMS1_FPI_FAST_L2_DES-DIST",
+        "MMS HPCA",
+        "ERG/Arase",
+        "THEMIS ESA/SST",
+        "PSP SPAN-i",
+        "*-DIST",
+        "*-MOMS",
+        "magf",
+        "distribution_artifact_magf",
+        "mag_file",
+        "external_runtime_route.not_an_mcp_tool: true",
+        "mms_part_getspec",
+        "mms_part_slice2d",
+        "mms_pad_fpi",
+        "mms_get_fpi_dist",
+        "mms_get_hpca_dist",
+        "spd_pgs_moments",
+        "moments_3d",
+        "eflux",
+        "df_cm",
+        "Do not paste raw arrays",
+    ]:
+        assert expected in skill
+
+    for forbidden in [
+        "mcp__spedas__pyspedas",
+        "mcp__spedas__mms_fpi",
+        "mcp__spedas__mms_hpca",
+        "use_dedicated_tool: pyspedas",
+    ]:
+        assert forbidden not in skill
