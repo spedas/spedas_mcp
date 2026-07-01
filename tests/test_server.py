@@ -3828,6 +3828,7 @@ def test_server_exposes_packaged_skills_as_mcp_resources(monkeypatch):
     assert "spedas-skill://skills/themis-workflows" in by_uri
     assert "spedas-skill://skills/mms-basic-workflows" in by_uri
     assert "spedas-skill://skills/psp-solo-heliophysics-workflows" in by_uri
+    assert "spedas-skill://skills/pytplot-plotting-options" in by_uri
     assert by_uri["spedas-skill://index"].mimeType == "text/markdown"
     assert by_uri["spedas-skill://index"].meta["surface"] == "spedas_skill"
     assert by_uri["spedas-skill://skills/spedas-workflow"].meta["skill_name"] == "spedas-workflow"
@@ -3839,6 +3840,10 @@ def test_server_exposes_packaged_skills_as_mcp_resources(monkeypatch):
     assert (
         by_uri["spedas-skill://skills/psp-solo-heliophysics-workflows"].meta["skill_name"]
         == "psp-solo-heliophysics-workflows"
+    )
+    assert (
+        by_uri["spedas-skill://skills/pytplot-plotting-options"].meta["skill_name"]
+        == "pytplot-plotting-options"
     )
 
     index_contents = asyncio.run(server.read_resource("spedas-skill://index"))
@@ -3877,6 +3882,17 @@ def test_server_exposes_packaged_skills_as_mcp_resources(monkeypatch):
     assert "pyspedas.projects.psp.psp_fields" not in psp_solo_contents[0].content
     assert "pyspedas.projects.solo.solo_mag" not in psp_solo_contents[0].content
     assert "external_runtime_route.not_an_mcp_tool: true" in psp_solo_contents[0].content
+
+    plotting_contents = asyncio.run(
+        server.read_resource("spedas-skill://skills/pytplot-plotting-options")
+    )
+    assert "name: pytplot-plotting-options" in plotting_contents[0].content
+    assert "pyspedas.options" in plotting_contents[0].content
+    assert "pyspedas.tplot_options" in plotting_contents[0].content
+    assert "spec_dim_to_plot" in plotting_contents[0].content
+    assert "save_png" in plotting_contents[0].content
+    assert "external_runtime_route.not_an_mcp_tool: true" in plotting_contents[0].content
+    assert "mcp__spedas__pyspedas.options" not in plotting_contents[0].content
 
 
 def test_overview_advertises_skill_resources(monkeypatch):
