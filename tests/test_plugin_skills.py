@@ -392,3 +392,53 @@ def test_systematic_batch003_themis_workflows_are_indexed_and_guarded() -> None:
         "thm_load_fgm",
     ]:
         assert expected in skill
+
+
+def test_systematic_batch004_mms_workflows_are_indexed_and_guarded() -> None:
+    skill_root = ROOT / "plugins/spedas-claude/skills"
+    source_root = ROOT / "src/spedas_agent_kit/resources/skills"
+    index = (skill_root / "spedas-skills-index/SKILL.md").read_text(encoding="utf-8")
+    skill = (source_root / "mms-basic-workflows/SKILL.md").read_text(encoding="utf-8")
+
+    assert "mms-basic-workflows" in index
+    for expected in [
+        "MMS1_FGM_SRVY_L2",
+        "MMS1_MEC_SRVY_L2_EPHT89D",
+        "MMS1_SCM_SRVY_L2_SCSRVY",
+        "MMS1_FPI_FAST_L2_DIS-MOMS",
+        "MMS1_EDP_FAST_L2_DCE",
+        "MMS1_HPCA_SRVY_L2_MOMENTS",
+        "pyspedas.projects.mms.fgm",
+        "pyspedas.projects.mms.mec",
+        "pyspedas.projects.mms.scm",
+        "pyspedas.projects.mms.fpi",
+        "pyspedas.projects.mms.hpca",
+        "pyspedas.projects.mms.edp",
+        "pyspedas.projects.mms.curlometer",
+        "pyspedas.projects.mms.lingradest",
+        "pyspedas.projects.mms.fpi_tools.mms_pad_fpi.mms_pad_fpi",
+        "pyspedas.projects.mms.fpi_tools.mms_load_fpi_calc_pad.mms_load_fpi_calc_pad",
+        "pyspedas.projects.mms.particles.mms_part_getspec.mms_part_getspec",
+        "pyspedas.projects.mms.particles.mms_part_slice2d.mms_part_slice2d",
+        "mms_load_fpi_calc_pad",
+        "magf",
+        "not_an_mcp_tool",
+        "external_runtime_route.not_an_mcp_tool: true",
+        "available=True",
+        "notplot=True",
+        "no_update=True",
+        "not_gradient_ready",
+        "single_spacecraft_route_scout",
+        "Do not paste arrays",
+        "create_spedas_analysis_bundle",
+        "mms_load_fgm",
+    ]:
+        assert expected in skill
+
+    for forbidden in [
+        "pyspedas.projects.mms.mms_pad_fpi",
+        "pyspedas.projects.mms.mms_load_fpi_calc_pad",
+        "pyspedas.projects.mms.mms_part_getspec",
+        "pyspedas.projects.mms.mms_part_slice2d",
+    ]:
+        assert forbidden not in skill

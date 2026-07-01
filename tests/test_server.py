@@ -94,6 +94,7 @@ def test_base_surface_is_thirteen_primary_tools(monkeypatch):
     assert {tool.meta["surface"] for tool in tools} == {"primary"}
     assert {"load_omni", "kyoto_dst", "load_ae", "noaa_load_kp"}.isdisjoint(names)
     assert {"themis_fgm", "themis_state", "load_themis", "themis_esa", "themis_sst", "themis_scm"}.isdisjoint(names)
+    assert {"mms_fgm", "mms_fpi", "mms_hpca", "mms_curlometer", "load_mms", "pyspedas_mms_fgm"}.isdisjoint(names)
 
 
 def test_public_server_manifest_advertises_gate_env_flags():
@@ -3825,6 +3826,7 @@ def test_server_exposes_packaged_skills_as_mcp_resources(monkeypatch):
     assert "spedas-skill://skills/wave-polarization" in by_uri
     assert "spedas-skill://skills/omni-kyoto-noaa-smoke-workflows" in by_uri
     assert "spedas-skill://skills/themis-workflows" in by_uri
+    assert "spedas-skill://skills/mms-basic-workflows" in by_uri
     assert by_uri["spedas-skill://index"].mimeType == "text/markdown"
     assert by_uri["spedas-skill://index"].meta["surface"] == "spedas_skill"
     assert by_uri["spedas-skill://skills/spedas-workflow"].meta["skill_name"] == "spedas-workflow"
@@ -3832,6 +3834,7 @@ def test_server_exposes_packaged_skills_as_mcp_resources(monkeypatch):
         "spedas-skill://skills/omni-kyoto-noaa-smoke-workflows"
     ].meta["skill_name"] == "omni-kyoto-noaa-smoke-workflows"
     assert by_uri["spedas-skill://skills/themis-workflows"].meta["skill_name"] == "themis-workflows"
+    assert by_uri["spedas-skill://skills/mms-basic-workflows"].meta["skill_name"] == "mms-basic-workflows"
 
     index_contents = asyncio.run(server.read_resource("spedas-skill://index"))
     assert "spedas-skill://skills/spedas-workflow" in index_contents[0].content
@@ -3846,6 +3849,16 @@ def test_server_exposes_packaged_skills_as_mcp_resources(monkeypatch):
     assert "name: themis-workflows" in themis_contents[0].content
     assert "pyspedas.projects.themis.fgm" in themis_contents[0].content
     assert "external_runtime_route.not_an_mcp_tool: true" in themis_contents[0].content
+    mms_contents = asyncio.run(server.read_resource("spedas-skill://skills/mms-basic-workflows"))
+    assert "name: mms-basic-workflows" in mms_contents[0].content
+    assert "pyspedas.projects.mms.fgm" in mms_contents[0].content
+    assert "pyspedas.projects.mms.fpi" in mms_contents[0].content
+    assert "pyspedas.projects.mms.edp" in mms_contents[0].content
+    assert "pyspedas.projects.mms.fpi_tools.mms_pad_fpi.mms_pad_fpi" in mms_contents[0].content
+    assert "pyspedas.projects.mms.fpi_tools.mms_load_fpi_calc_pad.mms_load_fpi_calc_pad" in mms_contents[0].content
+    assert "pyspedas.projects.mms.mms_pad_fpi" not in mms_contents[0].content
+    assert "pyspedas.projects.mms.mms_load_fpi_calc_pad" not in mms_contents[0].content
+    assert "external_runtime_route.not_an_mcp_tool: true" in mms_contents[0].content
 
 
 def test_overview_advertises_skill_resources(monkeypatch):

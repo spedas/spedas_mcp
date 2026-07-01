@@ -203,3 +203,37 @@ def test_systematic_batch003_themis_workflows_skill_is_packaged_and_indexed() ->
         "no_update=True",
     ]:
         assert expected in skill
+
+
+def test_systematic_batch004_mms_workflows_skill_is_packaged_and_indexed() -> None:
+    skill_name = "mms-basic-workflows"
+    skill = read_packaged_skill(skill_name)
+    index = read_packaged_skill("spedas-skills-index")
+    rendered = render_skill_index_markdown()
+
+    assert f"{SPEDAS_SKILL_URI_PREFIX}{skill_name}" in rendered
+    assert skill_name in index
+    for expected in [
+        "MMS1_FGM_SRVY_L2",
+        "MMS1_MEC_SRVY_L2_EPHT89D",
+        "MMS1_FPI_FAST_L2_DIS-MOMS",
+        "MMS1_EDP_FAST_L2_DCE",
+        "pyspedas.projects.mms.fgm",
+        "pyspedas.projects.mms.fpi",
+        "pyspedas.projects.mms.hpca",
+        "pyspedas.projects.mms.edp",
+        "pyspedas.projects.mms.fpi_tools.mms_pad_fpi.mms_pad_fpi",
+        "pyspedas.projects.mms.fpi_tools.mms_load_fpi_calc_pad.mms_load_fpi_calc_pad",
+        "external_runtime_route.not_an_mcp_tool: true",
+        "not_gradient_ready",
+        "available=True",
+        "notplot=True",
+        "no_update=True",
+    ]:
+        assert expected in skill
+
+    for forbidden in [
+        "pyspedas.projects.mms.mms_pad_fpi",
+        "pyspedas.projects.mms.mms_load_fpi_calc_pad",
+    ]:
+        assert forbidden not in skill
