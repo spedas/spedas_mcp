@@ -514,6 +514,23 @@ def test_create_spedas_analysis_bundle_writes_plan_files(tmp_path: Path):
     assert data["status"] == "success"
     assert Path(data["paths"]["readme"]).exists()
     assert Path(data["paths"]["request_plan"]).exists()
+    run_provenance_path = Path(data["paths"]["run_provenance"])
+    assert run_provenance_path.exists()
+    run_provenance = json.loads(run_provenance_path.read_text())
+    assert run_provenance["schema_version"] == "spedas-analysis-bundle-run-v1"
+    assert run_provenance["created_by"] == "spedas_agent_kit.create_spedas_analysis_bundle"
+    assert run_provenance["study_name"] == "Juno Jupiter geometry test"
+    assert run_provenance["science_goal"] == "Plan a Juno magnetic field and geometry study"
+    assert run_provenance["target"] == "Jupiter"
+    assert run_provenance["requested_data_sources"] == ["pds", "spice"]
+    assert run_provenance["recommended_sources"] == ["pds", "spice"]
+    assert run_provenance["plan_path"] == data["paths"]["request_plan"]
+    assert run_provenance["artifact_dirs"]["data"] == data["paths"]["data"]
+    assert run_provenance["resource_hints"]["skill_index_uri"] == "spedas-skill://index"
+    assert run_provenance["resource_hints"]["provenance_schema_uri"] == "spedas-preset://schemas/reproduction_provenance"
+    assert run_provenance["tool_calls"] == []
+    assert run_provenance["artifacts"] == []
+    assert run_provenance["caveats"] == []
     assert data["recommended_sources"] == ["pds", "spice"]
 
 

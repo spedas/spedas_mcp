@@ -17,6 +17,11 @@ from typing import Any
 from .optional_backends import analysis_dependencies_available
 
 
+SPEDAS_ANALYSIS_RUN_PROVENANCE_VERSION = "spedas-analysis-bundle-run-v1"
+SPEDAS_SKILL_INDEX_URI = "spedas-skill://index"
+SPEDAS_PROVENANCE_SCHEMA_URI = "spedas-preset://schemas/reproduction_provenance"
+
+
 SOURCE_PROFILES: dict[str, dict[str, Any]] = {
     "cdaweb": {
         "label": "CDAWeb heliophysics time-series",
@@ -1397,9 +1402,34 @@ def create_analysis_bundle(
 
     provenance_note = subdirs["provenance"] / "README.md"
     provenance_note.write_text(
-        "# Provenance notes\n\nRecord MCP tool calls, package versions, input time ranges, selected datasets, and output file hashes here.\n",
+        "# Provenance notes\n\nRecord MCP tool calls, package versions, input time ranges, selected datasets, and output file hashes here. Keep `run.json` machine-readable and update its tool_calls, artifacts, and caveats arrays as the workflow progresses.\n",
         encoding="utf-8",
     )
+
+    run_provenance_path = subdirs["provenance"] / "run.json"
+    artifact_dirs = {name: str(path) for name, path in subdirs.items()}
+    run_provenance = {
+        "schema_version": SPEDAS_ANALYSIS_RUN_PROVENANCE_VERSION,
+        "created_by": "spedas_agent_kit.create_spedas_analysis_bundle",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "study_name": study_name,
+        "science_goal": science_goal or study_name,
+        "target": target,
+        "start": start,
+        "stop": stop,
+        "requested_data_sources": list(data_sources or []),
+        "recommended_sources": plan["recommended_sources"],
+        "plan_path": str(request_path),
+        "artifact_dirs": artifact_dirs,
+        "resource_hints": {
+            "skill_index_uri": SPEDAS_SKILL_INDEX_URI,
+            "provenance_schema_uri": SPEDAS_PROVENANCE_SCHEMA_URI,
+        },
+        "tool_calls": [],
+        "artifacts": [],
+        "caveats": [],
+    }
+    run_provenance_path.write_text(json.dumps(run_provenance, indent=2), encoding="utf-8")
 
     return {
         "status": "success",
@@ -1408,7 +1438,8 @@ def create_analysis_bundle(
             "readme": str(readme_path),
             "request_plan": str(request_path),
             "provenance_note": str(provenance_note),
-            **{name: str(path) for name, path in subdirs.items()},
+            "run_provenance": str(run_provenance_path),
+            **artifact_dirs,
         },
         "recommended_sources": plan["recommended_sources"],
         "next_tools": ["search_spedas_data_sources", "plan_spedas_observation", "browse_data_sources", "load_data_source", "browse_data_parameters", "fetch_data_product"],

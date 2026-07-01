@@ -75,7 +75,8 @@ For a first golden workflow, follow the runtime-agnostic sequence from
    `load_data_source(...)`, and `browse_data_parameters(...)` before fetching.
 3. **Create the analysis bundle**: call `create_spedas_analysis_bundle(...)` once
    the science question, time range, source, variables, and output directory are
-   explicit.
+   explicit, then keep the seeded `provenance/run.json` updated as tool calls
+   and artifacts accumulate.
 4. **Fetch/compute only after the plan is explicit**: use
    `fetch_data_product(...)` and any specialized analysis tools only after the
    runtime can explain the selected source and parameters.
@@ -100,7 +101,8 @@ Minimum evidence:
 - the chosen shared skill was loaded or explicitly cited;
 - a run directory was created;
 - output data/figure artifacts were written;
-- a provenance artifact or reproduction schema output was written;
+- the seeded `provenance/run.json` was updated, or another provenance
+  artifact/reproduction schema output was written;
 - the runtime response names artifact paths and caveats instead of embedding
   large data arrays;
 - no wrapper-specific science logic was required.

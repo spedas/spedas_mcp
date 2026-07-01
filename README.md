@@ -117,7 +117,7 @@ Every non-trivial run should leave a directory that another researcher can audit
   requests/      original prompt, plan, or recipe
   data/          fetched or prepared measurement files
   plots/         PNG/SVG/PDF renderings
-  provenance/    source IDs, parameters, cache notes, tool versions, hashes
+  provenance/    run.json plus source IDs, parameters, cache notes, tool versions, hashes
   notes/         interpretation, caveats, and next steps
 ```
 
@@ -199,7 +199,7 @@ Start here for open-ended science requests.
 - `search_spedas_data_sources(question, target=None, observables=None)` — recommend which data source categories should lead a request.
 - `plan_spedas_observation(science_goal, start=None, stop=None, target=None, observables=None, data_sources=None)` — produce a source-specific plan before fetching data.
 - `compare_cdaweb_pds_spice(science_goal="")` — explain source boundaries and choose the right source family.
-- `create_spedas_analysis_bundle(study_name, output_dir, ...)` — create a request/provenance scaffold with `requests/`, `data/`, `plots/`, `provenance/`, and `notes/` folders.
+- `create_spedas_analysis_bundle(study_name, output_dir, ...)` — create a request/provenance scaffold with `requests/`, `data/`, `plots/`, `provenance/run.json`, and `notes/` folders.
 
 ### 3. Geometry tools
 
@@ -357,7 +357,7 @@ The former dedicated cache tools (`manage_cdaweb_cache`, `manage_pds_cache`, `ma
    - `browse_data_parameters(...)`
    - `fetch_data_product(...)` for CDAWeb/PDS measurement/archive products
 5. Use geometry tools directly for SPICE ephemeris, distance, frame, and coordinate-transform work.
-6. For any real analysis, call `create_spedas_analysis_bundle(...)` and write fetched files under the generated `data/` directory.
+6. For any real analysis, call `create_spedas_analysis_bundle(...)`, update the seeded `provenance/run.json`, and write fetched files under the generated `data/` directory.
 7. Return compact summaries and file paths. Do not paste large science arrays into chat.
 
 ## Quick start for local development
