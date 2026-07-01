@@ -157,3 +157,24 @@ def test_batch001_foundation_skills_are_rendered_as_resources() -> None:
     ]:
         assert f"{SPEDAS_SKILL_URI_PREFIX}{skill_name}" in index
         assert read_packaged_skill(skill_name).startswith("---\nname: ")
+
+def test_batch002_omni_kyoto_noaa_skill_is_packaged_and_indexed() -> None:
+    skill_name = "omni-kyoto-noaa-smoke-workflows"
+    skill = read_packaged_skill(skill_name)
+    index = read_packaged_skill("spedas-skills-index")
+    rendered = render_skill_index_markdown()
+
+    assert f"{SPEDAS_SKILL_URI_PREFIX}{skill_name}" in rendered
+    assert skill_name in index
+    for expected in [
+        "OMNI_HRO_1MIN",
+        "OMNI2_H0_MRG1HR",
+        "pyspedas.projects.kyoto.dst",
+        "pyspedas.projects.noaa.noaa_load_kp",
+        "external_runtime_route.not_an_mcp_tool: true",
+        "downloadonly=True",
+        "notplot=True",
+        "no_update=True",
+        "route_scout",
+    ]:
+        assert expected in skill
