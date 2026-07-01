@@ -284,3 +284,50 @@ def test_batch010_erg_arase_guardrails_are_indexed():
 
     assert "erg-arase-radiation-belt-waves" in index
     assert "ISEE/OMTI/MAGDAS" in index
+
+
+def test_batch001_pyspedas_foundation_skills_are_indexed_and_guarded() -> None:
+    skill_root = ROOT / "plugins/spedas-claude/skills"
+    source_root = ROOT / "src/spedas_agent_kit/resources/skills"
+    index = (skill_root / "spedas-skills-index/SKILL.md").read_text(encoding="utf-8")
+    load = (source_root / "pyspedas-load-planning/SKILL.md").read_text(encoding="utf-8")
+    tplot = (source_root / "tplot-data-lifecycle/SKILL.md").read_text(encoding="utf-8")
+    heritage = (source_root / "spedas-heritage-vocabulary/SKILL.md").read_text(encoding="utf-8")
+
+    for skill_name in [
+        "pyspedas-load-planning",
+        "tplot-data-lifecycle",
+        "spedas-heritage-vocabulary",
+    ]:
+        assert skill_name in index
+
+    for expected in [
+        "time_clip=True",
+        "`downloadonly`",
+        "`notplot`",
+        "`no_update`",
+        "not_an_mcp_tool",
+        "external_runtime_route.not_an_mcp_tool: true",
+        "create_spedas_analysis_bundle",
+    ]:
+        assert expected in load
+
+    for expected in [
+        "STORE_DATA",
+        "GET_DATA",
+        "tplot_names",
+        "artifact-first",
+        "Do not paste raw arrays",
+        "not_an_mcp_tool",
+    ]:
+        assert expected in tplot
+
+    for expected in [
+        "IDL SPEDAS",
+        "GUI plugin",
+        "`project`",
+        "`load_data`",
+        "not_an_mcp_tool",
+        "PySPEDAS/PyTplot functions are source evidence or external runtime routes",
+    ]:
+        assert expected in heritage

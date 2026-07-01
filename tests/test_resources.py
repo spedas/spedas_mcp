@@ -146,3 +146,14 @@ def test_multispacecraft_insitu_example_documents_batch004_routes() -> None:
     assert "BX_GSE" in text and "BZ_GSE" in text
     assert "1min" in text
     assert "spice-conjunction-finder" in text
+
+
+def test_batch001_foundation_skills_are_rendered_as_resources() -> None:
+    index = render_skill_index_markdown()
+    for skill_name in [
+        "pyspedas-load-planning",
+        "tplot-data-lifecycle",
+        "spedas-heritage-vocabulary",
+    ]:
+        assert f"{SPEDAS_SKILL_URI_PREFIX}{skill_name}" in index
+        assert read_packaged_skill(skill_name).startswith("---\nname: ")

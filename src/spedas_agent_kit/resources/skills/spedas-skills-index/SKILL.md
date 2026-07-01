@@ -43,6 +43,9 @@ Low-level / source-specific compat tools exist for maintenance only — skills d
 | ERG/Arase radiation-belt, wave-particle, PWE/MGF/particle, or ground-conjugate ISEE/OMTI/MAGDAS route scout | `erg-arase-radiation-belt-waves` | `spedas_overview`; use this skill to choose `pyspedas.erg.*` / CDAWeb satellite routes, and keep ground routes labeled PySPEDAS-only |
 | Standard mission overview plot, geomagnetic-index context, GOES XRS operational storm context, THEMIS FGM/ESA substorm/dipolarization proxy, or RBSP MagEIS/REPT radiation-belt overview | `overview-geomagnetic-indices` | `spedas_overview` |
 | To know what data/sources exist at all | `spedas-workflow` | `spedas_overview` |
+| Plan a PySPEDAS mission/product/time data load with `time_clip=True`, cache, `downloadonly`, `notplot`, and provenance hygiene | `pyspedas-load-planning` | `create_spedas_analysis_bundle` |
+| Manage tplot variables from load through inspect, derive, plot/export, and cleanup without raw-array chat output | `tplot-data-lifecycle` | `create_spedas_analysis_bundle` |
+| Translate IDL SPEDAS / PySPEDAS / plugin vocabulary into Agent Kit skills/resources while marking external routines as `not_an_mcp_tool` | `spedas-heritage-vocabulary` | `spedas_overview` |
 
 | Trace a spacecraft to its ionospheric footpoint / magnetic-equator (conjugacy, L-shell) | `field-line-footpoint` | `create_spedas_analysis_bundle` |
 | Quick-look 1-D power spectral density (PSD slope/peak) of an interval | `power-spectral-density` | `create_spedas_analysis_bundle` |
