@@ -10,10 +10,13 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 import tempfile
 from pathlib import Path
+
+from _smoke_runtime import ensure_source_tree_on_path, isolated_cache_env
+
+ensure_source_tree_on_path()
 
 import anyio
 from mcp import ClientSession, StdioServerParameters
@@ -94,10 +97,7 @@ def main() -> int:
     args = parser.parse_args()
 
     with tempfile.TemporaryDirectory(prefix="spedas-agent-kit-smoke-") as tmp:
-        env = os.environ.copy()
-        env.setdefault("XHELIO_CDAWEB_CACHE_DIR", str(Path(tmp) / "cdaweb"))
-        env.setdefault("XHELIO_SPICE_KERNEL_DIR", str(Path(tmp) / "spice"))
-        env.setdefault("PDSMCP_CACHE_DIR", str(Path(tmp) / "pds"))
+        env = isolated_cache_env(tmp)
         if args.compat_tools:
             env["SPEDAS_AGENT_KIT_COMPAT_TOOLS"] = "1"
         else:

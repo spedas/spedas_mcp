@@ -374,11 +374,13 @@ Run tests and smoke checks:
 ```bash
 uv run --extra dev --extra mcp python -m pytest -q
 uv run --extra mcp python scripts/smoke_mcp_list_tools.py --json
+uv run --extra mcp python scripts/smoke_mcp_resources.py --json
+uv run --extra mcp python scripts/smoke_analysis_bundle.py --json
 uv run --extra dev --extra mcp python scripts/validate_plugin_packages.py
 uv run --extra analysis --extra mcp python scripts/smoke_analysis_imports.py --json
 ```
 
-The list-tools smoke starts the stdio MCP server with isolated temporary cache directories, performs MCP `initialize` + `list_tools`, and verifies the expected advertised tool names. The analysis smoke imports the exact optional backend modules/attributes and verifies that a real `[analysis]` install registers every analysis tool by default. Neither smoke fetches CDAWeb/PDS data or downloads SPICE kernels.
+The smoke scripts prefer the checked-out `src/` tree over any ambient installed `spedas_agent_kit` package, so local source-tree runs do not accidentally inspect a stale editable install. The list-tools smoke starts the stdio MCP server with isolated temporary cache directories, performs MCP `initialize` + `list_tools`, and verifies the expected advertised tool names. The resource smoke performs MCP `list_resources` + selected `read_resource` calls for the skill index, workflow skill, and provenance schema resources. The analysis-bundle smoke creates a temporary bundle, reads `spedas-preset://schemas/analysis_bundle_run`, appends one compact `tool_calls` / `artifacts` / `caveats` update to `provenance/run.json`, and validates the resulting record shape. The analysis smoke imports the exact optional backend modules/attributes and verifies that a real `[analysis]` install registers every analysis tool by default. None of these smokes fetch CDAWeb/PDS data or download SPICE kernels.
 
 Optional backends are installed via extras and are not required for the base
 install. The `analysis` extra also controls MCP registration of the 13 local

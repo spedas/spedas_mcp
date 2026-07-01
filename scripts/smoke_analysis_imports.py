@@ -17,6 +17,10 @@ import io
 import json
 from collections.abc import Sequence
 
+from _smoke_runtime import ensure_source_tree_on_path
+
+ensure_source_tree_on_path()
+
 from spedas_agent_kit.optional_backends import (
     ANALYSIS_REQUIRED_IMPORTS,
     ANALYSIS_TOOL_NAMES,
